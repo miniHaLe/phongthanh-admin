@@ -59,15 +59,15 @@ export function StatusDistributionChart({
 }: StatusDistributionChartProps) {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center" style={{ height: 240 }}>
-        <Skeleton className="h-48 w-48 rounded-full" />
+      <div className="flex h-[280px] items-center justify-center">
+        <Skeleton className="h-56 w-56 rounded-full" />
       </div>
     )
   }
 
   if (isError) {
     return (
-      <div style={{ height: 240 }}>
+      <div className="h-[280px]">
         <EmptyState
           icon={BarChart2}
           heading="Không thể tải biểu đồ"
@@ -80,14 +80,14 @@ export function StatusDistributionChart({
 
   if (data.length === 0) {
     return (
-      <div style={{ height: 240 }}>
+      <div className="h-[280px]">
         <EmptyState icon={BarChart2} heading="Chưa có dữ liệu phiếu" />
       </div>
     )
   }
 
   return (
-    <ResponsiveContainer width="100%" height={240}>
+    <ResponsiveContainer width="100%" height={280}>
       <PieChart>
         <Pie
           data={data}
@@ -95,7 +95,7 @@ export function StatusDistributionChart({
           nameKey="label"
           cx="50%"
           cy="50%"
-          outerRadius={80}
+          outerRadius={92}
           paddingAngle={2}
         >
           {data.map((entry) => (

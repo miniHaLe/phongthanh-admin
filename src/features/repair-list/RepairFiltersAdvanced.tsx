@@ -101,7 +101,7 @@ export function RepairFiltersAdvanced({
           value={filters.branchId ?? UNSET}
           onValueChange={(v) => onChange({ branchId: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-cn`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-cn`} className="h-11 text-base md:h-8 md:text-sm">
             <SelectValue placeholder="Tất cả chi nhánh" />
           </SelectTrigger>
           <SelectContent>
@@ -127,7 +127,7 @@ export function RepairFiltersAdvanced({
             })
           }
         >
-          <SelectTrigger id={`${uid}-nsx`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-nsx`} className="h-11 text-base md:h-8 md:text-sm">
             <SelectValue placeholder="Tất cả NSX" />
           </SelectTrigger>
           <SelectContent>
@@ -149,7 +149,7 @@ export function RepairFiltersAdvanced({
             onChange({ sanPhamId: v === UNSET ? undefined : v, modelId: undefined })
           }
         >
-          <SelectTrigger id={`${uid}-sp`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-sp`} className="h-11 text-base md:h-8 md:text-sm">
             <SelectValue placeholder="Tất cả sản phẩm" />
           </SelectTrigger>
           <SelectContent>
@@ -169,7 +169,7 @@ export function RepairFiltersAdvanced({
           value={filters.modelId ?? UNSET}
           onValueChange={(v) => onChange({ modelId: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-model`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-model`} className="h-11 text-base md:h-8 md:text-sm">
             <SelectValue placeholder="Tất cả model" />
           </SelectTrigger>
           <SelectContent>
@@ -189,7 +189,7 @@ export function RepairFiltersAdvanced({
           {HINH_THUC_OPTIONS.map((opt) => (
             <label
               key={opt.value}
-              className="flex cursor-pointer items-center gap-1.5 text-sm"
+              className="flex min-h-11 cursor-pointer items-center gap-2 text-base md:min-h-0 md:text-sm"
             >
               <Checkbox
                 checked={(filters.hinhThuc ?? []).includes(opt.value)}
@@ -206,7 +206,7 @@ export function RepairFiltersAdvanced({
       <Field label="Số phiếu hãng" htmlFor={`${uid}-sph`}>
         <Input
           id={`${uid}-sph`}
-          className="h-8 text-sm"
+          className="h-11 text-base md:h-8 md:text-sm"
           placeholder="Nhập số phiếu hãng…"
           value={filters.soPhieuHang ?? ''}
           onChange={(e) => onChange({ soPhieuHang: e.target.value || undefined })}
@@ -217,7 +217,7 @@ export function RepairFiltersAdvanced({
       <Field label="Số Serial" htmlFor={`${uid}-serial`}>
         <Input
           id={`${uid}-serial`}
-          className="h-8 text-sm"
+          className="h-11 text-base md:h-8 md:text-sm"
           placeholder="Nhập số serial…"
           value={filters.soSerial ?? ''}
           onChange={(e) => onChange({ soSerial: e.target.value || undefined })}
@@ -252,7 +252,7 @@ export function RepairFiltersAdvanced({
           value={filters.kyThuatId ?? UNSET}
           onValueChange={(v) => onChange({ kyThuatId: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-kt`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-kt`} className="h-11 text-base md:h-8 md:text-sm">
             <SelectValue placeholder="Tất cả KTV" />
           </SelectTrigger>
           <SelectContent>
@@ -274,7 +274,7 @@ export function RepairFiltersAdvanced({
             onChange({ tinh: v === UNSET ? undefined : v, huyen: undefined })
           }
         >
-          <SelectTrigger id={`${uid}-tinh`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-tinh`} className="h-11 text-base md:h-8 md:text-sm">
             <SelectValue placeholder="Tất cả tỉnh" />
           </SelectTrigger>
           <SelectContent>
@@ -295,7 +295,7 @@ export function RepairFiltersAdvanced({
           onValueChange={(v) => onChange({ huyen: v === UNSET ? undefined : v })}
           disabled={!filters.tinh}
         >
-          <SelectTrigger id={`${uid}-huyen`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-huyen`} className="h-11 text-base md:h-8 md:text-sm">
             <SelectValue placeholder="Tất cả huyện" />
           </SelectTrigger>
           <SelectContent>
@@ -313,7 +313,7 @@ export function RepairFiltersAdvanced({
       <Field label="Tuyến" htmlFor={`${uid}-tuyen`}>
         <Input
           id={`${uid}-tuyen`}
-          className="h-8 text-sm"
+          className="h-11 text-base md:h-8 md:text-sm"
           placeholder="Nhập tuyến…"
           value={filters.tuyen ?? ''}
           onChange={(e) => onChange({ tuyen: e.target.value || undefined })}
@@ -324,7 +324,7 @@ export function RepairFiltersAdvanced({
       <Field label="Đại lý" htmlFor={`${uid}-daily`}>
         <Input
           id={`${uid}-daily`}
-          className="h-8 text-sm"
+          className="h-11 text-base md:h-8 md:text-sm"
           placeholder="Nhập đại lý…"
           value={filters.daiLy ?? ''}
           onChange={(e) => onChange({ daiLy: e.target.value || undefined })}
@@ -342,7 +342,7 @@ export function RepairFiltersAdvanced({
             })
           }
         >
-          <SelectTrigger id={`${uid}-lbh`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-lbh`} className="h-11 text-base md:h-8 md:text-sm">
             <SelectValue placeholder="Tất cả loại BH" />
           </SelectTrigger>
           <SelectContent>
@@ -360,7 +360,7 @@ export function RepairFiltersAdvanced({
       <Field label="Địa chỉ" htmlFor={`${uid}-diachi`}>
         <Input
           id={`${uid}-diachi`}
-          className="h-8 text-sm"
+          className="h-11 text-base md:h-8 md:text-sm"
           placeholder="Nhập địa chỉ…"
           value={filters.diaChi ?? ''}
           onChange={(e) => onChange({ diaChi: e.target.value || undefined })}
@@ -384,7 +384,7 @@ export function RepairFiltersAdvanced({
             onChange({ dateType: v as RepairListFilters['dateType'] })
           }
         >
-          <SelectTrigger id={`${uid}-datetype`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-datetype`} className="h-11 text-base md:h-8 md:text-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -402,7 +402,7 @@ export function RepairFiltersAdvanced({
         <Input
           id={`${uid}-df`}
           type="date"
-          className="h-8 text-sm"
+          className="h-11 text-base md:h-8 md:text-sm"
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
@@ -411,7 +411,7 @@ export function RepairFiltersAdvanced({
         <Input
           id={`${uid}-dt`}
           type="date"
-          className="h-8 text-sm"
+          className="h-11 text-base md:h-8 md:text-sm"
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />
@@ -419,7 +419,7 @@ export function RepairFiltersAdvanced({
 
       {/* Sửa gấp */}
       <Field label="Sửa gấp">
-        <label className="flex cursor-pointer items-center gap-1.5 pt-1 text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center gap-2 pt-1 text-base md:min-h-0 md:text-sm">
           <Checkbox
             checked={!!filters.suaGap}
             onCheckedChange={(c) => onChange({ suaGap: c ? true : undefined })}

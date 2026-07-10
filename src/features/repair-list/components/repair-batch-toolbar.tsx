@@ -121,7 +121,7 @@ export function RepairBatchToolbar({
     <div className="flex flex-wrap items-center gap-2">
       <Button
         size="sm"
-        className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+        className="h-11 gap-1.5 bg-emerald-600 hover:bg-emerald-700 md:h-8"
         onClick={() => navigate(ROUTES.repairCreate)}
       >
         <PlusCircle className="size-4" />
@@ -131,7 +131,7 @@ export function RepairBatchToolbar({
       <Button
         size="sm"
         variant="outline"
-        className="h-8"
+        className="h-11 md:h-8"
         onClick={() => requireSelection('chuyển chi nhánh') && setTransferOpen(true)}
       >
         Chuyển chi nhánh
@@ -140,7 +140,7 @@ export function RepairBatchToolbar({
       <Button
         size="sm"
         variant="outline"
-        className="h-8"
+        className="h-11 md:h-8"
         onClick={handleBienNhan}
       >
         In Biên nhận
@@ -149,7 +149,7 @@ export function RepairBatchToolbar({
       <Button
         size="sm"
         variant="outline"
-        className="h-8"
+        className="h-11 md:h-8"
         onClick={() =>
           requireSelection('in giấy đi đường') && printGiayDiDuong(selected)
         }
@@ -160,7 +160,7 @@ export function RepairBatchToolbar({
       <Button
         size="sm"
         variant="outline"
-        className="h-8"
+        className="h-11 md:h-8"
         onClick={handleLenhSuaTaiNha}
       >
         In Lệnh Sửa Tại Nhà
@@ -169,7 +169,7 @@ export function RepairBatchToolbar({
       <Button
         size="sm"
         variant="outline"
-        className="h-8"
+        className="h-11 md:h-8"
         onClick={() =>
           requireSelection('in phiếu SC') && printPhieuSc(selected[0])
         }
@@ -179,7 +179,7 @@ export function RepairBatchToolbar({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="outline" className="h-8 gap-1 text-red-600">
+          <Button size="sm" variant="outline" className="h-11 gap-1 text-red-600 md:h-8">
             In tem
             <ChevronDown className="size-3.5" />
           </Button>
@@ -199,7 +199,7 @@ export function RepairBatchToolbar({
       <Button
         size="sm"
         variant="destructive"
-        className="h-8 gap-1"
+        className="h-11 gap-1 md:h-8"
         onClick={() => requireSelection('xóa') && setConfirmDelete(true)}
       >
         <Trash2 className="size-4" /> Xóa
@@ -207,18 +207,18 @@ export function RepairBatchToolbar({
 
       <div className="flex-1" />
 
-      <Button size="sm" variant="outline" className="h-8" onClick={() => handleExport()}>
+      <Button size="sm" variant="outline" className="h-11 md:h-8" onClick={() => handleExport()}>
         Xuất Excel File
       </Button>
       <Button
         size="sm"
         variant="outline"
-        className="h-8"
+        className="h-11 md:h-8"
         onClick={() => handleExport('-in')}
       >
         Xuất Excel In
       </Button>
-      <Button size="sm" variant="ghost" className="h-8" onClick={onReload}>
+      <Button size="sm" variant="ghost" className="h-11 md:h-8" onClick={onReload}>
         Tải lại trang
       </Button>
 

@@ -95,7 +95,7 @@ export function PlanCalendar({
         {cells.map((day, i) => (
           <div
             key={i}
-            className="min-h-[72px] rounded-md border bg-card p-1 text-left"
+            className="min-h-[72px] rounded-md border bg-card p-1 text-left min-[1920px]:min-h-[92px]"
           >
             {day && (
               <>

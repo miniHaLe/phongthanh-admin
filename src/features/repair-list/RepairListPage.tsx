@@ -3,7 +3,7 @@
  * 14-column table with rich cells + row actions, checkbox multi-select driving
  * the batch toolbar, reference filter set, Xuất Excel. Route: /sua-chua-bao-hanh
  */
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import type {
   SortingState,
@@ -15,14 +15,17 @@ import {
   DataTablePagination,
   DataTableColumnConfig,
   StatusLegend,
+  StatusBadge,
   PageHeader,
   BulkActionsBar,
 } from '@/components/shared'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Link, useNavigate } from 'react-router-dom'
 import { useRegisterCommands } from '@/components/shell/command-registry'
-import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/constants/routes'
 import { fetchRepairList } from '@/domains/repair/mock-data'
 import type { RepairTicket } from '@/domains/repair/types'
+import { formatVND } from '@/lib/format'
 import { useRepairFilters } from './hooks/use-repair-filters'
 import {
   useRepairTableColumns,
@@ -31,10 +34,88 @@ import {
 } from './hooks/use-repair-table-columns'
 import { RepairFilters } from './RepairFilters'
 import { RepairBatchToolbar } from './components/repair-batch-toolbar'
+import { RowActionsCell } from './components/row-actions-cell'
 import { cn } from '@/lib/utils'
 
 const PAGE_SIZE_OPTIONS = [20, 50, 100]
 const DEFAULT_PAGE_SIZE = 20
+
+function RepairMobileCards({
+  tickets,
+  rowSelection,
+  onSelectionChange,
+}: {
+  tickets: RepairTicket[]
+  rowSelection: RowSelectionState
+  onSelectionChange: Dispatch<SetStateAction<RowSelectionState>>
+}) {
+  if (tickets.length === 0) return null
+
+  return (
+    <div className="space-y-3 md:hidden" aria-label="Danh sách phiếu sửa chữa">
+      {tickets.map((ticket) => {
+        const selected = !!rowSelection[ticket.id]
+        return (
+          <article
+            key={ticket.id}
+            className="rounded-lg border bg-card p-3 shadow-sm"
+          >
+            <div className="flex items-start gap-3">
+              <span
+                className="inline-flex min-h-11 min-w-11 items-center justify-center"
+                data-touch-target=""
+              >
+                <Checkbox
+                  aria-label={`Chọn phiếu ${ticket.soPhieu}`}
+                  checked={selected}
+                  onCheckedChange={(checked) =>
+                    onSelectionChange((prev) => ({
+                      ...prev,
+                      [ticket.id]: !!checked,
+                    }))
+                  }
+                />
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    to={ROUTES.repairDetail(ticket.id)}
+                    className="font-mono text-base font-semibold text-primary hover:underline"
+                  >
+                    {ticket.soPhieu}
+                  </Link>
+                  <StatusBadge status={ticket.tinhTrang} />
+                </div>
+
+                <dl className="mt-2 grid grid-cols-1 gap-1 text-sm text-muted-foreground">
+                  <div>
+                    <dt className="sr-only">Khách hàng</dt>
+                    <dd className="font-medium text-foreground">
+                      {ticket.khachHang.ten} · {ticket.khachHang.sdt}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="sr-only">Sản phẩm</dt>
+                    <dd className="truncate">{ticket.tenSanPham}</dd>
+                  </div>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    <span>Kỹ thuật: {ticket.kyThuat || 'Chưa phân công'}</span>
+                    <span>{formatVND(ticket.chiPhiDuKien)}</span>
+                  </div>
+                </dl>
+              </div>
+            </div>
+
+            <div className="mt-3 border-t pt-2">
+              <RowActionsCell ticket={ticket} />
+            </div>
+          </article>
+        )
+      })}
+    </div>
+  )
+}
 
 export default function RepairListPage() {
   const navigate = useNavigate()
@@ -154,7 +235,13 @@ export default function RepairListPage() {
             isFetching && !isLoading && 'opacity-60',
           )}
         >
-          <div className="min-w-[1700px]">
+          <RepairMobileCards
+            tickets={tickets}
+            rowSelection={rowSelection}
+            onSelectionChange={setRowSelection}
+          />
+
+          <div className="hidden min-w-[1700px] md:block">
             <DataTable
               tableId={TABLE_ID}
               columns={columns}

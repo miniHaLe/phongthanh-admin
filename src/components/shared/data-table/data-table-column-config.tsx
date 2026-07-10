@@ -61,7 +61,7 @@ export function DataTableColumnConfig({
         <Button
           variant="outline"
           size="sm"
-          className="h-8 gap-1.5"
+          className="h-11 gap-1.5 md:h-8"
           title="Cấu hình cột"
           aria-label="Cấu hình cột"
         >
@@ -103,7 +103,7 @@ export function DataTableColumnConfig({
           <Button
             variant={density === 'comfortable' ? 'default' : 'outline'}
             size="sm"
-            className="flex-1 text-xs"
+            className="flex-1 text-sm md:text-xs"
             onClick={() => handleDensity('comfortable')}
           >
             Rộng
@@ -111,7 +111,7 @@ export function DataTableColumnConfig({
           <Button
             variant={density === 'compact' ? 'default' : 'outline'}
             size="sm"
-            className="flex-1 text-xs"
+            className="flex-1 text-sm md:text-xs"
             onClick={() => handleDensity('compact')}
           >
             Gọn
@@ -124,7 +124,7 @@ export function DataTableColumnConfig({
         <Button
           variant="ghost"
           size="sm"
-          className="w-full text-xs text-muted-foreground"
+          className="w-full text-sm text-muted-foreground md:text-xs"
           onClick={() => resetTable(tableId)}
         >
           Đặt lại mặc định

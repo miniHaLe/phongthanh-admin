@@ -18,7 +18,7 @@ export function TopBar() {
   return (
     <header
       data-app-topbar=""
-      className="flex h-14 items-center gap-2 border-b bg-card px-4"
+      className="sticky top-0 z-40 flex min-h-14 items-center gap-2 border-b bg-card px-3 sm:px-4"
     >
       {/* Mobile hamburger */}
       <Button
@@ -35,7 +35,7 @@ export function TopBar() {
           tab-strip — TopBar stays a thin global bar to avoid duplicate crumbs. */}
 
       {/* Right cluster */}
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex min-w-0 items-center gap-1">
         {/* Search trigger — text variant for sm+, icon-only for mobile */}
         <Button
           variant="ghost"

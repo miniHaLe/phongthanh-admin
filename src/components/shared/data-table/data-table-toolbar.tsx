@@ -32,7 +32,7 @@ export function DataTableToolbar({
             value={searchValue ?? ''}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="h-8 w-56 pl-8 text-sm"
+            className="h-11 w-full pl-8 text-base md:h-8 md:w-56 md:text-sm"
           />
         </div>
       )}

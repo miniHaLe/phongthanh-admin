@@ -75,6 +75,10 @@ export default function DashboardPage() {
 
   return (
     <>
+      <div
+        className="mx-auto w-full max-w-[1800px]"
+        data-dashboard-main=""
+      >
       {/* ── Page header ─────────────────────────────────────────────────── */}
       <PageHeader title="Trang chủ" breadcrumbs={[{ label: 'Trang chủ' }]}>
         {/* Inline "Lập phiếu" button — hidden on mobile (FAB shows instead) */}
@@ -83,13 +87,13 @@ export default function DashboardPage() {
         </div>
       </PageHeader>
 
-      <Tabs defaultValue="tong-quan" className="p-4 md:p-6">
+      <Tabs defaultValue="tong-quan" className="p-4 md:p-6 2xl:p-8">
         <TabsList className="mb-4">
           <TabsTrigger value="tong-quan">Tổng quan</TabsTrigger>
           <TabsTrigger value="ke-hoach">Kế hoạch của bạn</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="tong-quan" className="space-y-5">
+        <TabsContent value="tong-quan" className="space-y-5 2xl:space-y-6">
         {/* ── Greeting banner ─────────────────────────────────────────── */}
         <GreetingBanner activeBranch={activeBranch} />
 
@@ -124,9 +128,9 @@ export default function DashboardPage() {
         )}
 
         {/* ── Middle row: status chart + low-stock alert ───────────────── */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)] 2xl:gap-6">
           {/* Status distribution chart */}
-          <Card>
+          <Card className="min-h-[360px]">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">
                 Phân bổ trạng thái phiếu
@@ -143,7 +147,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Low stock alert */}
-          <Card>
+          <Card className="min-h-[360px]">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">
                 Linh kiện sắp hết hàng
@@ -181,8 +185,8 @@ export default function DashboardPage() {
 
         {/* ── Bottom row: branch counts + (spacer on desktop) ─────────── */}
         {summaryQuery.data && (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <Card>
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(380px,0.8fr)_minmax(0,1.2fr)] 2xl:gap-6">
+            <Card className="hidden min-h-[260px] xl:block">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">
                   Tình hình theo chi nhánh
@@ -193,8 +197,14 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Placeholder column for future widgets on lg screens */}
-            <div className="hidden lg:col-span-2 lg:block" />
+            <Card className="min-h-[260px]">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Kế hoạch nhanh</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PlanCalendar />
+              </CardContent>
+            </Card>
           </div>
         )}
 
@@ -225,6 +235,7 @@ export default function DashboardPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
 
       {/* ── Mobile FAB ──────────────────────────────────────────────────── */}
       <QuickLapPhieuButton variant="fab" />

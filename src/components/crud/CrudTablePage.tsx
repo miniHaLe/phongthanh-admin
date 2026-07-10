@@ -146,7 +146,8 @@ export function CrudTablePage<T extends { id: string }>({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
+              className="h-11 w-11 md:h-7 md:w-7"
+              aria-label="Chỉnh sửa"
               title="Chỉnh sửa"
               onClick={(e) => {
                 e.stopPropagation()
@@ -160,7 +161,8 @@ export function CrudTablePage<T extends { id: string }>({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-destructive hover:text-destructive"
+              className="h-11 w-11 text-destructive hover:text-destructive md:h-7 md:w-7"
+              aria-label="Xóa"
               title="Xóa"
               onClick={(e) => {
                 e.stopPropagation()
@@ -250,7 +252,7 @@ export function CrudTablePage<T extends { id: string }>({
           <Button
             variant="outline"
             size="sm"
-            className="h-8 gap-1"
+            className="h-11 gap-1 md:h-8"
             onClick={() => listQuery.refetch()}
             disabled={listQuery.isFetching}
             title="Làm mới"
@@ -268,7 +270,7 @@ export function CrudTablePage<T extends { id: string }>({
             <Button
               variant="outline"
               size="sm"
-              className="h-8 gap-1"
+              className="h-11 gap-1 md:h-8"
               onClick={handleExport}
               title="Xuất ra Excel"
             >
@@ -279,7 +281,7 @@ export function CrudTablePage<T extends { id: string }>({
           {config.addLabel !== false && (
             <Button
               size="sm"
-              className="h-8 gap-1"
+              className="h-11 gap-1 md:h-8"
               onClick={() => {
                 setEditRow(undefined)
                 setSheetMode('create')
@@ -317,7 +319,7 @@ export function CrudTablePage<T extends { id: string }>({
           <Button
             variant="destructive"
             size="sm"
-            className="h-8 gap-1"
+            className="h-11 gap-1 md:h-8"
             onClick={() => setBulkDeleteOpen(true)}
           >
             <Trash2 className="h-4 w-4" />

@@ -45,13 +45,15 @@ export function WorkQueueTile({
           handleActivate()
         }
       }}
-      className="cursor-pointer transition-all hover:scale-[1.02] hover:ring-2 hover:ring-ring hover:ring-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="min-h-[128px] cursor-pointer transition-all hover:scale-[1.02] hover:ring-2 hover:ring-ring hover:ring-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 min-[1920px]:min-h-[148px]"
     >
-      <CardContent className="p-5">
+      <CardContent className="p-5 min-[1920px]:p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm text-muted-foreground">{label}</p>
-            <p className="mt-1 text-3xl font-bold tabular-nums">{count}</p>
+            <p className="mt-1 text-3xl font-bold tabular-nums min-[1920px]:text-4xl">
+              {count}
+            </p>
 
             {/* Trend row — hidden when trend is exactly 0 */}
             {trend !== 0 && (
@@ -74,7 +76,7 @@ export function WorkQueueTile({
                     aria-hidden="true"
                   />
                 )}
-                <span>
+                <span className="leading-snug">
                   {trend > 0 ? '+' : ''}
                   {trend} so với hôm qua
                 </span>
@@ -83,8 +85,8 @@ export function WorkQueueTile({
           </div>
 
           {/* Icon badge */}
-          <div className={cn('shrink-0 rounded-lg p-2.5', colorClass)}>
-            <Icon className="h-5 w-5" aria-hidden="true" />
+          <div className={cn('shrink-0 rounded-lg p-2.5 min-[1920px]:p-3', colorClass)}>
+            <Icon className="h-5 w-5 min-[1920px]:h-6 min-[1920px]:w-6" aria-hidden="true" />
           </div>
         </div>
       </CardContent>

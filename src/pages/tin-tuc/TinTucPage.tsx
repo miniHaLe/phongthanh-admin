@@ -3,7 +3,7 @@
  * (Unresolved #2): title / author / datetime / body, unread bold, per-item
  * "Đánh dấu là đã xem"; row click → detail.
  */
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
@@ -13,7 +13,6 @@ import { formatDateTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 export default function TinTucPage() {
-  const navigate = useNavigate()
   const news = useNotificationStore((s) => s.news)
   const seenNewsIds = useNotificationStore((s) => s.seenNewsIds)
   const markNewsSeen = useNotificationStore((s) => s.markNewsSeen)
@@ -32,25 +31,26 @@ export default function TinTucPage() {
         {news.map((n) => {
           const isSeen = seen.has(n.id)
           return (
-            <button
+            <article
               key={n.id}
-              type="button"
               className="flex w-full items-start gap-3 rounded-lg border bg-card p-4 text-left hover:bg-accent"
-              onClick={() => {
-                markNewsSeen(n.id)
-                navigate(ROUTES.newsDetail(n.id))
-              }}
             >
               <div className="min-w-0 flex-1">
-                <p className={cn('truncate', !isSeen && 'font-bold')}>
-                  {n.title}
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {n.author} · {formatDateTime(n.at)}
-                </p>
-                <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
-                  {n.body}
-                </p>
+                <Link
+                  to={ROUTES.newsDetail(n.id)}
+                  className="block rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  onClick={() => markNewsSeen(n.id)}
+                >
+                  <p className={cn('truncate', !isSeen && 'font-bold')}>
+                    {n.title}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {n.author} · {formatDateTime(n.at)}
+                  </p>
+                  <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                    {n.body}
+                  </p>
+                </Link>
               </div>
               <Button
                 variant="ghost"
@@ -63,7 +63,7 @@ export default function TinTucPage() {
               >
                 <Check className="size-4" />
               </Button>
-            </button>
+            </article>
           )
         })}
       </div>

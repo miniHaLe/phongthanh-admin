@@ -89,6 +89,33 @@
   }
 }
 
+@layer base {
+  @media (max-width: 767px) {
+    button,
+    [role='button'],
+    [role='checkbox'],
+    [role='radio'],
+    [role='switch'],
+    [role='combobox'],
+    input,
+    select,
+    textarea {
+      min-height: 44px;
+      font-size: 16px;
+    }
+
+    button,
+    [role='button'],
+    [role='checkbox'],
+    [role='radio'],
+    [role='switch'],
+    [role='combobox'],
+    [data-touch-target] {
+      min-width: 44px;
+    }
+  }
+}
+
 /* ── Print foundation (real browser print via @media print) ─────────────────
    Elements marked data-print-hide are removed; a container marked
    .print-area is isolated. Later phases add print templates that opt in. */
