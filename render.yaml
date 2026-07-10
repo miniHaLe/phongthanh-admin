@@ -1,20 +1,5 @@
 services:
   - type: web
-    name: phongthanh-admin-minihale
-    runtime: static
-    buildCommand: npm ci && npm run build:prod
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_REAL_RESOURCES
-        value: khach-hang
-      - key: VITE_API_URL
-        value: https://phongthanh-admin-api-minihale.onrender.com
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-
-  - type: web
     name: phongthanh-admin-api-minihale
     runtime: node
     rootDir: api
@@ -39,7 +24,7 @@ services:
       - key: INITIAL_ADMIN_PASSWORD
         sync: false
       - key: CORS_ORIGIN
-        value: https://phongthanh-admin-minihale.onrender.com,https://minihale.github.io
+        value: https://minihale.github.io
       - key: REFRESH_COOKIE_SAME_SITE
         value: none
 

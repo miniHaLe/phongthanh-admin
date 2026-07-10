@@ -9,7 +9,17 @@
         var path = window.location.pathname
         var search = window.location.search
         var hash = window.location.hash
-        window.location.replace('/#' + path + search + hash)
+        var base = ''
+
+        if (window.location.hostname.endsWith('github.io')) {
+          var segments = path.split('/').filter(Boolean)
+          if (segments.length > 0) {
+            base = '/' + segments[0]
+            path = '/' + segments.slice(1).join('/')
+          }
+        }
+
+        window.location.replace(base + '/#' + path + search + hash)
       })()
     </script>
   </head>
