@@ -34,6 +34,7 @@ async function req<T>(url: string, options: ReqOptions = {}): Promise<T> {
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
   const headers: Record<string, string> = {}
+  headers['ngrok-skip-browser-warning'] = 'true'
   const token = getAccessToken()
   if (token) headers.Authorization = `Bearer ${token}`
   if (options.body !== undefined) headers['Content-Type'] = 'application/json'

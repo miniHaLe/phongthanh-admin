@@ -35,7 +35,9 @@ async function authRequest<T>(
 ): Promise<T> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
-  const headers: Record<string, string> = {}
+  const headers: Record<string, string> = {
+    'ngrok-skip-browser-warning': 'true',
+  }
 
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (csrf) headers['X-Requested-With'] = 'XMLHttpRequest'

@@ -54,10 +54,12 @@ describe('makeHttpApi — request contract', () => {
   it('serializes ListParams into the query string and attaches the Bearer token', async () => {
     let seenUrl: URL | undefined
     let seenAuth: string | null = null
+    let seenNgrokSkip: string | null = null
     server.use(
       http.get(BASE, ({ request }) => {
         seenUrl = new URL(request.url)
         seenAuth = request.headers.get('Authorization')
+        seenNgrokSkip = request.headers.get('ngrok-skip-browser-warning')
         return HttpResponse.json({ data: [], total: 0, page: 2, pageSize: 20 })
       }),
     )
@@ -81,6 +83,7 @@ describe('makeHttpApi — request contract', () => {
     // Empty filter values are omitted, not sent as blank.
     expect(q.has('filters[active]')).toBe(false)
     expect(seenAuth).toBe('Bearer test-access-token')
+    expect(seenNgrokSkip).toBe('true')
   })
 
   it('returns the exact PagedResult shape unchanged', async () => {
@@ -154,10 +157,12 @@ describe('makeHttpApi — 401 refresh-and-retry', () => {
     let listCalls = 0
     let refreshCalls = 0
     let refreshCsrfHeader: string | null = null
+    let refreshNgrokSkipHeader: string | null = null
     server.use(
       http.post(`${API}/auth/refresh`, ({ request }) => {
         refreshCalls += 1
         refreshCsrfHeader = request.headers.get('X-Requested-With')
+        refreshNgrokSkipHeader = request.headers.get('ngrok-skip-browser-warning')
         return HttpResponse.json({ accessToken: 'fresh-token' })
       }),
       http.get(BASE, ({ request }) => {
@@ -176,5 +181,6 @@ describe('makeHttpApi — 401 refresh-and-retry', () => {
     expect(listCalls).toBe(2) // original 401 + retry with fresh token
     // The refresh MUST carry the CSRF header or the server's guard 403s it.
     expect(refreshCsrfHeader).toBe('XMLHttpRequest')
+    expect(refreshNgrokSkipHeader).toBe('true')
   })
 })

@@ -1,6 +1,7 @@
 export const CORS_ALLOWED_HEADERS = [
   'Authorization',
   'Content-Type',
+  'ngrok-skip-browser-warning',
   'X-Requested-With',
 ]
 

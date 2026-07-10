@@ -138,7 +138,7 @@ Install Docker Desktop from Docker if it is not already installed.
 git clone https://github.com/miniHaLe/phongthanh-admin.git
 cd phongthanh-admin
 npm ci
-npm --prefix api ci
+npm --prefix api install
 ```
 
 3. Create `api/.env` from `api/.env.example`, then set these values:
@@ -187,6 +187,11 @@ ngrok http 3210
 
 Copy the HTTPS forwarding URL, for example
 `https://example.ngrok-free.app`.
+
+The frontend sends `ngrok-skip-browser-warning: true` on API requests so free
+ngrok tunnels return the JSON API instead of the browser warning HTML page. The
+API CORS allowlist permits that header only for configured origins such as
+`https://minihale.github.io`.
 
 7. Redeploy GitHub Pages with the MacBook API URL:
 

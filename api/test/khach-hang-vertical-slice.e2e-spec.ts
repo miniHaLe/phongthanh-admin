@@ -111,7 +111,10 @@ describe('auth', () => {
       .options('/api/v1/khach-hang')
       .set('Origin', 'http://localhost:5173')
       .set('Access-Control-Request-Method', 'GET')
-      .set('Access-Control-Request-Headers', 'authorization')
+      .set(
+        'Access-Control-Request-Headers',
+        'authorization,ngrok-skip-browser-warning',
+      )
 
     expect(res.status).toBe(204)
     expect(res.headers['access-control-allow-origin']).toBe(
@@ -120,6 +123,9 @@ describe('auth', () => {
     expect(res.headers['access-control-allow-credentials']).toBe('true')
     expect(res.headers['access-control-allow-headers'].toLowerCase()).toContain(
       'authorization',
+    )
+    expect(res.headers['access-control-allow-headers'].toLowerCase()).toContain(
+      'ngrok-skip-browser-warning',
     )
   })
 })
