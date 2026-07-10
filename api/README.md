@@ -45,7 +45,12 @@ login. Every other seeded user shares that initial password.
 ## Tests
 
 ```bash
-npm test          # e2e/integration against a throwaway `phongthanh_test` DB
+# from repo root: starts only Postgres, then runs API lint/build/test
+npm run test:api:with-db
+
+# or manually
+docker compose up -d db
+cd api && npm test
 ```
 
 `test/global-setup.ts` drops + recreates `phongthanh_test` on the same compose
@@ -53,6 +58,13 @@ Postgres, migrates, and seeds before the suite. The suite covers auth
 (login / no-enumeration / locked / CSRF / refresh-rotation-reuse), CRUD, and the
 five security gates (sort allowlist, filter allowlist, branch-never-filterable,
 JWT branch scope, no-secret-serialization).
+
+If Postgres is not listening on `127.0.0.1:5434`, Jest fails before booting the
+app with the exact `docker compose up -d db` command. The DB-only compose path
+does not require app secrets. Full API/web compose still requires real secrets:
+copy `.env.docker.example` to the gitignored `.env.docker` or export
+`JWT_SECRET`, `JWT_REFRESH_SECRET`, and `INITIAL_ADMIN_PASSWORD` before starting
+the full stack.
 
 ## Architecture
 

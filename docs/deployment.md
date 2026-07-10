@@ -65,6 +65,28 @@ API:
 - `CORS_ORIGIN=https://minihale.github.io`
 - `REFRESH_COOKIE_SAME_SITE=none`
 
+## Pre-Deploy Verification
+
+Run these from repo root before release:
+
+```bash
+npm run type-check
+npm run lint
+npm run test
+npm run test:e2e:uiux
+env VITE_REAL_RESOURCES=khach-hang npm run build:prod
+npm run test:api:with-db
+```
+
+`test:e2e:uiux` verifies protected-route render, console hygiene, mobile touch
+targets, mobile input fonts, footer overlap, repair mobile actions, news
+semantics, and dashboard large-screen metrics across phone, landscape, tablet,
+desktop, and 4K viewports.
+
+`test:api:with-db` starts only the compose Postgres service, then runs API
+lint/build/Jest against `phongthanh_test`. Full-stack compose still requires
+real `JWT_SECRET`, `JWT_REFRESH_SECRET`, and `INITIAL_ADMIN_PASSWORD` values.
+
 ## Troubleshooting
 
 If an expected Render URL returns:

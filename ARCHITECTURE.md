@@ -106,6 +106,31 @@ src/
 
 ---
 
+## Runtime UI/UX Verification
+
+Playwright covers browser-only UI/UX risks that Vitest/Happy DOM cannot measure:
+layout overflow, touch target size, mobile input font size, footer overlap,
+console warnings, and screenshots.
+
+| File | Role |
+|------|------|
+| `playwright.config.ts` | starts/reuses Vite dev server for UIUX tests |
+| `tests/e2e/uiux-viewports.ts` | phone, landscape, tablet, desktop, 4K matrix |
+| `tests/e2e/uiux-audit-helpers.ts` | auth harness, console gate, hit-area/font/overflow assertions, screenshots |
+| `tests/e2e/uiux-runtime.spec.ts` | route smoke, shell/mobile controls, repair cards/actions, dashboard 4K metrics, news semantics |
+| `plans/reports/260711-uiux-remediation-verification/screenshots/` | generated evidence screenshots |
+
+Run:
+
+```bash
+npm run test:e2e:uiux
+```
+
+The console gate filters the known React Router future-flag warning only; other
+browser warnings/errors remain failures.
+
+---
+
 ## Zustand Store Slices + STORE_KEYS
 
 | Slice | Key (`STORE_KEYS.*`) | Nội dung |
