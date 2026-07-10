@@ -1,0 +1,32 @@
+[
+  {
+    "id": "quan-bmt",
+    "ten": "Tp. Buôn Ma Thuột",
+    "tinhId": "tinh-dak-lak"
+  },
+  {
+    "id": "quan-ea-hleo",
+    "ten": "Ea H'Leo",
+    "tinhId": "tinh-dak-lak"
+  },
+  {
+    "id": "quan-cu-mgar",
+    "ten": "Cư M'gar",
+    "tinhId": "tinh-dak-lak"
+  },
+  {
+    "id": "quan-gia-nghia",
+    "ten": "Tp. Gia Nghĩa",
+    "tinhId": "tinh-dak-nong"
+  },
+  {
+    "id": "quan-dak-rlap",
+    "ten": "Đắk R'Lấp",
+    "tinhId": "tinh-dak-nong"
+  },
+  {
+    "id": "quan-cu-jut",
+    "ten": "Cư Jút",
+    "tinhId": "tinh-dak-nong"
+  }
+]

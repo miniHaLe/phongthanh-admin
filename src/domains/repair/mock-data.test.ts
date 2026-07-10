@@ -1,0 +1,118 @@
+/**
+ * Characterization + spec tests for the LIVE repair layer (D5).
+ * These run against `MOCK_TICKETS` — the array repair pages actually render —
+ * NOT the dead seed arrays. Written parametrized by canonical status exports
+ * (via STATUS_LABEL keys) so they survive the legacy-status swap.
+ *
+ * Spec source: gap matrix §5b (status ids), plan §"Data-Layer Reconciliation (D5)".
+ */
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { MOCK_TICKETS, fetchRepairList } from './mock-data'
+import { STATUS_LABEL, KT_BOARD_STATUS_IDS } from './status'
+import { TECHNICIANS, PRODUCTS, MODELS } from './reference-data'
+
+/** Valid status values as strings — works for snake slugs AND numeric ids. */
+const VALID_STATUS = new Set(Object.keys(STATUS_LABEL).map(String))
+const TECH_IDS = new Set(TECHNICIANS.map((t) => t.id))
+const PRODUCT_IDS = new Set(PRODUCTS.map((p) => p.id))
+const MODEL_IDS = new Set(MODELS.map((m) => m.id))
+const BRANCHES = new Set(['dak-lak', 'dak-nong'])
+
+describe('MOCK_TICKETS (live repair layer) — characterization', () => {
+  it('holds exactly 250 tickets with unique ids', () => {
+    expect(MOCK_TICKETS).toHaveLength(250)
+    expect(new Set(MOCK_TICKETS.map((t) => t.id)).size).toBe(250)
+  })
+
+  it('is deterministic across a fresh module load', async () => {
+    vi.resetModules()
+    const reloaded = await import('./mock-data')
+    expect(reloaded.MOCK_TICKETS[0].id).toBe(MOCK_TICKETS[0].id)
+    expect(reloaded.MOCK_TICKETS[0].soPhieu).toBe(MOCK_TICKETS[0].soPhieu)
+    expect(reloaded.MOCK_TICKETS.at(-1)!.id).toBe(MOCK_TICKETS.at(-1)!.id)
+  })
+
+  it('every soPhieu matches /^PSC-\\d+$/', () => {
+    for (const t of MOCK_TICKETS) {
+      expect(t.soPhieu).toMatch(/^PSC-\d+$/)
+    }
+  })
+
+  it('every ticket status is a canonical status value', () => {
+    for (const t of MOCK_TICKETS) {
+      expect(VALID_STATUS.has(String(t.tinhTrang))).toBe(true)
+    }
+  })
+
+  it('every relational id resolves against the module generators', () => {
+    for (const t of MOCK_TICKETS) {
+      expect(BRANCHES.has(t.branchId)).toBe(true)
+      expect(TECH_IDS.has(t.kyThuatId)).toBe(true)
+      expect(PRODUCT_IDS.has(t.sanPhamId)).toBe(true)
+      expect(MODEL_IDS.has(t.modelId)).toBe(true)
+    }
+  })
+
+  it('statusHistory is non-empty, chronological, and ends at the current status', () => {
+    for (const t of MOCK_TICKETS) {
+      expect(t.statusHistory.length).toBeGreaterThan(0)
+      const times = t.statusHistory.map((h) => new Date(h.changedAt).getTime())
+      for (let i = 1; i < times.length; i++) {
+        expect(times[i]).toBeGreaterThanOrEqual(times[i - 1])
+      }
+      expect(t.statusHistory.at(-1)!.status).toBe(t.tinhTrang)
+    }
+  })
+})
+
+describe('fetchRepairList — characterization', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('honors page/pageSize and returns the correct total', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.999) // never trip the 5% error gate
+    const res = await fetchRepairList({ page: 1, pageSize: 20 })
+    expect(res.data.length).toBeLessThanOrEqual(20)
+    expect(res.total).toBe(250)
+    expect(res.page).toBe(1)
+    expect(res.pageSize).toBe(20)
+  })
+
+  it('branch filter returns only matching tickets', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.999)
+    const res = await fetchRepairList({
+      page: 1,
+      pageSize: 250,
+      branchId: 'dak-lak',
+    })
+    expect(res.data.length).toBeGreaterThan(0)
+    for (const t of res.data) {
+      expect(t.branchId).toBe('dak-lak')
+    }
+  })
+})
+
+describe('MOCK_TICKETS (live repair layer) — legacy-status spec (§5b)', () => {
+  it('represents all 15 legacy statuses with a nonzero count', () => {
+    const counts = new Map<string, number>()
+    for (const t of MOCK_TICKETS) {
+      const k = String(t.tinhTrang)
+      counts.set(k, (counts.get(k) ?? 0) + 1)
+    }
+    for (const id of Object.keys(STATUS_LABEL)) {
+      expect(counts.get(String(id)) ?? 0).toBeGreaterThan(0)
+    }
+  })
+
+  it('every KT-board status has a count of at least 10 of 250', () => {
+    const counts = new Map<string, number>()
+    for (const t of MOCK_TICKETS) {
+      const k = String(t.tinhTrang)
+      counts.set(k, (counts.get(k) ?? 0) + 1)
+    }
+    for (const id of KT_BOARD_STATUS_IDS) {
+      expect(counts.get(String(id)) ?? 0).toBeGreaterThanOrEqual(10)
+    }
+  })
+})

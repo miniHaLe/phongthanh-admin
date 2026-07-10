@@ -1,0 +1,193 @@
+[
+  {
+    "id": "nd-1",
+    "tenDangNhap": "admin",
+    "hoTen": "Trần Phúc",
+    "dienThoai": "0977947615",
+    "email": "admin@phongthanh.vn",
+    "chiNhanhId": "cn-1",
+    "chiNhanhPhuIds": [
+      "cn-2",
+      "cn-3"
+    ],
+    "nhomQuyenId": "nq-8",
+    "locked": false,
+    "lastLogin": "2026-06-15T21:36:05.500Z",
+    "active": true,
+    "createdAt": "2025-10-03T07:29:41.035Z"
+  },
+  {
+    "id": "nd-2",
+    "tenDangNhap": "giamdoc",
+    "hoTen": "Nguyễn Cường",
+    "dienThoai": "0925202797",
+    "email": "giamdoc@phongthanh.vn",
+    "chiNhanhId": "cn-3",
+    "chiNhanhPhuIds": [],
+    "nhomQuyenId": "nq-4",
+    "locked": false,
+    "lastLogin": "2026-06-09T14:40:47.857Z",
+    "active": true,
+    "createdAt": "2026-06-06T21:43:45.780Z",
+    "updatedAt": "2026-06-25T06:05:10.053Z"
+  },
+  {
+    "id": "nd-3",
+    "tenDangNhap": "ketoan1",
+    "hoTen": "Lê Tuấn",
+    "dienThoai": "0964337330",
+    "email": "ketoan1@phongthanh.vn",
+    "chiNhanhId": "cn-2",
+    "chiNhanhPhuIds": [],
+    "nhomQuyenId": "nq-6",
+    "locked": true,
+    "lastLogin": "2026-06-26T11:48:47.450Z",
+    "active": true,
+    "createdAt": "2026-01-22T23:54:44.683Z"
+  },
+  {
+    "id": "nd-4",
+    "tenDangNhap": "ketoan2",
+    "hoTen": "Hoàng Cường",
+    "dienThoai": "0926344606",
+    "email": "ketoan2@phongthanh.vn",
+    "chiNhanhId": "cn-1",
+    "chiNhanhPhuIds": [
+      "cn-2",
+      "cn-3"
+    ],
+    "nhomQuyenId": "nq-1",
+    "locked": false,
+    "active": true,
+    "createdAt": "2026-02-16T15:16:12.534Z"
+  },
+  {
+    "id": "nd-5",
+    "tenDangNhap": "kythuat1",
+    "hoTen": "Nguyễn Lan",
+    "dienThoai": "0938307251",
+    "email": "kythuat1@phongthanh.vn",
+    "chiNhanhId": "cn-2",
+    "chiNhanhPhuIds": [
+      "cn-1",
+      "cn-3"
+    ],
+    "nhomQuyenId": "nq-2",
+    "locked": false,
+    "active": true,
+    "createdAt": "2025-07-05T04:36:58.965Z",
+    "updatedAt": "2026-07-05T17:44:29.884Z"
+  },
+  {
+    "id": "nd-6",
+    "tenDangNhap": "kythuat2",
+    "hoTen": "Phan Dung",
+    "dienThoai": "0952944463",
+    "email": "kythuat2@phongthanh.vn",
+    "chiNhanhId": "cn-3",
+    "chiNhanhPhuIds": [],
+    "nhomQuyenId": "nq-7",
+    "locked": false,
+    "active": true,
+    "createdAt": "2025-06-11T23:58:25.038Z"
+  },
+  {
+    "id": "nd-7",
+    "tenDangNhap": "kythuat3",
+    "hoTen": "Hoàng Cường",
+    "dienThoai": "0927679631",
+    "email": "kythuat3@phongthanh.vn",
+    "chiNhanhId": "cn-3",
+    "chiNhanhPhuIds": [],
+    "nhomQuyenId": "nq-6",
+    "locked": false,
+    "active": true,
+    "createdAt": "2026-06-28T21:53:04.689Z"
+  },
+  {
+    "id": "nd-8",
+    "tenDangNhap": "tiepnhan1",
+    "hoTen": "Đặng Bình",
+    "dienThoai": "0928384752",
+    "email": "tiepnhan1@phongthanh.vn",
+    "chiNhanhId": "cn-1",
+    "chiNhanhPhuIds": [],
+    "nhomQuyenId": "nq-2",
+    "locked": false,
+    "lastLogin": "2026-06-20T05:35:02.570Z",
+    "active": true,
+    "createdAt": "2026-05-07T02:17:39.384Z"
+  },
+  {
+    "id": "nd-9",
+    "tenDangNhap": "tiepnhan2",
+    "hoTen": "Trần Ngọc",
+    "dienThoai": "0999249533",
+    "email": "tiepnhan2@phongthanh.vn",
+    "chiNhanhId": "cn-1",
+    "chiNhanhPhuIds": [],
+    "nhomQuyenId": "nq-1",
+    "locked": false,
+    "active": true,
+    "createdAt": "2025-09-20T21:45:46.794Z"
+  },
+  {
+    "id": "nd-10",
+    "tenDangNhap": "kho1",
+    "hoTen": "Hoàng Bình",
+    "dienThoai": "0980357813",
+    "email": "kho1@phongthanh.vn",
+    "chiNhanhId": "cn-2",
+    "chiNhanhPhuIds": [],
+    "nhomQuyenId": "nq-1",
+    "locked": true,
+    "lastLogin": "2026-06-28T23:56:26.923Z",
+    "active": true,
+    "createdAt": "2025-12-11T11:55:27.892Z",
+    "updatedAt": "2026-06-22T04:21:46.936Z"
+  },
+  {
+    "id": "nd-11",
+    "tenDangNhap": "kho2",
+    "hoTen": "Phạm Hùng",
+    "dienThoai": "0998891817",
+    "email": "kho2@phongthanh.vn",
+    "chiNhanhId": "cn-1",
+    "chiNhanhPhuIds": [],
+    "nhomQuyenId": "nq-2",
+    "locked": false,
+    "lastLogin": "2026-06-17T16:28:03.827Z",
+    "active": true,
+    "createdAt": "2026-06-12T05:24:25.280Z"
+  },
+  {
+    "id": "nd-12",
+    "tenDangNhap": "kinhdoanh1",
+    "hoTen": "Phạm Minh",
+    "dienThoai": "0928413878",
+    "email": "kinhdoanh1@phongthanh.vn",
+    "chiNhanhId": "cn-2",
+    "chiNhanhPhuIds": [],
+    "nhomQuyenId": "nq-2",
+    "locked": true,
+    "lastLogin": "2026-06-14T00:18:31.209Z",
+    "active": true,
+    "createdAt": "2025-07-14T19:24:31.660Z"
+  },
+  {
+    "id": "nd-13",
+    "tenDangNhap": "baocao1",
+    "hoTen": "Hoàng Lan",
+    "dienThoai": "0993557258",
+    "email": "baocao1@phongthanh.vn",
+    "chiNhanhId": "cn-2",
+    "chiNhanhPhuIds": [
+      "cn-1",
+      "cn-3"
+    ],
+    "nhomQuyenId": "nq-4",
+    "locked": false,
+    "active": true,
+    "createdAt": "2025-08-05T02:06:42.862Z"
+  }
+]

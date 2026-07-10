@@ -1,0 +1,71 @@
+# Full-stack local/self-hosted deployment: Postgres + NestJS API + nginx-served SPA.
+#
+# Dev flow (Phase 1) still works: `docker compose up -d db` brings up only Postgres
+# on host 5434 for the host-run API/frontend.
+# Full stack:  `docker compose up -d --build` (or scripts/docker-run.sh) builds and
+# runs all three; the app is served at http://localhost:8080 (nginx proxies /api +
+# /auth to the API on the compose network, so it's same-origin — no CORS).
+#
+# Secrets come from the host environment with dev-safe fallbacks; override for a
+# real deploy (e.g. `JWT_SECRET=... docker compose up -d`), never commit real ones.
+services:
+  db:
+    image: postgres:16
+    container_name: phongthanh-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: phongthanh
+      POSTGRES_PASSWORD: phongthanh_dev
+      POSTGRES_DB: phongthanh
+    # Host 5433 is commonly taken by other local stacks; 5434 keeps this
+    # project's DB conflict-free. api/.env DATABASE_URL (host-run) points here.
+    ports:
+      - '5434:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U phongthanh -d phongthanh']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./api
+    container_name: phongthanh-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # On the compose network the API reaches Postgres at db:5432 (NOT 5434).
+      DATABASE_URL: postgres://phongthanh:phongthanh_dev@db:5432/phongthanh
+      # Secrets are REQUIRED (`:?` fails the compose command loud if unset) — no
+      # baked-in fallback, so a real deploy can never silently boot with a
+      # publicly-known signing key. The gitignored `.env.docker` (created from
+      # .env.docker.example) supplies dev values for the one-command local flow.
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (copy .env.docker.example to .env.docker or export it)}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set JWT_REFRESH_SECRET (see .env.docker.example)}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?set INITIAL_ADMIN_PASSWORD (see .env.docker.example)}
+      PORT: '3210'
+      # Same-origin via nginx; CORS not needed but kept correct for direct hits.
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+    expose:
+      - '3210'
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        VITE_REAL_RESOURCES: khach-hang
+        VITE_API_URL: ''
+    container_name: phongthanh-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - '8080:80'
+
+volumes:
+  pgdata:

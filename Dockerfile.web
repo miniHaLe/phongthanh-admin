@@ -1,0 +1,25 @@
+# Frontend: build the Vite SPA (prod build guard enforced), serve via nginx which
+# also reverse-proxies /api + /auth to the API container (same origin).
+# Build context is the repo root (frontend source lives in src/).
+
+# ---- build ----
+FROM node:24-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+# Same-origin deployment: empty API base => the client calls /api/... and
+# /auth/... relatively, which nginx proxies to the API. VITE_REAL_RESOURCES must
+# cover the release or build:prod's guard fails the build (security gate 5).
+ARG VITE_REAL_RESOURCES=khach-hang
+ARG VITE_API_URL=""
+ENV VITE_REAL_RESOURCES=$VITE_REAL_RESOURCES
+ENV VITE_API_URL=$VITE_API_URL
+RUN npm run build:prod
+
+# ---- serve ----
+FROM nginx:1.27-alpine AS runtime
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80

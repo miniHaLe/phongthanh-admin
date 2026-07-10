@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-ssr
+api
+plans
+docs
+.git
+.claude
+*.log
+.env
+.env.*
+!.env.example
+coverage

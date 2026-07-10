@@ -1,0 +1,69 @@
+[
+  {
+    "id": "nq-1",
+    "maNhom": "NQ001",
+    "tenNhom": "Quản trị hệ thống",
+    "moTa": "Toàn quyền truy cập",
+    "active": true,
+    "createdAt": "2025-10-06T02:15:30.188Z"
+  },
+  {
+    "id": "nq-2",
+    "maNhom": "NQ002",
+    "tenNhom": "Giám đốc",
+    "moTa": "Xem và phê duyệt toàn bộ",
+    "active": true,
+    "createdAt": "2026-01-04T06:55:36.244Z",
+    "updatedAt": "2026-04-25T08:14:27.275Z"
+  },
+  {
+    "id": "nq-3",
+    "maNhom": "NQ003",
+    "tenNhom": "Kế toán",
+    "moTa": "Quản lý tài chính, hóa đơn",
+    "active": true,
+    "createdAt": "2025-06-20T03:08:10.214Z",
+    "updatedAt": "2026-06-28T14:17:06.300Z"
+  },
+  {
+    "id": "nq-4",
+    "maNhom": "NQ004",
+    "tenNhom": "Kỹ thuật viên",
+    "moTa": "Xử lý phiếu sửa chữa",
+    "active": true,
+    "createdAt": "2025-07-31T04:19:20.784Z"
+  },
+  {
+    "id": "nq-5",
+    "maNhom": "NQ005",
+    "tenNhom": "Tiếp nhận",
+    "moTa": "Tạo và xem phiếu sửa chữa",
+    "active": true,
+    "createdAt": "2026-05-14T03:28:55.409Z"
+  },
+  {
+    "id": "nq-6",
+    "maNhom": "NQ006",
+    "tenNhom": "Nhân viên kho",
+    "moTa": "Quản lý nhập xuất kho",
+    "active": true,
+    "createdAt": "2026-04-24T06:22:25.776Z",
+    "updatedAt": "2026-04-27T11:58:46.217Z"
+  },
+  {
+    "id": "nq-7",
+    "maNhom": "NQ007",
+    "tenNhom": "Nhân viên kinh doanh",
+    "moTa": "Bán hàng và khách hàng",
+    "active": true,
+    "createdAt": "2025-06-01T07:13:45.574Z"
+  },
+  {
+    "id": "nq-8",
+    "maNhom": "NQ008",
+    "tenNhom": "Xem báo cáo",
+    "moTa": "Chỉ xem báo cáo",
+    "active": true,
+    "createdAt": "2025-11-11T17:01:33.458Z"
+  }
+]

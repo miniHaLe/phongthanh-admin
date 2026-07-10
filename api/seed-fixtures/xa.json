@@ -1,0 +1,146 @@
+[
+  {
+    "id": "xa-tan-loi",
+    "ten": "Phường Tân Lợi",
+    "quanId": "quan-bmt",
+    "tinhId": "tinh-dak-lak",
+    "khoangCach": 37,
+    "tienCong": 200000,
+    "tuyenId": "tuyen-01"
+  },
+  {
+    "id": "xa-thang-loi",
+    "ten": "Phường Thắng Lợi",
+    "quanId": "quan-bmt",
+    "tinhId": "tinh-dak-lak",
+    "khoangCach": 15,
+    "tienCong": 350000,
+    "tuyenId": "tuyen-01"
+  },
+  {
+    "id": "xa-ea-tam",
+    "ten": "Phường Ea Tam",
+    "quanId": "quan-bmt",
+    "tinhId": "tinh-dak-lak",
+    "khoangCach": 35,
+    "tienCong": 350000,
+    "tuyenId": "tuyen-01"
+  },
+  {
+    "id": "xa-tu-an",
+    "ten": "Phường Tự An",
+    "quanId": "quan-bmt",
+    "tinhId": "tinh-dak-lak",
+    "khoangCach": 10,
+    "tienCong": 50000,
+    "tuyenId": "tuyen-01"
+  },
+  {
+    "id": "xa-khanh-xuan",
+    "ten": "Phường Khánh Xuân",
+    "quanId": "quan-bmt",
+    "tinhId": "tinh-dak-lak",
+    "khoangCach": 15,
+    "tienCong": 350000,
+    "tuyenId": "tuyen-01"
+  },
+  {
+    "id": "xa-ea-drang",
+    "ten": "Thị trấn Ea Drăng",
+    "quanId": "quan-ea-hleo",
+    "tinhId": "tinh-dak-lak",
+    "khoangCach": 45,
+    "tienCong": 300000,
+    "tuyenId": "tuyen-02"
+  },
+  {
+    "id": "xa-ea-hleo",
+    "ten": "Xã Ea H'Leo",
+    "quanId": "quan-ea-hleo",
+    "tinhId": "tinh-dak-lak",
+    "khoangCach": 10,
+    "tienCong": 200000,
+    "tuyenId": "tuyen-02"
+  },
+  {
+    "id": "xa-quang-phu",
+    "ten": "Thị trấn Quảng Phú",
+    "quanId": "quan-cu-mgar",
+    "tinhId": "tinh-dak-lak",
+    "khoangCach": 23,
+    "tienCong": 150000,
+    "tuyenId": "tuyen-03"
+  },
+  {
+    "id": "xa-ea-pok",
+    "ten": "Xã Ea Pốk",
+    "quanId": "quan-cu-mgar",
+    "tinhId": "tinh-dak-lak",
+    "khoangCach": 36,
+    "tienCong": 50000,
+    "tuyenId": "tuyen-03"
+  },
+  {
+    "id": "xa-nghia-phu",
+    "ten": "Phường Nghĩa Phú",
+    "quanId": "quan-gia-nghia",
+    "tinhId": "tinh-dak-nong",
+    "khoangCach": 15,
+    "tienCong": 300000,
+    "tuyenId": "tuyen-04"
+  },
+  {
+    "id": "xa-nghia-duc",
+    "ten": "Phường Nghĩa Đức",
+    "quanId": "quan-gia-nghia",
+    "tinhId": "tinh-dak-nong",
+    "khoangCach": 43,
+    "tienCong": 150000,
+    "tuyenId": "tuyen-04"
+  },
+  {
+    "id": "xa-nghia-xuan",
+    "ten": "Phường Nghĩa Xuân",
+    "quanId": "quan-gia-nghia",
+    "tinhId": "tinh-dak-nong",
+    "khoangCach": 27,
+    "tienCong": 400000,
+    "tuyenId": "tuyen-04"
+  },
+  {
+    "id": "xa-kien-duc",
+    "ten": "Thị trấn Kiến Đức",
+    "quanId": "quan-dak-rlap",
+    "tinhId": "tinh-dak-nong",
+    "khoangCach": 33,
+    "tienCong": 50000,
+    "tuyenId": "tuyen-05"
+  },
+  {
+    "id": "xa-dak-rmoan",
+    "ten": "Xã Đắk R'Moan",
+    "quanId": "quan-dak-rlap",
+    "tinhId": "tinh-dak-nong",
+    "khoangCach": 3,
+    "tienCong": 100000,
+    "tuyenId": "tuyen-05"
+  },
+  {
+    "id": "xa-ea-tling",
+    "ten": "Thị trấn Ea T'Ling",
+    "quanId": "quan-cu-jut",
+    "tinhId": "tinh-dak-nong",
+    "khoangCach": 44,
+    "tienCong": 150000,
+    "tuyenId": "tuyen-06"
+  },
+  {
+    "id": "xa-tam-thang",
+    "ten": "Xã Tâm Thắng",
+    "quanId": "quan-cu-jut",
+    "tinhId": "tinh-dak-nong",
+    "khoangCach": 37,
+    "tienCong": 400000,
+    "tuyenId": "tuyen-06"
+  }
+]
