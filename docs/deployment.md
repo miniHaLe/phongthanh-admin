@@ -118,6 +118,101 @@ The app therefore switches to hash routing on `*.github.io`, and `public/404.htm
 redirects old clean URLs such as `/phongthanh-admin/trang-chu` to
 `/phongthanh-admin/#/trang-chu`.
 
+## MacBook API Fallback
+
+Use this when Render Blueprint creation is blocked or unstable. GitHub Pages
+still hosts the frontend, while the API runs on your MacBook through an HTTPS
+tunnel. Your MacBook must stay awake while customers test.
+
+1. Install prerequisites on the MacBook:
+
+```bash
+brew install node ngrok/ngrok/ngrok
+```
+
+Install Docker Desktop from Docker if it is not already installed.
+
+2. Clone and install:
+
+```bash
+git clone https://github.com/miniHaLe/phongthanh-admin.git
+cd phongthanh-admin
+npm ci
+npm --prefix api ci
+```
+
+3. Create `api/.env` from `api/.env.example`, then set these values:
+
+```bash
+DATABASE_URL=postgres://phongthanh:phongthanh_dev@localhost:5434/phongthanh
+JWT_SECRET=<long-random-secret>
+JWT_REFRESH_SECRET=<different-long-random-secret>
+INITIAL_ADMIN_PASSWORD=<temporary-password-for-test-users>
+PORT=3210
+CORS_ORIGIN=https://minihale.github.io
+REFRESH_COOKIE_SAME_SITE=none
+TRUST_PROXY_HOPS=1
+```
+
+Generate secrets with:
+
+```bash
+openssl rand -base64 48
+```
+
+4. Start Postgres:
+
+```bash
+JWT_SECRET=local-placeholder \
+JWT_REFRESH_SECRET=local-placeholder \
+INITIAL_ADMIN_PASSWORD=local-placeholder \
+docker compose up -d db
+```
+
+5. Build, migrate, seed, and start the API:
+
+```bash
+npm --prefix api run build
+npm --prefix api run db:migrate
+npm --prefix api run seed
+npm --prefix api run start:prod
+```
+
+6. In a second terminal, expose the API:
+
+```bash
+ngrok config add-authtoken <your-ngrok-token>
+ngrok http 3210
+```
+
+Copy the HTTPS forwarding URL, for example
+`https://example.ngrok-free.app`.
+
+7. Redeploy GitHub Pages with the MacBook API URL:
+
+```bash
+gh workflow run "Deploy GitHub Pages" \
+  --repo miniHaLe/phongthanh-admin \
+  -f api_url=https://example.ngrok-free.app
+```
+
+8. Verify:
+
+```bash
+curl -i https://example.ngrok-free.app/health
+curl -i https://example.ngrok-free.app/api/v1/khach-hang
+```
+
+`/health` should return `200`; `/api/v1/khach-hang` should return `401`
+without login. Customers can then open:
+
+```text
+https://minihale.github.io/phongthanh-admin/
+```
+
+Seeded users such as `admin`, `giamdoc`, and `tiepnhan1` use
+`INITIAL_ADMIN_PASSWORD` on first login, then must change password.
+
 ## Rollback
 
 Use Render Dashboard -> service -> Events -> previous deploy -> Manual Deploy.
