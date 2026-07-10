@@ -22,7 +22,10 @@ export function buildSelectionColumn<TData>(): ColumnDef<TData, unknown> {
       <TooltipProvider delayDuration={200}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="inline-flex">
+            <span
+              className="inline-flex min-h-11 min-w-11 items-center justify-center md:min-h-4 md:min-w-4"
+              data-touch-target=""
+            >
               <Checkbox
                 aria-label="Chọn tất cả"
                 checked={
@@ -41,7 +44,8 @@ export function buildSelectionColumn<TData>(): ColumnDef<TData, unknown> {
     ),
     cell: ({ row }) => (
       <span
-        className="inline-flex"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center md:min-h-4 md:min-w-4"
+        data-touch-target=""
         onClick={(e) => e.stopPropagation()}
         role="presentation"
       >

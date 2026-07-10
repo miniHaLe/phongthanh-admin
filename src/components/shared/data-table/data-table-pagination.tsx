@@ -46,7 +46,7 @@ export function DataTablePagination({
       </span>
 
       {/* Right: page-size selector + navigation */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="whitespace-nowrap">Hàng mỗi trang:</span>
         <Select
           value={String(pageSize)}
@@ -56,7 +56,7 @@ export function DataTablePagination({
             onPageChange(1)
           }}
         >
-          <SelectTrigger className="h-8 w-[70px]">
+          <SelectTrigger className="h-11 w-[78px] md:h-8 md:w-[70px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent side="top">
@@ -71,7 +71,7 @@ export function DataTablePagination({
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-11 w-11 md:h-8 md:w-8"
           onClick={() => onPageChange(page - 1)}
           disabled={isFirstPage}
           aria-label="Trang trước"
@@ -86,7 +86,7 @@ export function DataTablePagination({
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-11 w-11 md:h-8 md:w-8"
           onClick={() => onPageChange(page + 1)}
           disabled={isLastPage}
           aria-label="Trang tiếp theo"

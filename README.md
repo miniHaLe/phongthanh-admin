@@ -36,6 +36,22 @@ npm run build       # xuất ra thư mục dist/
 npm run preview     # xem trước bản build tại localhost:4173
 ```
 
+## Kiểm thử
+
+```bash
+npm run type-check
+npm run lint
+npm run test
+npm run test:e2e:uiux
+env VITE_REAL_RESOURCES=khach-hang npm run build:prod
+npm run test:api:with-db
+```
+
+`test:e2e:uiux` chạy Playwright qua ma trận viewport mobile → 4K và lưu
+screenshot ở `plans/reports/260711-uiux-remediation-verification/screenshots/`.
+`test:api:with-db` khởi động compose Postgres `db`, rồi chạy API lint/build/Jest
+với database test `phongthanh_test`.
+
 ---
 
 ## Các phân hệ

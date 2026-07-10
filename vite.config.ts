@@ -14,6 +14,12 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      'tests/e2e/**',
+    ],
     // Don't fetch iframe/img subresources in tests (e.g. the OSM map embed).
     environmentOptions: {
       happyDOM: { settings: { disableIframePageLoading: true } },

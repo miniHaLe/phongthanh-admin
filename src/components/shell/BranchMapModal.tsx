@@ -51,6 +51,7 @@ export function BranchMapModal() {
     b.name.toLowerCase().includes(query.toLowerCase()),
   )
   const coords = BRANCH_COORDS[selected]
+  const isTest = import.meta.env.MODE === 'test'
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && close()}>
@@ -86,11 +87,21 @@ export function BranchMapModal() {
               ))}
             </ul>
           </div>
-          <iframe
-            title="Bản đồ chi nhánh"
-            className="h-[360px] w-full rounded-md border"
-            src={osmEmbedUrl(coords.lat, coords.lng)}
-          />
+          {isTest ? (
+            <div
+              role="img"
+              aria-label="Bản đồ chi nhánh"
+              className="flex h-[360px] w-full items-center justify-center rounded-md border text-sm text-muted-foreground"
+            >
+              Map test placeholder
+            </div>
+          ) : (
+            <iframe
+              title="Bản đồ chi nhánh"
+              className="h-[360px] w-full rounded-md border"
+              src={osmEmbedUrl(coords.lat, coords.lng)}
+            />
+          )}
         </div>
       </DialogContent>
     </Dialog>

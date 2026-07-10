@@ -22,7 +22,7 @@ export function SidebarDrawer() {
     <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
       <SheetContent
         side="left"
-        className="w-72 bg-sidebar p-0 text-sidebar-foreground"
+        className="w-[min(18rem,calc(100vw-2rem))] bg-sidebar p-0 text-sidebar-foreground"
       >
         <SheetHeader className="h-14 flex-row items-center border-b border-sidebar-border px-4">
           <SheetTitle className="text-base font-bold text-primary">
@@ -30,7 +30,7 @@ export function SidebarDrawer() {
           </SheetTitle>
         </SheetHeader>
 
-        <ScrollArea className="h-[calc(100vh-3.5rem)] flex-1 py-2">
+        <ScrollArea className="h-[calc(100dvh-3.5rem)] flex-1 py-2">
           <nav aria-label="Điều hướng chính" className="space-y-0.5 px-2">
             {PRIMARY_NAV.map((item) => (
               <NavItem

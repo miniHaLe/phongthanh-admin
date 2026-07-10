@@ -40,13 +40,13 @@ services:
     environment:
       # On the compose network the API reaches Postgres at db:5432 (NOT 5434).
       DATABASE_URL: postgres://phongthanh:phongthanh_dev@db:5432/phongthanh
-      # Secrets are REQUIRED (`:?` fails the compose command loud if unset) — no
-      # baked-in fallback, so a real deploy can never silently boot with a
-      # publicly-known signing key. The gitignored `.env.docker` (created from
-      # .env.docker.example) supplies dev values for the one-command local flow.
-      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (copy .env.docker.example to .env.docker or export it)}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set JWT_REFRESH_SECRET (see .env.docker.example)}
-      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?set INITIAL_ADMIN_PASSWORD (see .env.docker.example)}
+      # Empty defaults let `docker compose up -d db` parse this file without app
+      # secrets. Full API/web startup still fails loud during seed/app env
+      # validation when these are absent. The gitignored `.env.docker` (created
+      # from .env.docker.example) supplies dev values for local full-stack runs.
+      JWT_SECRET: ${JWT_SECRET:-}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
       PORT: '3210'
       # Same-origin via nginx; CORS not needed but kept correct for direct hits.
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}

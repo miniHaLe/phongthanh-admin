@@ -50,17 +50,17 @@ export function RepairFilters({
   }, [])
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+    <div className="rounded-lg border border-border bg-card" data-repair-filters="">
+      <div className="grid grid-cols-1 gap-2 px-4 py-3 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-center">
         {/* Số phiếu (autofocus) */}
-        <div className="flex flex-col gap-1">
+        <div className="flex min-w-0 flex-col gap-1">
           <Label htmlFor={`${uid}-sophieu`} className="sr-only">
             Số phiếu
           </Label>
           <Input
             id={`${uid}-sophieu`}
             ref={soPhieuRef}
-            className="h-8 w-44 text-sm"
+            className="h-11 w-full text-base md:h-8 md:text-sm lg:w-44"
             placeholder="Số phiếu…"
             value={filters.soPhieu ?? ''}
             onChange={(e) => onChange({ soPhieu: e.target.value || undefined })}
@@ -80,7 +80,7 @@ export function RepairFilters({
             })
           }
         >
-          <SelectTrigger className="h-8 w-48 text-sm" aria-label="Tình trạng">
+          <SelectTrigger className="h-11 w-full text-base md:h-8 md:text-sm lg:w-48" aria-label="Tình trạng">
             <SelectValue placeholder="Tình trạng…" />
           </SelectTrigger>
           <SelectContent>
@@ -100,10 +100,10 @@ export function RepairFilters({
         </Select>
 
         {/* Date range */}
-        <div className="flex items-center gap-1.5">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 sm:col-span-2 lg:flex">
           <Input
             type="date"
-            className="h-8 w-36 text-sm"
+            className="h-11 w-full text-base md:h-8 md:text-sm lg:w-36"
             value={filters.dateFrom ?? ''}
             onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
             aria-label="Từ ngày"
@@ -113,14 +113,14 @@ export function RepairFilters({
           </span>
           <Input
             type="date"
-            className="h-8 w-36 text-sm"
+            className="h-11 w-full text-base md:h-8 md:text-sm lg:w-36"
             value={filters.dateTo ?? ''}
             onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
             aria-label="Đến ngày"
           />
         </div>
 
-        <div className="flex-1" />
+        <div className="hidden flex-1 lg:block" />
 
         <SavedViews
           tableId="repair-list"
@@ -131,7 +131,7 @@ export function RepairFilters({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1 px-2 text-muted-foreground"
+          className="h-11 gap-1 px-2 text-muted-foreground md:h-8"
           onClick={onClear}
           disabled={activeFilterCount === 0}
           aria-label="Xóa tất cả bộ lọc"
@@ -151,7 +151,7 @@ export function RepairFilters({
         <Button
           variant="outline"
           size="sm"
-          className="h-8 gap-1.5"
+          className="h-11 gap-1.5 md:h-8"
           onClick={() => setAdvancedOpen((p) => !p)}
           aria-expanded={advancedOpen}
           aria-controls={`${uid}-advanced`}

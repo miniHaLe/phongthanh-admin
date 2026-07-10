@@ -12,7 +12,7 @@ import { useCallCenterDemo, triggerDemoCall } from '@/demo/call-center-demo'
 
 function PageSpinner() {
   return (
-    <div className="flex flex-1 items-center justify-center">
+    <div className="flex min-h-[60dvh] flex-1 items-center justify-center">
       <Loader2 className="size-8 animate-spin text-muted-foreground" />
     </div>
   )
@@ -45,13 +45,13 @@ export default function AppShell() {
   useRegisterCommands('shell', shellCommands)
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex min-h-dvh overflow-x-hidden bg-background">
       <Sidebar />
       <SidebarDrawer />
 
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
-        <main className="flex-1 overflow-auto p-4 lg:p-6">
+        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:p-6 lg:pb-6">
           <Suspense fallback={<PageSpinner />}>
             <Outlet />
           </Suspense>

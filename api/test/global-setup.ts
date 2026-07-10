@@ -22,7 +22,22 @@ const INITIAL_ADMIN_PASSWORD = 'Test!Admin2026'
 export default async function globalSetup() {
   // Drop + recreate the test DB via the maintenance `postgres` DB.
   const admin = new Client({ connectionString: ADMIN_URL })
-  await admin.connect()
+  try {
+    await admin.connect()
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error)
+    throw new Error(
+      [
+        'API test Postgres is unavailable.',
+        `Tried TEST_ADMIN_DATABASE_URL=${ADMIN_URL}`,
+        'Start the local DB from the repo root with:',
+        '  docker compose up -d db',
+        'Then rerun:',
+        '  cd api && npm test',
+        `Original error: ${detail}`,
+      ].join('\n'),
+    )
+  }
   await admin.query(
     `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()`,
     [TEST_DB],

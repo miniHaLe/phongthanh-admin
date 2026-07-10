@@ -46,7 +46,7 @@ export function SavedViews({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5">
+        <Button variant="outline" size="sm" className="h-11 gap-1.5 md:h-8">
           <Bookmark className="h-4 w-4" />
           <span className="hidden sm:inline">Lưu / Xem bộ lọc</span>
         </Button>
@@ -62,14 +62,14 @@ export function SavedViews({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Tên view…"
-            className="h-8 flex-1 text-sm"
+            className="h-11 flex-1 text-base md:h-8 md:text-sm"
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleSave()
             }}
           />
           <Button
             size="sm"
-            className="h-8 whitespace-nowrap"
+            className="h-11 whitespace-nowrap md:h-8"
             disabled={name.trim() === ''}
             onClick={handleSave}
           >
@@ -97,7 +97,7 @@ export function SavedViews({
               >
                 <button
                   type="button"
-                  className="flex-1 truncate text-left text-sm"
+                  className="min-h-11 flex-1 truncate text-left text-base md:min-h-0 md:text-sm"
                   onClick={() => onApply(view.filters)}
                   title={`Áp dụng: ${view.label}`}
                 >
@@ -106,7 +106,7 @@ export function SavedViews({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 shrink-0 text-muted-foreground hover:text-destructive"
+                  className="h-11 w-11 shrink-0 text-muted-foreground hover:text-destructive md:h-6 md:w-6"
                   onClick={() => removeView(tableId, view.id)}
                   aria-label={`Xóa view "${view.label}"`}
                 >
