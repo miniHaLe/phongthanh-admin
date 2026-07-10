@@ -4,8 +4,7 @@ services:
     runtime: node
     rootDir: api
     plan: free
-    buildCommand: npm ci && npm run build
-    preDeployCommand: npm run db:migrate && npm run seed
+    buildCommand: npm ci --include=dev && npm run build && npm run db:migrate && npm run seed
     startCommand: npm run start:prod
     healthCheckPath: /health
     envVars:

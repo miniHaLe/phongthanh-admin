@@ -100,10 +100,14 @@ npm run build:prod
 API:
 
 ```bash
-npm ci && npm run build
-npm run db:migrate && npm run seed
+npm ci --include=dev && npm run build && npm run db:migrate && npm run seed
 npm run start:prod
 ```
+
+Render free web services do not support Blueprint `preDeployCommand`. The
+Blueprint therefore runs the idempotent database migration and seed during
+`buildCommand`; paid Render services can move that logic back to a pre-deploy
+hook later if desired.
 
 ## GitHub Pages Frontend
 
