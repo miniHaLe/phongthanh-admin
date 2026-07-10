@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { KeyRound, LogOut, UserCircle } from 'lucide-react'
+import { toast } from 'sonner'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -11,9 +12,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ROUTES } from '@/constants/routes'
 import { CURRENT_USER } from '@/mock/current-user-mock'
+import { logout } from '@/api/auth-client'
 
 export function UserMenu() {
   const navigate = useNavigate()
+
+  async function handleLogout() {
+    try {
+      await logout()
+    } catch {
+      toast.error('Không thể đăng xuất phiên hiện tại')
+    } finally {
+      navigate(ROUTES.login, { replace: true })
+    }
+  }
 
   return (
     <DropdownMenu>
@@ -53,7 +65,7 @@ export function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem
-          onClick={() => navigate(ROUTES.login)}
+          onClick={handleLogout}
           className="text-red-600 focus:text-red-600"
         >
           <LogOut className="mr-2 size-4" />

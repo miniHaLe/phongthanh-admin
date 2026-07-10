@@ -20,6 +20,7 @@ import {
 
 const ACCESS_TOKEN_TTL = '15m'
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
+const BCRYPT_ROUNDS = 12
 // A rotated token replayed within this window is treated as a benign
 // concurrent-refresh race (reject softly); beyond it, as token theft (revoke
 // the family). Short enough to bound a stolen-token replay to seconds.
@@ -121,6 +122,36 @@ export class AuthService {
       mustChangePassword: user.mustChangePassword,
       refreshToken: raw,
     }
+  }
+
+  async changePassword(
+    userId: string,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const [user] = await this.db
+      .select()
+      .from(nguoiDung)
+      .where(eq(nguoiDung.id, userId))
+      .limit(1)
+
+    if (!user || !user.active || user.locked) {
+      throw new UnauthorizedException('Tài khoản không khả dụng')
+    }
+
+    const passwordMatches = await bcrypt.compare(oldPassword, user.passwordHash)
+    if (!passwordMatches) {
+      throw new UnauthorizedException('Mật khẩu cũ không đúng')
+    }
+
+    await this.db
+      .update(nguoiDung)
+      .set({
+        passwordHash: await bcrypt.hash(newPassword, BCRYPT_ROUNDS),
+        mustChangePassword: false,
+        updatedAt: new Date(),
+      })
+      .where(eq(nguoiDung.id, user.id))
   }
 
   /** Rotation with reuse-detection: presenting an already-used (or revoked)

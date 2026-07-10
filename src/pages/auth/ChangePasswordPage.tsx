@@ -1,7 +1,5 @@
 /**
- * ChangePasswordPage — mock change-password screen.
- * Validates old/new/confirm match with zod; submit → toast success + navigate back.
- * Renders standalone (outside AppShell); centered on screen.
+ * ChangePasswordPage — real password-change screen.
  * Route: ROUTES.changePassword (/doi-mat-khau)
  */
 import { useForm } from 'react-hook-form'
@@ -20,11 +18,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { toast } from 'sonner'
+import { changePassword } from '@/api/auth-client'
+import { ROUTES } from '@/constants/routes'
 
 const schema = z
   .object({
     oldPassword: z.string().min(1, 'Vui lòng nhập mật khẩu cũ'),
-    newPassword: z.string().min(6, 'Mật khẩu mới phải có ít nhất 6 ký tự'),
+    newPassword: z.string().min(8, 'Mật khẩu mới phải có ít nhất 8 ký tự'),
     confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu mới'),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {
@@ -42,10 +42,14 @@ export default function ChangePasswordPage() {
     formState: { errors, isSubmitting },
   } = useForm<ChangePasswordInput>({ resolver: zodResolver(schema) })
 
-  function onSubmit(_data: ChangePasswordInput) {
-    // Mock: always succeeds
-    toast.success('Đổi mật khẩu thành công')
-    navigate(-1)
+  async function onSubmit(data: ChangePasswordInput) {
+    try {
+      await changePassword(data.oldPassword, data.newPassword)
+      toast.success('Đổi mật khẩu thành công')
+      navigate(ROUTES.home, { replace: true })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Đổi mật khẩu thất bại')
+    }
   }
 
   return (
@@ -98,7 +102,7 @@ export default function ChangePasswordPage() {
                   id="newPassword"
                   type="password"
                   autoComplete="new-password"
-                  placeholder="Ít nhất 6 ký tự"
+                  placeholder="Ít nhất 8 ký tự"
                   aria-describedby={
                     errors.newPassword ? 'new-pw-error' : undefined
                   }

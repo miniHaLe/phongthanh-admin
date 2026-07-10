@@ -54,7 +54,7 @@ describe('auth', () => {
     const cookie = res.headers['set-cookie']?.[0] ?? ''
     expect(cookie).toMatch(/refreshToken=/)
     expect(cookie).toMatch(/HttpOnly/i)
-    expect(cookie).toMatch(/Path=\/auth\/refresh/i)
+    expect(cookie).toMatch(/Path=\/auth/i)
     expect(cookie).toMatch(/SameSite=Strict/i)
   })
 
@@ -395,6 +395,26 @@ describe('auth refresh — rotation + reuse detection', () => {
     expect(noCsrf.status).toBe(403)
   })
 
+  it('logout clears the refresh cookie and revokes the refresh family', async () => {
+    const loginRes = await http.post('/auth/login').send(ADMIN)
+    const cookie = rawCookie(loginRes.headers['set-cookie'])
+
+    const logout = await http
+      .post('/auth/logout')
+      .set(...CSRF)
+      .set('Cookie', cookie)
+    expect(logout.status).toBe(204)
+    expect(logout.headers['set-cookie']?.[0] ?? '').toMatch(
+      /(Max-Age=0|Expires=Thu, 01 Jan 1970)/,
+    )
+
+    const refresh = await http
+      .post('/auth/refresh')
+      .set(...CSRF)
+      .set('Cookie', cookie)
+    expect(refresh.status).toBe(401)
+  })
+
   it('rotates the refresh token and revokes the family on reuse', async () => {
     const loginRes = await http.post('/auth/login').send(ADMIN)
     const firstCookie = rawCookie(loginRes.headers['set-cookie'])
@@ -413,5 +433,36 @@ describe('auth refresh — rotation + reuse detection', () => {
       .set(...CSRF)
       .set('Cookie', firstCookie)
     expect(reuse.status).toBe(401)
+  })
+})
+
+describe('auth change-password', () => {
+  const USER = { tenDangNhap: 'giamdoc', password: 'Test!Admin2026' }
+  const NEW_PASSWORD = 'Changed!Admin2026'
+
+  it('requires a valid access token and old password, then clears mustChangePassword', async () => {
+    const token = await tokenFor(USER)
+
+    const wrongOld = await http
+      .post('/auth/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ oldPassword: 'wrong', newPassword: NEW_PASSWORD })
+    expect(wrongOld.status).toBe(401)
+
+    const changed = await http
+      .post('/auth/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ oldPassword: USER.password, newPassword: NEW_PASSWORD })
+    expect(changed.status).toBe(204)
+
+    const oldLogin = await login(USER)
+    expect(oldLogin.status).toBe(401)
+
+    const newLogin = await login({
+      tenDangNhap: USER.tenDangNhap,
+      password: NEW_PASSWORD,
+    })
+    expect(newLogin.status).toBe(200)
+    expect(newLogin.body.mustChangePassword).toBe(false)
   })
 })

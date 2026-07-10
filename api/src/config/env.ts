@@ -10,6 +10,26 @@ const envSchema = z.object({
   INITIAL_ADMIN_PASSWORD: z.string().min(1).optional(),
   PORT: z.coerce.number().int().positive().default(3000),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  CORS_ADDITIONAL_ORIGINS: z.string().optional(),
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(3).default(1),
+  AUTH_LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(20),
+  AUTH_LOGIN_RATE_LIMIT_WINDOW_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(15 * 60 * 1000),
+  AUTH_REFRESH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(120),
+  AUTH_REFRESH_RATE_LIMIT_WINDOW_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(60 * 1000),
+  API_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(600),
+  API_RATE_LIMIT_WINDOW_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(60 * 1000),
   REFRESH_COOKIE_SAME_SITE: z
     .enum(['strict', 'lax', 'none'])
     .default('strict'),

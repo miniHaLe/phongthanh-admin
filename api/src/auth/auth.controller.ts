@@ -13,7 +13,10 @@ import { ConfigService } from '@nestjs/config'
 import type { Request, Response } from 'express'
 import type { Env } from '../config/env'
 import { AuthService } from './auth.service'
+import { changePasswordDtoSchema } from './change-password.dto'
 import { CsrfHeaderGuard } from './csrf-header.guard'
+import { CurrentUser } from './current-user.decorator'
+import type { AuthenticatedUser } from './jwt-payload'
 import { loginDtoSchema } from './login.dto'
 import { Public } from './public.decorator'
 import {
@@ -78,5 +81,19 @@ export class AuthController {
     const rawToken = req.cookies?.[REFRESH_COOKIE_NAME] as string | undefined
     await this.authService.logout(rawToken)
     clearRefreshCookie(res, this.refreshCookieSameSite())
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async changePassword(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(changePasswordDtoSchema))
+    body: { oldPassword: string; newPassword: string },
+  ) {
+    await this.authService.changePassword(
+      user.sub,
+      body.oldPassword,
+      body.newPassword,
+    )
   }
 }

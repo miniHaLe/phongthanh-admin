@@ -8,12 +8,13 @@ import { Loader2 } from 'lucide-react'
 import AppShell from '@/components/shell/AppShell'
 import StubPage from '@/pages/StubPage'
 import { ROUTES } from '@/constants/routes'
+import { RequireAuth } from './RequireAuth'
 
 // All page components are code-split via React.lazy so each section loads on
 // demand (AppShell provides the Suspense boundary). Keeps the initial bundle
 // small — only the shell + the first visited route are fetched up front.
 const GalleryPage = lazy(() => import('@/pages/GalleryPage'))
-// Phase 8 — Mock auth (rendered outside AppShell)
+// Auth (rendered outside AppShell)
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const ChangePasswordPage = lazy(() => import('@/pages/auth/ChangePasswordPage'))
 // Phase 3 — Dashboard
@@ -191,11 +192,15 @@ function suspended(node: React.ReactNode) {
 }
 
 const routes = [
-  // Mock auth — standalone, no AppShell chrome.
+  // Auth — standalone, no AppShell chrome.
   { path: rel(ROUTES.login, ''), element: suspended(<LoginPage />) },
   {
     path: '/',
-    element: <AppShell />,
+    element: (
+      <RequireAuth>
+        <AppShell />
+      </RequireAuth>
+    ),
     children: [
       { index: true, element: <Navigate to={ROUTES.home} replace /> },
 
@@ -550,7 +555,7 @@ const routes = [
       { path: 'tin-tuc/:id', element: <TinTucDetailPage /> },
       { path: rel(ROUTES.account, ''), element: <TaiKhoanPage /> },
 
-      // Mock change-password (inside shell — reached from user menu)
+      // Change-password (inside shell — reached from user menu / first login)
       { path: rel(ROUTES.changePassword, ''), element: <ChangePasswordPage /> },
 
       // Dev

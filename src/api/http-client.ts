@@ -9,9 +9,10 @@ import type { BaseEntity, ListParams, PagedResult } from '@/mock/seed'
 import type { MockApi } from '@/types/crud-types'
 import {
   getAccessToken,
-  setAccessToken,
   coalescedRefresh,
 } from './auth-token'
+import { refreshAccessToken } from './auth-client'
+import { apiUrl } from './api-url'
 import { toQuery } from './list-params-query'
 import {
   viErrorMessage,
@@ -21,37 +22,11 @@ import {
 
 const REQUEST_TIMEOUT_MS = 15_000
 
-/** Read lazily (not captured at module load) so tests can stub VITE_API_URL and
- * so an env injected after bundle init is still honored. */
-function apiUrl(): string {
-  return import.meta.env.VITE_API_URL ?? 'http://localhost:3210'
-}
-
 interface ReqOptions {
   method?: string
   body?: unknown
   /** Internal: set once we've already retried after a refresh, to avoid loops. */
   _retried?: boolean
-}
-
-/** Performs `POST /auth/refresh` (cookie-based) and stores the new access token.
- * The `X-Requested-With` header is REQUIRED — the server's CSRF guard rejects
- * the cookie route without it (a cross-site tag can't set a custom header). */
-async function refreshAccessToken(): Promise<string | null> {
-  try {
-    const res = await fetch(`${apiUrl()}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as { accessToken?: string }
-    const token = data.accessToken ?? null
-    setAccessToken(token)
-    return token
-  } catch {
-    return null
-  }
 }
 
 async function req<T>(url: string, options: ReqOptions = {}): Promise<T> {

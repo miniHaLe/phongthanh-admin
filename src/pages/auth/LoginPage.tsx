@@ -1,14 +1,14 @@
 /**
- * LoginPage — mock authentication screen.
- * Any non-empty username + password accepted (no real auth).
+ * LoginPage — real API authentication screen.
  * Renders standalone (outside AppShell); centered on screen.
  * Route: ROUTES.login (/dang-nhap)
  */
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Wrench } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { ROUTES } from '@/constants/routes'
+import { login } from '@/api/auth-client'
 
 const schema = z.object({
   username: z.string().min(1, 'Vui lòng nhập tên đăng nhập'),
@@ -30,15 +31,25 @@ type LoginInput = z.infer<typeof schema>
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({ resolver: zodResolver(schema) })
 
-  function onSubmit(_data: LoginInput) {
-    // Mock: accept any non-empty credentials
-    navigate(ROUTES.home, { replace: true })
+  async function onSubmit(data: LoginInput) {
+    try {
+      const result = await login(data.username, data.password)
+      const from =
+        (location.state as { from?: { pathname?: string } } | null)?.from
+          ?.pathname ?? ROUTES.home
+      navigate(result.mustChangePassword ? ROUTES.changePassword : from, {
+        replace: true,
+      })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Đăng nhập thất bại')
+    }
   }
 
   return (

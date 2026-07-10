@@ -1,15 +1,16 @@
 import type { Response } from 'express'
 
 export const REFRESH_COOKIE_NAME = 'refreshToken'
-export const REFRESH_COOKIE_PATH = '/auth/refresh'
+export const REFRESH_COOKIE_PATH = '/auth'
 const REFRESH_COOKIE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
 export type RefreshCookieSameSite = 'strict' | 'lax' | 'none'
 
 /** CSRF strategy (security gate 5): refresh/logout require a custom header
  * (`X-Requested-With`). A cross-origin form/img/script tag cannot set that
- * header, and CORS controls which browser origins may send it. Local/dev keeps
- * `SameSite=Strict`; split frontend/backend deployments may set `SameSite=None`
- * so the refresh cookie can cross the site boundary. */
+ * header, and CORS controls which browser origins may send it. The cookie is
+ * scoped to `/auth` so logout receives it and can revoke the token family.
+ * Local/dev keeps `SameSite=Strict`; split frontend/backend deployments may set
+ * `SameSite=None` so the refresh cookie can cross the site boundary. */
 export const CSRF_HEADER_NAME = 'x-requested-with'
 export const CSRF_HEADER_VALUE = 'XMLHttpRequest'
 
