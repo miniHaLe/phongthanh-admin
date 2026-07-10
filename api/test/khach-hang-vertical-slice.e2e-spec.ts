@@ -11,6 +11,10 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
 import request from 'supertest'
 import { AppModule } from '../src/app.module'
+import {
+  CORS_ALLOWED_HEADERS,
+  CORS_ALLOWED_METHODS,
+} from '../src/config/cors-policy'
 import { setRefreshCookie } from '../src/auth/refresh-cookie.util'
 
 const ADMIN = { tenDangNhap: 'admin', password: 'Test!Admin2026' }
@@ -36,6 +40,13 @@ beforeAll(async () => {
   app = moduleRef.createNestApplication<NestExpressApplication>()
   // Mirror main.ts runtime config the gates depend on.
   ;(app as NestExpressApplication).set('query parser', 'extended')
+  app.enableCors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+    methods: CORS_ALLOWED_METHODS,
+    allowedHeaders: CORS_ALLOWED_HEADERS,
+    optionsSuccessStatus: 204,
+  })
   app.use(cookieParser())
   await app.init()
   http = request(app.getHttpServer())
@@ -93,6 +104,23 @@ describe('auth', () => {
   it('rejects a protected route with no token → 401', async () => {
     const res = await http.get('/api/v1/khach-hang')
     expect(res.status).toBe(401)
+  })
+
+  it('allows browser preflight for API requests with Authorization', async () => {
+    const res = await http
+      .options('/api/v1/khach-hang')
+      .set('Origin', 'http://localhost:5173')
+      .set('Access-Control-Request-Method', 'GET')
+      .set('Access-Control-Request-Headers', 'authorization')
+
+    expect(res.status).toBe(204)
+    expect(res.headers['access-control-allow-origin']).toBe(
+      'http://localhost:5173',
+    )
+    expect(res.headers['access-control-allow-credentials']).toBe('true')
+    expect(res.headers['access-control-allow-headers'].toLowerCase()).toContain(
+      'authorization',
+    )
   })
 })
 

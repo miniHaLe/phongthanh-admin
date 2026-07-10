@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser'
 import { rateLimit } from 'express-rate-limit'
 import helmet from 'helmet'
 import { AppModule } from './app.module'
+import { CORS_ALLOWED_HEADERS, CORS_ALLOWED_METHODS } from './config/cors-policy'
 import { corsOrigins } from './config/cors-origins'
 import type { Env } from './config/env'
 
@@ -37,6 +38,9 @@ async function bootstrap() {
       config.get('CORS_ADDITIONAL_ORIGINS'),
     ),
     credentials: true,
+    methods: CORS_ALLOWED_METHODS,
+    allowedHeaders: CORS_ALLOWED_HEADERS,
+    optionsSuccessStatus: 204,
   })
   app.use(
     '/auth/login',
