@@ -166,21 +166,21 @@ export default function CapLinhKienPage() {
           </div>
         </div>
 
-        <div className="min-w-[1100px] overflow-x-auto">
-          <DataTable
-            tableId={CAP_LINH_KIEN_TABLE_ID}
-            columns={columns}
-            data={pageRows}
-            isLoading={isLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            emptyMessage="Không có phiếu cấp linh kiện nào"
-            manualPagination
-            pagination={pagination}
-            pageCount={totalPages}
-            getRowId={(r) => r.id}
-          />
-        </div>
+        <DataTable
+          tableId={CAP_LINH_KIEN_TABLE_ID}
+          columns={columns}
+          data={pageRows}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyMessage="Không có phiếu cấp linh kiện nào"
+          manualPagination
+          pagination={pagination}
+          pageCount={totalPages}
+          getRowId={(r) => r.id}
+          scrollLabel="Bảng cấp linh kiện"
+          tableClassName="min-w-[1100px]"
+        />
 
         {!isError && (
           <DataTablePagination

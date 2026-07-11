@@ -5,6 +5,7 @@
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
 import {
   Select,
   SelectContent,
@@ -66,7 +67,7 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
           value={filters.tuChiNhanh ?? UNSET}
           onValueChange={(v) => onChange({ tuChiNhanh: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-tucn`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-tucn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả" />
           </SelectTrigger>
           <SelectContent>
@@ -85,7 +86,7 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
           value={filters.denChiNhanh ?? UNSET}
           onValueChange={(v) => onChange({ denChiNhanh: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-dencn`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-dencn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả" />
           </SelectTrigger>
           <SelectContent>
@@ -102,7 +103,7 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
       <Field label="Số phiếu" htmlFor={`${uid}-sp`}>
         <Input
           id={`${uid}-sp`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.soPhieu ?? ''}
           onChange={(e) => onChange({ soPhieu: e.target.value || undefined })}
         />
@@ -115,7 +116,7 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
             onChange({ trangThai: v === UNSET ? undefined : (v as ChuyenKhoTrangThai) })
           }
         >
-          <SelectTrigger id={`${uid}-tt`} className="h-8 text-sm" aria-label="Trạng thái">
+          <SelectTrigger id={`${uid}-tt`} className={filterControlClassName} aria-label="Trạng thái">
             <SelectValue placeholder="Tất cả trạng thái" />
           </SelectTrigger>
           <SelectContent>
@@ -133,7 +134,7 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
         <Input
           id={`${uid}-df`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
@@ -142,7 +143,7 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
         <Input
           id={`${uid}-dt`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />

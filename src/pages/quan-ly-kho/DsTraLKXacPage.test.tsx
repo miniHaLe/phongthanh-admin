@@ -1,5 +1,5 @@
 /**
- * Spec: DSTraLKXac (new page) — 20-col header incl. Mã vận đơn, bulk Trả hàng
+ * Spec: DSTraLKXac (new page) — grouped header incl. Mã vận đơn, bulk Trả hàng
  * empty-selection alert, status labels, In BB Kỹ Thuật + In Phiếu Trả Hãng
  * empty-selection alerts, Xuất ra Excel, Tổng số LK KPI.
  */
@@ -18,25 +18,14 @@ vi.mock('@/components/shared', async (orig) => {
 beforeEach(() => notifyError.mockClear())
 
 const HEADERS_IN_ORDER = [
-  '##',
-  'Tình trạng',
-  'Mã vận đơn',
-  'Số phiếu cấp',
-  'Số phiếu SC',
-  'Số phiếu hãng',
-  'Model',
-  'Serial',
-  'Nhà kho',
-  'NSX',
-  'Mã hàng',
-  'Tên hàng',
-  'Kĩ thuật',
-  'Mục đích',
-  'Ngày TX',
-  'Người TX',
-  'SL',
-  'Ngày tạo',
-  'Người tạo',
+  '',
+  'Trạng thái / Vận đơn',
+  'Tham chiếu phiếu',
+  'Linh kiện / Vị trí',
+  'Phân công',
+  'Thu xác',
+  'Số lượng',
+  'Tạo phiếu',
 ]
 
 describe('DsTraLKXacPage', () => {
@@ -47,13 +36,12 @@ describe('DsTraLKXacPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders the 20 verified column headers (## + checkbox + 18 data cols) in order', async () => {
+  it('renders the grouped column headers in order', async () => {
     renderWithProviders(<DsTraLKXacPage />)
     const headerCells = await screen.findAllByRole('columnheader')
-    expect(headerCells).toHaveLength(HEADERS_IN_ORDER.length + 1)
-    expect(headerCells[0]).toHaveTextContent('##')
-    HEADERS_IN_ORDER.slice(1).forEach((label, i) => {
-      expect(headerCells[i + 2]).toHaveTextContent(label)
+    expect(headerCells).toHaveLength(HEADERS_IN_ORDER.length)
+    HEADERS_IN_ORDER.forEach((label, i) => {
+      expect(headerCells[i]).toHaveTextContent(label)
     })
   })
 

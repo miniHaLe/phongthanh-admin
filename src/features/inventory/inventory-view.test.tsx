@@ -1,7 +1,6 @@
 /**
- * Spec: the Xem Tồn Kho family's exact verified column headers (in order),
- * the KPI trio labels + tone-driven negative rendering (no clamp), and the
- * technician-axis dimension on the Kỹ Thuật view.
+ * Spec: the Xem Tồn Kho family's grouped composition, KPI behavior, and the
+ * unchanged technician-axis view.
  */
 import { describe, it, expect } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
@@ -11,29 +10,16 @@ import TonKhoLKXacPage from '@/pages/quan-ly-kho/TonKhoLKXacPage'
 import TonKhoKyThuatPage from '@/pages/quan-ly-kho/TonKhoKyThuatPage'
 
 const W2_HEADERS = [
-  'STT',
-  '##',
-  'Chi nhánh',
-  'Mã hàng',
-  'Tên hàng',
-  'Nhóm hàng',
-  'Model',
-  'Giá vốn đầu kỳ',
-  'Tồn đầu kỳ',
-  'Nhập trong kỳ',
-  'Xuất trong kỳ',
-  'Tồn',
-  'Giá vốn trong kỳ',
-  'Tồn cuối kỳ',
-  'Tổng tiền',
-  'Nhà sản xuất',
-  'Nhà kho',
-  'Ngăn chứa',
+  'STT / Thao tác',
+  'Vị trí',
+  'Thông tin hàng',
+  'Đầu kỳ',
+  'Phát sinh',
+  'Cuối kỳ',
   'Kỳ',
-  'Có serial',
 ]
 
-const W3_HEADERS = W2_HEADERS.filter((h) => h !== 'Tổng tiền')
+const W3_HEADERS = W2_HEADERS
 
 const W4_HEADERS = [
   'STT',
@@ -74,7 +60,7 @@ function queryKpiLabel(label: string): boolean {
 }
 
 describe('XemTonKhoPage (W2)', () => {
-  it('renders the exact 20-column header set in order', async () => {
+  it('renders the grouped stock header set in order', async () => {
     renderWithProviders(<XemTonKhoPage />)
     expect(await getTableHeaders()).toEqual(W2_HEADERS)
   })
@@ -102,7 +88,7 @@ describe('XemTonKhoPage (W2)', () => {
 })
 
 describe('TonKhoLKXacPage (W3)', () => {
-  it('renders the exact 19-column header set (W2 minus Tổng tiền)', async () => {
+  it('renders the grouped confirmed-stock header set', async () => {
     renderWithProviders(<TonKhoLKXacPage />)
     expect(await getTableHeaders()).toEqual(W3_HEADERS)
   })

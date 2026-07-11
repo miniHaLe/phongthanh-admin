@@ -133,24 +133,24 @@ export default function NhapKhoPage() {
           </div>
         </div>
 
-        <div className="min-w-[1200px] overflow-x-auto">
-          <DataTable
-            tableId={NHAP_KHO_TABLE_ID}
-            columns={columns}
-            data={rows}
-            isLoading={isLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            emptyMessage="Không có phiếu nhập kho nào"
-            manualPagination
-            pagination={pagination}
-            pageCount={totalPages}
-            enableRowSelection
-            rowSelection={rowSelection}
-            onRowSelectionChange={setRowSelection}
-            getRowId={(r) => r.id}
-          />
-        </div>
+        <DataTable
+          tableId={NHAP_KHO_TABLE_ID}
+          columns={columns}
+          data={rows}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyMessage="Không có phiếu nhập kho nào"
+          manualPagination
+          pagination={pagination}
+          pageCount={totalPages}
+          enableRowSelection
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+          getRowId={(r) => r.id}
+          scrollLabel="Bảng nhập kho"
+          tableClassName="min-w-[1200px]"
+        />
 
         {!isError && (
           <DataTablePagination

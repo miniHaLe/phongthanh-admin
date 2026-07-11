@@ -8,6 +8,7 @@
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
 import {
   Select,
   SelectContent,
@@ -62,7 +63,7 @@ export function CapLinhKienFilters({ filters, onChange }: CapLinhKienFiltersProp
           value={filters.branchId ?? UNSET}
           onValueChange={(v) => onChange({ branchId: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-cn`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả chi nhánh" />
           </SelectTrigger>
           <SelectContent>
@@ -81,7 +82,7 @@ export function CapLinhKienFilters({ filters, onChange }: CapLinhKienFiltersProp
           value={filters.kyThuat ?? UNSET}
           onValueChange={(v) => onChange({ kyThuat: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-kt`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-kt`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả kỹ thuật" />
           </SelectTrigger>
           <SelectContent>
@@ -98,7 +99,7 @@ export function CapLinhKienFilters({ filters, onChange }: CapLinhKienFiltersProp
       <Field label="Số phiếu cấp" htmlFor={`${uid}-spc`}>
         <Input
           id={`${uid}-spc`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.soPhieuCap ?? ''}
           onChange={(e) => onChange({ soPhieuCap: e.target.value || undefined })}
         />
@@ -108,7 +109,7 @@ export function CapLinhKienFilters({ filters, onChange }: CapLinhKienFiltersProp
         <Input
           id={`${uid}-df`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
@@ -117,7 +118,7 @@ export function CapLinhKienFilters({ filters, onChange }: CapLinhKienFiltersProp
         <Input
           id={`${uid}-dt`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />

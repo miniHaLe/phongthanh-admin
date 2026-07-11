@@ -19,6 +19,7 @@ function makeFakeWindow() {
     },
   }
   const win = {
+    opener: {} as Window,
     document: doc,
     focus: vi.fn(),
     print: vi.fn(),
@@ -40,6 +41,12 @@ describe('openPrintWindow', () => {
     expect(fake.getHtml()).toContain('NỘI DUNG')
     expect(fake.getHtml()).toContain('@media print')
     expect(fake.document.title).toBe('Phiếu test')
+    expect(fake.opener).toBeNull()
+    expect(window.open).toHaveBeenCalledWith(
+      '',
+      '_blank',
+      'width=900,height=700',
+    )
   })
 
   it('does not inject an untrusted title as a live node (title set via textContent)', async () => {

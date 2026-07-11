@@ -39,7 +39,7 @@ function IconAction({
           <Button
             variant="ghost"
             size="icon"
-            className="h-11 w-11 md:h-7 md:w-7"
+            className="h-11 w-11 xl:h-6 xl:w-6"
             aria-label={label}
             onClick={onClick}
           >
@@ -63,7 +63,7 @@ export function RowActionsCell({ ticket }: { ticket: RepairTicket }) {
   const canDeliver = DELIVERABLE_STATUS_IDS.has(ticket.tinhTrang)
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="grid auto-cols-max grid-flow-col items-center gap-0.5">
       <IconAction label="Đổi tình trạng" onClick={() => setStatusOpen(true)}>
         <RefreshCw className="size-4" />
       </IconAction>

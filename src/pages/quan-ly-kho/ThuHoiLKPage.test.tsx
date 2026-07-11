@@ -1,5 +1,5 @@
 /**
- * Spec: Danh sách sử dụng linh kiện — 21-col header verbatim, Tình trạng
+ * Spec: Danh sách sử dụng linh kiện — grouped header composition, Tình trạng
  * action-button state machine, Số phiếu hãng ticket-status badge, filter
  * option sets, KPI boxes.
  */
@@ -10,27 +10,15 @@ import { renderWithProviders } from '@/test/render-with-providers'
 import ThuHoiLKPage from './ThuHoiLKPage'
 
 const HEADERS_IN_ORDER = [
-  '##',
-  'Tình trạng',
-  'Số phiếu cấp',
-  'Số phiếu SC',
-  'Số phiếu hãng',
-  'Model',
-  'Serial',
-  'NSX',
-  'Nhà kho',
-  'Mã hàng',
-  'Tên hàng',
-  'Kĩ thuật',
-  'Mục đích',
-  'Ngày cấp',
-  'Người cấp',
-  'Ngày giao',
-  'Ngày TX',
-  'Người TX',
-  'Số lượng cấp',
-  'SL Trả',
-  'Chọn',
+  'Trạng thái / Thao tác',
+  'Tham chiếu phiếu',
+  'Thông tin linh kiện',
+  'Vị trí',
+  'Phân công',
+  'Cấp linh kiện',
+  'Giao',
+  'Thu hồi',
+  'Chi tiết',
 ]
 
 describe('ThuHoiLKPage (Danh sách sử dụng linh kiện)', () => {
@@ -42,7 +30,7 @@ describe('ThuHoiLKPage (Danh sách sử dụng linh kiện)', () => {
     expect(screen.getAllByText('Danh sách sử dụng linh kiện').length).toBeGreaterThan(0)
   })
 
-  it('renders the 21 verified column headers in order', async () => {
+  it('renders the grouped column headers in order', async () => {
     renderWithProviders(<ThuHoiLKPage />)
     const headerCells = await screen.findAllByRole('columnheader')
     expect(headerCells).toHaveLength(HEADERS_IN_ORDER.length)

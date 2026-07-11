@@ -7,8 +7,7 @@
  */
 import { useMemo, useState } from 'react'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
-import type { ColumnDef } from '@tanstack/react-table'
-import { PackageCheck, Pencil, Eye } from 'lucide-react'
+import { PackageCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import {
   DataTable,
@@ -38,12 +37,13 @@ import {
 } from '@/components/ui/dialog'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
-import { formatVND, formatNumber } from '@/lib/format'
+import { formatNumber } from '@/lib/format'
 import { fetchInventory } from '@/domains/warehouse/mock-data'
 import { BRANCHES } from '@/mock/seed/branches'
 import { NHA_KHO_ROWS } from '@/mock/masterdata'
 import { MANUFACTURERS, MODELS } from '@/domains/repair/reference-data'
 import type { InventoryRow } from '@/domains/warehouse/types'
+import { useInventoryCompositeColumns } from '@/features/warehouse/inventory-composite-table-columns'
 
 const NHOM_HANG_OPTIONS = [
   'Điện lạnh',
@@ -138,101 +138,13 @@ export default function TonKhoLKXacPage() {
     setPage(1)
   }
 
-  const columns = useMemo<ColumnDef<InventoryRow, unknown>[]>(
-    () => [
-      {
-        id: 'stt',
-        header: 'STT',
-        enableSorting: false,
-        size: 56,
-        cell: ({ row }) => (page - 1) * pageSize + row.index + 1,
-      },
-      {
-        id: 'actions',
-        header: '##',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              aria-label="Cập nhật"
-              onClick={() => setUpdateRow(row.original)}
-            >
-              <Pencil className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              aria-label="Xem chi tiết"
-              onClick={() => setDetailRow(row.original)}
-            >
-              <Eye className="size-4" />
-            </Button>
-          </div>
-        ),
-      },
-      {
-        id: 'chiNhanh',
-        header: 'Chi nhánh',
-        cell: ({ row }) =>
-          BRANCHES.find((b) => b.id === row.original.branchId)?.name ??
-          row.original.branchId,
-      },
-      { id: 'maHang', header: 'Mã hàng', accessorKey: 'maHang' },
-      { id: 'tenHang', header: 'Tên hàng', accessorKey: 'tenHang' },
-      { id: 'nhomHang', header: 'Nhóm hàng', accessorKey: 'nhomHang' },
-      { id: 'model', header: 'Model', accessorKey: 'model' },
-      {
-        id: 'giaVonDauKy',
-        header: 'Giá vốn đầu kỳ',
-        cell: ({ row }) => formatVND(row.original.giaVonDauKy),
-      },
-      {
-        id: 'tonDauKy',
-        header: 'Tồn đầu kỳ',
-        cell: ({ row }) => formatNumber(row.original.tonDauKy),
-      },
-      {
-        id: 'nhapTrongKy',
-        header: 'Nhập trong kỳ',
-        cell: ({ row }) => formatNumber(row.original.nhapTrongKy),
-      },
-      {
-        id: 'xuatTrongKy',
-        header: 'Xuất trong kỳ',
-        cell: ({ row }) => formatNumber(row.original.xuatTrongKy),
-      },
-      {
-        id: 'ton',
-        header: 'Tồn',
-        cell: ({ row }) => formatNumber(row.original.ton),
-      },
-      {
-        id: 'giaVonTrongKy',
-        header: 'Giá vốn trong kỳ',
-        cell: ({ row }) => formatVND(row.original.giaVonTrongKy),
-      },
-      {
-        id: 'tonCuoiKy',
-        header: 'Tồn cuối kỳ',
-        cell: ({ row }) => formatNumber(row.original.tonCuoiKy),
-      },
-      // NOTE: no "Tổng tiền" column here (19 cols, W2 minus Tổng tiền).
-      { id: 'nhaSanXuat', header: 'Nhà sản xuất', accessorKey: 'nhaSanXuat' },
-      { id: 'khoTen', header: 'Nhà kho', accessorKey: 'khoTen' },
-      { id: 'nganChua', header: 'Ngăn chứa', accessorKey: 'nganChua' },
-      { id: 'kyLabel', header: 'Kỳ', accessorKey: 'kyLabel' },
-      {
-        id: 'coSerial',
-        header: 'Có serial',
-        cell: ({ row }) => (row.original.coSerial ? 'Có' : 'Không'),
-      },
-    ],
-    [page, pageSize],
-  )
+  const columns = useInventoryCompositeColumns({
+    page,
+    pageSize,
+    showTotal: false,
+    onEdit: setUpdateRow,
+    onDetail: setDetailRow,
+  })
 
   return (
     <div className="space-y-0">
@@ -386,19 +298,20 @@ export default function TonKhoLKXacPage() {
           />
         </div>
 
-        <div className="min-w-[1200px]">
-          <DataTable
-            tableId="ton-kho-lk-xac"
-            columns={columns}
-            data={rows}
-            isLoading={isLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            emptyMessage="Không có dữ liệu tồn kho linh kiện xác"
-            getRowId={(r) => r.id}
-            className={isFetching && !isLoading ? 'opacity-60' : undefined}
-          />
-        </div>
+        <DataTable
+          tableId="ton-kho-lk-xac"
+          columns={columns}
+          data={rows}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyMessage="Không có dữ liệu tồn kho linh kiện xác"
+          getRowId={(r) => r.id}
+          className={isFetching && !isLoading ? 'opacity-60' : undefined}
+          scrollLabel="Bảng tồn kho linh kiện xác"
+          tableMinWidth={1560}
+          tableLayout="content-safe"
+        />
 
         {!isError && (
           <DataTablePagination

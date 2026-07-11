@@ -16,6 +16,7 @@ import {
 export function buildSelectionColumn<TData>(): ColumnDef<TData, unknown> {
   return {
     id: 'select',
+    size: 48,
     enableSorting: false,
     enableHiding: false,
     header: ({ table }) => (
@@ -23,7 +24,7 @@ export function buildSelectionColumn<TData>(): ColumnDef<TData, unknown> {
         <Tooltip>
           <TooltipTrigger asChild>
             <span
-              className="inline-flex min-h-11 min-w-11 items-center justify-center md:min-h-4 md:min-w-4"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center lg:min-h-4 lg:min-w-4"
               data-touch-target=""
             >
               <Checkbox
@@ -32,9 +33,7 @@ export function buildSelectionColumn<TData>(): ColumnDef<TData, unknown> {
                   table.getIsAllPageRowsSelected() ||
                   (table.getIsSomePageRowsSelected() && 'indeterminate')
                 }
-                onCheckedChange={(v) =>
-                  table.toggleAllPageRowsSelected(!!v)
-                }
+                onCheckedChange={(v) => table.toggleAllPageRowsSelected(!!v)}
               />
             </span>
           </TooltipTrigger>
@@ -44,7 +43,7 @@ export function buildSelectionColumn<TData>(): ColumnDef<TData, unknown> {
     ),
     cell: ({ row }) => (
       <span
-        className="inline-flex min-h-11 min-w-11 items-center justify-center md:min-h-4 md:min-w-4"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center lg:min-h-4 lg:min-w-4"
         data-touch-target=""
         onClick={(e) => e.stopPropagation()}
         role="presentation"

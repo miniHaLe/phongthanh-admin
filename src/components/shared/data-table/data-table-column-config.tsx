@@ -11,10 +11,12 @@ import {
   useTableState,
   type Density,
 } from '@/components/shared/data-table/use-table-state'
+import type { ColumnPresentation } from './data-table'
 
 export interface ColumnDescriptor {
   id: string
   label: string
+  presentation?: ColumnPresentation
 }
 
 export interface DataTableColumnConfigProps {
@@ -35,6 +37,9 @@ export function DataTableColumnConfig({
     useTableState()
   const tableState = getTable(tableId)
   const { columnVisibility, density } = tableState
+  const visibleColumns = columns.filter(
+    (column) => column.presentation !== 'sort-only',
+  )
 
   /**
    * A column is considered visible unless `columnVisibility[id]` is explicitly
@@ -61,7 +66,7 @@ export function DataTableColumnConfig({
         <Button
           variant="outline"
           size="sm"
-          className="h-11 gap-1.5 md:h-8"
+          className="h-11 gap-1.5 lg:h-8"
           title="Cấu hình cột"
           aria-label="Cấu hình cột"
         >
@@ -76,7 +81,7 @@ export function DataTableColumnConfig({
           Hiển thị cột
         </p>
         <ul className="space-y-1.5">
-          {columns.map((col) => (
+          {visibleColumns.map((col) => (
             <li key={col.id} className="flex items-center gap-2">
               <Checkbox
                 id={`col-vis-${tableId}-${col.id}`}

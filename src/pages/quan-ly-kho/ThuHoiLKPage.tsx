@@ -168,21 +168,22 @@ export default function ThuHoiLKPage() {
           <KpiBox label="Tổng tiền LK đã giao" value={formatVND(kpi.daGiao)} tone="green" />
         </div>
 
-        <div className="min-w-[1500px] overflow-x-auto">
-          <DataTable
-            tableId={ISSUED_USAGE_TABLE_ID}
-            columns={columns}
-            data={pageRows}
-            isLoading={isLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            emptyMessage="Không có dữ liệu sử dụng linh kiện"
-            manualPagination
-            pagination={pagination}
-            pageCount={totalPages}
-            getRowId={(r) => r.id}
-          />
-        </div>
+        <DataTable
+          tableId={ISSUED_USAGE_TABLE_ID}
+          columns={columns}
+          data={pageRows}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyMessage="Không có dữ liệu sử dụng linh kiện"
+          manualPagination
+          pagination={pagination}
+          pageCount={totalPages}
+          getRowId={(r) => r.id}
+          scrollLabel="Bảng thu hồi linh kiện"
+          tableMinWidth={1560}
+          tableLayout="content-safe"
+        />
 
         {!isError && (
           <DataTablePagination

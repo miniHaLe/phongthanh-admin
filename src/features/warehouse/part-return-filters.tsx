@@ -6,6 +6,7 @@
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
 import {
   Select,
   SelectContent,
@@ -70,7 +71,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
           value={filters.branchId ?? UNSET}
           onValueChange={(v) => onChange({ branchId: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-cn`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả chi nhánh" />
           </SelectTrigger>
           <SelectContent>
@@ -89,7 +90,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
           value={filters.kyThuat ?? UNSET}
           onValueChange={(v) => onChange({ kyThuat: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-kt`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-kt`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả KTV" />
           </SelectTrigger>
           <SelectContent>
@@ -106,7 +107,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
       <Field label="Số phiếu cấp" htmlFor={`${uid}-spc`}>
         <Input
           id={`${uid}-spc`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.soPhieuCap ?? ''}
           onChange={(e) => onChange({ soPhieuCap: e.target.value || undefined })}
         />
@@ -117,7 +118,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
           value={filters.nsx ?? UNSET}
           onValueChange={(v) => onChange({ nsx: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-nsx`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-nsx`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả NSX" />
           </SelectTrigger>
           <SelectContent>
@@ -134,7 +135,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
       <Field label="Số phiếu SC" htmlFor={`${uid}-spsc`}>
         <Input
           id={`${uid}-spsc`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.soPhieuSC ?? ''}
           onChange={(e) => onChange({ soPhieuSC: e.target.value || undefined })}
         />
@@ -143,7 +144,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
       <Field label="Số phiếu hãng" htmlFor={`${uid}-sph`}>
         <Input
           id={`${uid}-sph`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.soPhieuHang ?? ''}
           onChange={(e) => onChange({ soPhieuHang: e.target.value || undefined })}
         />
@@ -152,7 +153,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
       <Field label="Mã sản phẩm" htmlFor={`${uid}-msp`}>
         <Input
           id={`${uid}-msp`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           placeholder="Mã/tên hàng…"
           value={filters.maSanPham ?? ''}
           onChange={(e) => onChange({ maSanPham: e.target.value || undefined })}
@@ -166,7 +167,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
             onChange({ tinhTrang: v === UNSET ? undefined : (v as PartReturnTinhTrang) })
           }
         >
-          <SelectTrigger id={`${uid}-tt`} className="h-8 text-sm" aria-label="Tình trạng">
+          <SelectTrigger id={`${uid}-tt`} className={filterControlClassName} aria-label="Tình trạng">
             <SelectValue placeholder="Tất cả tình trạng" />
           </SelectTrigger>
           <SelectContent>
@@ -185,7 +186,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
           value={filters.hinhThuc ?? UNSET}
           onValueChange={(v) => onChange({ hinhThuc: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-lt`} className="h-8 text-sm" aria-label="Loại trả">
+          <SelectTrigger id={`${uid}-lt`} className={filterControlClassName} aria-label="Loại trả">
             <SelectValue placeholder="Tất cả loại trả" />
           </SelectTrigger>
           <SelectContent>
@@ -203,7 +204,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
         <Input
           id={`${uid}-df`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
@@ -212,7 +213,7 @@ export function PartReturnFilters({ filters, onChange }: PartReturnFiltersProps)
         <Input
           id={`${uid}-dt`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />
