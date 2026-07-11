@@ -48,7 +48,8 @@ npm run test:api:with-db
 ```
 
 `test:e2e:uiux` chạy Playwright qua ma trận viewport mobile → 4K và lưu
-screenshot ở `plans/reports/260711-uiux-remediation-verification/screenshots/`.
+screenshot ở
+`plans/260711-1527-responsive-table-1080p-fit/reports/screenshots/`.
 `test:api:with-db` khởi động compose Postgres `db`, rồi chạy API lint/build/Jest
 với database test `phongthanh_test`.
 
