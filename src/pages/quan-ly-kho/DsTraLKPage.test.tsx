@@ -1,5 +1,5 @@
 /**
- * Spec: DSTraLK — 18-col header, per-row + bulk Duyệt confirm/toast, In Phiếu
+ * Spec: DSTraLK — grouped header, per-row + bulk Duyệt confirm/toast, In Phiếu
  * Trả empty-selection alert, filter option sets, KPI box, Xuất ra Excel.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -28,33 +28,22 @@ beforeEach(() => {
 })
 
 const HEADERS_IN_ORDER = [
-  '##',
-  'Tình trạng',
-  'Hình thức',
-  'Mã hàng',
-  'Tên hàng',
-  'Kĩ thuật',
-  'SL',
-  'Số phiếu cấp',
-  'Số phiếu SC',
-  'Số phiếu hãng',
-  'Model',
-  'Serial',
-  'NSX',
-  'Ngày tạo',
-  'Người tạo',
-  'Ngày duyệt',
-  'Người duyệt',
+  '',
+  'Trạng thái / Duyệt',
+  'Thông tin linh kiện',
+  'Tham chiếu phiếu',
+  'Phân công',
+  'Tạo phiếu',
+  'Duyệt phiếu',
 ]
 
 describe('DsTraLKPage', () => {
-  it('renders the 18 verified column headers (## + checkbox + 16 data cols) in order', async () => {
+  it('renders the grouped column headers in order', async () => {
     renderWithProviders(<DsTraLKPage />)
     const headerCells = await screen.findAllByRole('columnheader')
-    expect(headerCells).toHaveLength(HEADERS_IN_ORDER.length + 1)
-    expect(headerCells[0]).toHaveTextContent('##')
-    HEADERS_IN_ORDER.slice(1).forEach((label, i) => {
-      expect(headerCells[i + 2]).toHaveTextContent(label)
+    expect(headerCells).toHaveLength(HEADERS_IN_ORDER.length)
+    HEADERS_IN_ORDER.forEach((label, i) => {
+      expect(headerCells[i]).toHaveTextContent(label)
     })
   })
 

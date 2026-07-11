@@ -155,24 +155,24 @@ export default function ChuyenKhoPage() {
 
         <BulkActionsBar count={selectedRows.length} />
 
-        <div className="min-w-[1400px] overflow-x-auto">
-          <DataTable
-            tableId={CHUYEN_KHO_TABLE_ID}
-            columns={columns}
-            data={pageRows}
-            isLoading={isLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            emptyMessage="Không có phiếu chuyển kho nào"
-            manualPagination
-            pagination={pagination}
-            pageCount={totalPages}
-            enableRowSelection
-            rowSelection={rowSelection}
-            onRowSelectionChange={setRowSelection}
-            getRowId={(r) => r.id}
-          />
-        </div>
+        <DataTable
+          tableId={CHUYEN_KHO_TABLE_ID}
+          columns={columns}
+          data={pageRows}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyMessage="Không có phiếu chuyển kho nào"
+          manualPagination
+          pagination={pagination}
+          pageCount={totalPages}
+          enableRowSelection
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+          getRowId={(r) => r.id}
+          scrollLabel="Bảng chuyển kho"
+          tableClassName="min-w-[1400px]"
+        />
 
         {!isError && (
           <DataTablePagination

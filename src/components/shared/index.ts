@@ -12,10 +12,30 @@ export { SheetModal } from './sheet-modal'
 export { ToastProvider, toast, notify } from './toast'
 
 export { DataTable } from './data-table/data-table'
-export type { DataTableProps } from './data-table/data-table'
+export type {
+  ColumnPresentation,
+  DataTableLayout,
+  DataTableProps,
+} from './data-table/data-table'
 export { DataTablePagination } from './data-table/data-table-pagination'
 export { DataTableToolbar } from './data-table/data-table-toolbar'
 export { DataTableColumnConfig } from './data-table/data-table-column-config'
+export type { ColumnDescriptor } from './data-table/data-table-column-config'
+export {
+  TableDescription,
+  TableMetaStack,
+  TableProtectedValue,
+} from './data-table/table-cell-content'
+export type {
+  TableDescriptionProps,
+  TableMetaStackProps,
+  TableProtectedValueProps,
+} from './data-table/table-cell-content'
+export { CompositeSortHeader } from './data-table/composite-sort-header'
+export type {
+  CompositeSortHeaderProps,
+  CompositeSortOption,
+} from './data-table/composite-sort-header'
 export { buildSelectionColumn } from './data-table/selection-column'
 export { useTableState } from './data-table/use-table-state'
 export type { Density } from './data-table/use-table-state'
@@ -27,10 +47,7 @@ export {
 } from './server-autocomplete'
 export { KyPicker, KyRangePicker, KY_OPTIONS } from './ky-picker'
 export { LineItemEditor } from './line-item-editor/line-item-editor'
-export type {
-  LineColumn,
-  TotalDef,
-} from './line-item-editor/line-item-editor'
+export type { LineColumn, TotalDef } from './line-item-editor/line-item-editor'
 
 export { FilterPanel } from './filter-panel/filter-panel'
 export { SavedViews } from './filter-panel/saved-views'

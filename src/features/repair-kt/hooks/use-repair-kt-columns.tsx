@@ -1,63 +1,93 @@
-/**
- * TanStack Table column definitions for the KT board — the 14 reference
- * columns of RepairingM/Index. Modeled on use-repair-table-columns.tsx but a
- * distinct column set (own action set: view detail + photo upload).
- */
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { type ColumnDef } from '@tanstack/react-table'
 import { Link, useNavigate } from 'react-router-dom'
 import { Camera, Eye } from 'lucide-react'
+import {
+  TableDescription,
+  TableMetaStack,
+  TableProtectedValue,
+} from '@/components/shared/data-table/table-cell-content'
 import { Button } from '@/components/ui/button'
-import { formatVND, formatDate, formatDateTime } from '@/lib/format'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { ROUTES } from '@/constants/routes'
 import { STATUS_HEX, STATUS_LABEL } from '@/domains/repair/status'
 import { HINH_THUC_LABEL, type RepairTicket } from '@/domains/repair/types'
-import { ROUTES } from '@/constants/routes'
+import { formatDate, formatDateTime, formatVND } from '@/lib/format'
 import { UpdateImageModal } from '../UpdateImageModal'
 
 export const TABLE_ID = 'repair-kt'
 
+const META_LABEL_CLASS = 'text-xs font-medium text-muted-foreground'
+
 export const REPAIR_KT_COLUMN_LABELS: Array<{ id: string; label: string }> = [
-  { id: 'tinhTrang', label: 'Trạng thái' },
+  { id: 'status', label: 'Trạng thái' },
   { id: 'actions', label: 'Hành động' },
-  { id: 'soPhieu', label: 'Phiếu sửa chữa' },
-  { id: 'khachHang', label: 'Khách hàng' },
-  { id: 'sanPham', label: 'Thông tin sản phẩm' },
-  { id: 'kyThuat', label: 'Kỹ thuật' },
-  { id: 'loaiSc', label: 'Loại SC' },
-  { id: 'chiPhi', label: 'Chi phí' },
-  { id: 'ngayNhan', label: 'Ngày nhận' },
-  { id: 'ngayGiao', label: 'Ngày giao' },
-  { id: 'chiTietSc', label: 'Chi tiết SC' },
-  { id: 'ghiChu', label: 'Ghi chú' },
-  { id: 'nguoiNhan', label: 'Người nhận' },
-  { id: 'khuVuc', label: 'Khu vực' },
+  { id: 'ticketRefs', label: 'Mã phiếu' },
+  { id: 'customer', label: 'Khách hàng' },
+  { id: 'product', label: 'Sản phẩm' },
+  { id: 'assignment', label: 'Phân công' },
+  { id: 'cost', label: 'Chi phí' },
+  { id: 'timeline', label: 'Thời gian' },
+  { id: 'notes', label: 'Ghi chú' },
+  { id: 'receiver', label: 'Người nhận' },
 ]
 
-/** Row action cell: view detail + photo-upload button opening UpdateImageModal. */
+export const REPAIR_KT_LEGACY_SORT_IDS = [
+  'tinhTrang',
+  'soPhieu',
+  'sanPham',
+  'kyThuat',
+  'loaiSc',
+  'chiPhi',
+  'ngayNhan',
+  'ngayGiao',
+  'chiTietSc',
+  'ghiChu',
+  'nguoiNhan',
+  'khuVuc',
+] as const
+
 function KtActionsCell({ ticket }: { ticket: RepairTicket }) {
   const navigate = useNavigate()
   const [imageOpen, setImageOpen] = useState(false)
 
   return (
-    <div className="flex items-center gap-0.5">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7"
-        aria-label="Xem chi tiết"
-        onClick={() => navigate(ROUTES.repairDetail(ticket.id))}
-      >
-        <Eye className="size-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7"
-        aria-label="Cập nhật hình ảnh"
-        onClick={() => setImageOpen(true)}
-      >
-        <Camera className="size-4" />
-      </Button>
+    <div className="grid auto-cols-max grid-flow-col items-center gap-0.5">
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-11 w-11 xl:h-7 xl:w-7"
+              aria-label="Xem chi tiết"
+              onClick={() => navigate(ROUTES.repairDetail(ticket.id))}
+            >
+              <Eye className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Xem chi tiết</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-11 w-11 xl:h-7 xl:w-7"
+              aria-label="Cập nhật hình ảnh"
+              onClick={() => setImageOpen(true)}
+            >
+              <Camera className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Cập nhật hình ảnh</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       {imageOpen && (
         <UpdateImageModal
           open={imageOpen}
@@ -69,6 +99,119 @@ function KtActionsCell({ ticket }: { ticket: RepairTicket }) {
   )
 }
 
+function renderStatusCell(ticket: RepairTicket) {
+  return (
+    <div
+      className="flex min-h-11 items-center justify-center px-1"
+      style={{ backgroundColor: STATUS_HEX[ticket.tinhTrang] }}
+    >
+      <span className="line-clamp-2 rounded bg-white/90 px-1.5 py-0.5 text-center text-xs font-bold uppercase leading-tight text-black">
+        {STATUS_LABEL[ticket.tinhTrang]}
+      </span>
+    </div>
+  )
+}
+
+function renderTicketRefsCell(ticket: RepairTicket) {
+  return (
+    <TableMetaStack>
+      <span className={META_LABEL_CLASS}>Phiếu</span>
+      <TableProtectedValue>
+        <Link
+          to={ROUTES.repairDetail(ticket.id)}
+          className="font-mono text-sm font-semibold text-primary hover:underline"
+        >
+          {ticket.soPhieu}
+        </Link>
+      </TableProtectedValue>
+      {ticket.soPhieuHang && (
+        <Fragment>
+          <span className={META_LABEL_CLASS}>PSC hãng</span>
+          <TableProtectedValue className="text-xs text-muted-foreground">
+            {ticket.soPhieuHang}
+          </TableProtectedValue>
+        </Fragment>
+      )}
+      {ticket.soPhieuDaiLy && (
+        <Fragment>
+          <span className={META_LABEL_CLASS}>PSC ĐL</span>
+          <TableProtectedValue className="text-xs text-muted-foreground">
+            {ticket.soPhieuDaiLy}
+          </TableProtectedValue>
+        </Fragment>
+      )}
+    </TableMetaStack>
+  )
+}
+
+function renderCustomerCell(ticket: RepairTicket) {
+  return (
+    <TableMetaStack>
+      <span className={META_LABEL_CLASS}>Tên</span>
+      <TableDescription
+        value={ticket.khachHang.ten}
+        className="text-sm font-bold"
+      />
+      <span className={META_LABEL_CLASS}>SĐT</span>
+      <TableProtectedValue className="text-xs text-muted-foreground">
+        {ticket.khachHang.sdt}
+      </TableProtectedValue>
+      <span className={META_LABEL_CLASS}>Địa chỉ</span>
+      <TableDescription
+        value={ticket.khachHang.diaChi}
+        className="text-xs text-muted-foreground"
+      />
+    </TableMetaStack>
+  )
+}
+
+function renderProductCell(ticket: RepairTicket) {
+  return (
+    <TableMetaStack>
+      <span className={META_LABEL_CLASS}>Sản phẩm</span>
+      <TableDescription value={ticket.tenSanPham} className="text-sm" />
+      {ticket.soSerial && (
+        <Fragment>
+          <span className={META_LABEL_CLASS}>Serial</span>
+          <TableProtectedValue className="text-xs text-muted-foreground">
+            {ticket.soSerial}
+          </TableProtectedValue>
+        </Fragment>
+      )}
+    </TableMetaStack>
+  )
+}
+
+function renderAssignmentCell(ticket: RepairTicket) {
+  return (
+    <TableMetaStack>
+      <span className={META_LABEL_CLASS}>Kỹ thuật</span>
+      <TableDescription
+        value={ticket.kyThuat || '—'}
+        className="text-sm font-medium"
+      />
+      <span className={META_LABEL_CLASS}>Loại SC</span>
+      <span className="text-xs">{HINH_THUC_LABEL[ticket.hinhThuc]}</span>
+      <span className={META_LABEL_CLASS}>Khu vực</span>
+      <TableDescription value={ticket.khuVuc ?? '—'} className="text-xs" />
+    </TableMetaStack>
+  )
+}
+
+function renderNotesCell(ticket: RepairTicket) {
+  return (
+    <TableMetaStack className="text-xs">
+      <span className={META_LABEL_CLASS}>Chi tiết SC</span>
+      <TableDescription value={ticket.noiDungSuaChua ?? '—'} />
+      <span className={META_LABEL_CLASS}>Ghi chú</span>
+      <TableDescription
+        value={ticket.ghiChu ?? '—'}
+        className="text-muted-foreground"
+      />
+    </TableMetaStack>
+  )
+}
+
 interface UseRepairKtColumnsReturn {
   columns: ColumnDef<RepairTicket, unknown>[]
 }
@@ -76,218 +219,193 @@ interface UseRepairKtColumnsReturn {
 export function useRepairKtColumns(): UseRepairKtColumnsReturn {
   const columns = useMemo<ColumnDef<RepairTicket, unknown>[]>(
     () => [
-      // 1. Trạng thái — full-cell status color block
       {
-        id: 'tinhTrang',
-        accessorKey: 'tinhTrang',
-        header: '#',
-        enableSorting: false,
-        cell: ({ row }) => {
-          const id = row.original.tinhTrang
-          return (
-            <div
-              className="flex min-h-[36px] items-center justify-center px-1"
-              style={{ backgroundColor: STATUS_HEX[id] }}
-            >
-              <span className="rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-bold uppercase text-black">
-                {STATUS_LABEL[id]}
-              </span>
-            </div>
-          )
+        id: 'status',
+        size: 104,
+        header: 'Trạng thái',
+        meta: {
+          compositeSortOptions: [{ id: 'tinhTrang', label: 'Trạng thái' }],
         },
+        cell: ({ row }) => renderStatusCell(row.original),
       },
-
-      // 2. Hành động
       {
         id: 'actions',
-        header: '#',
+        size: 80,
+        header: 'Hành động',
         enableSorting: false,
         cell: ({ row }) => <KtActionsCell ticket={row.original} />,
       },
-
-      // 3. Phiếu sửa chữa
+      {
+        id: 'ticketRefs',
+        size: 150,
+        header: 'Mã phiếu',
+        meta: {
+          compositeSortOptions: [{ id: 'soPhieu', label: 'Phiếu sửa chữa' }],
+        },
+        cell: ({ row }) => renderTicketRefsCell(row.original),
+      },
+      {
+        id: 'customer',
+        size: 190,
+        header: 'Khách hàng',
+        enableSorting: false,
+        cell: ({ row }) => renderCustomerCell(row.original),
+      },
+      {
+        id: 'product',
+        size: 175,
+        header: 'Sản phẩm',
+        meta: {
+          compositeSortOptions: [{ id: 'sanPham', label: 'Sản phẩm' }],
+        },
+        cell: ({ row }) => renderProductCell(row.original),
+      },
+      {
+        id: 'assignment',
+        size: 170,
+        header: 'Phân công',
+        meta: {
+          compositeSortOptions: [
+            { id: 'kyThuat', label: 'Kỹ thuật' },
+            { id: 'loaiSc', label: 'Loại sửa chữa' },
+            { id: 'khuVuc', label: 'Khu vực' },
+          ],
+        },
+        cell: ({ row }) => renderAssignmentCell(row.original),
+      },
+      {
+        id: 'cost',
+        size: 110,
+        header: 'Chi phí',
+        meta: {
+          compositeSortOptions: [{ id: 'chiPhi', label: 'Chi phí' }],
+        },
+        cell: ({ row }) => (
+          <TableProtectedValue tabular className="text-sm">
+            {formatVND(row.original.giaBaoGia ?? row.original.chiPhiDuKien)}
+          </TableProtectedValue>
+        ),
+      },
+      {
+        id: 'timeline',
+        size: 190,
+        header: 'Thời gian',
+        meta: {
+          compositeSortOptions: [
+            { id: 'ngayNhan', label: 'Ngày nhận' },
+            { id: 'ngayGiao', label: 'Ngày giao' },
+          ],
+        },
+        cell: ({ row }) => (
+          <TableMetaStack className="text-xs">
+            <span className={META_LABEL_CLASS}>Nhận</span>
+            <TableProtectedValue tabular>
+              {formatDateTime(row.original.ngayNhan)}
+            </TableProtectedValue>
+            <span className={META_LABEL_CLASS}>Giao</span>
+            <TableProtectedValue tabular className="text-muted-foreground">
+              {row.original.ngayGiao ? formatDate(row.original.ngayGiao) : '—'}
+            </TableProtectedValue>
+          </TableMetaStack>
+        ),
+      },
+      {
+        id: 'notes',
+        size: 230,
+        header: 'Ghi chú',
+        meta: {
+          compositeSortOptions: [
+            { id: 'chiTietSc', label: 'Chi tiết sửa chữa' },
+            { id: 'ghiChu', label: 'Ghi chú' },
+          ],
+        },
+        cell: ({ row }) => renderNotesCell(row.original),
+      },
+      {
+        id: 'receiver',
+        size: 95,
+        header: 'Người nhận',
+        meta: {
+          compositeSortOptions: [{ id: 'nguoiNhan', label: 'Người nhận' }],
+        },
+        cell: ({ row }) => (
+          <TableDescription
+            value={row.original.nguoiNhan}
+            className="text-sm"
+          />
+        ),
+      },
+      {
+        id: 'tinhTrang',
+        accessorKey: 'tinhTrang',
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
+      },
       {
         id: 'soPhieu',
         accessorKey: 'soPhieu',
-        header: 'Phiếu sửa chữa',
-        enableSorting: false,
-        cell: ({ row }) => {
-          const t = row.original
-          return (
-            <div className="min-w-[120px]">
-              <Link
-                to={ROUTES.repairDetail(t.id)}
-                className="font-mono text-sm font-semibold text-primary hover:underline"
-              >
-                {t.soPhieu}
-              </Link>
-              {t.soPhieuHang && (
-                <p className="text-xs text-muted-foreground">
-                  PSC hãng: {t.soPhieuHang}
-                </p>
-              )}
-            </div>
-          )
-        },
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
-
-      // 4. Khách hàng
-      {
-        id: 'khachHang',
-        header: 'Khách hàng',
-        enableSorting: false,
-        cell: ({ row }) => {
-          const kh = row.original.khachHang
-          return (
-            <div className="min-w-[160px]">
-              <p className="text-sm font-bold">{kh.ten}</p>
-              <p className="text-xs text-muted-foreground">{kh.sdt}</p>
-              <p className="text-xs text-muted-foreground">{kh.diaChi}</p>
-            </div>
-          )
-        },
-      },
-
-      // 5. Thông tin sản phẩm
       {
         id: 'sanPham',
         accessorKey: 'tenSanPham',
-        header: 'Thông tin sản phẩm',
-        enableSorting: false,
-        cell: ({ row }) => {
-          const t = row.original
-          return (
-            <div className="max-w-[220px]">
-              <p className="truncate text-sm">{t.tenSanPham}</p>
-              {t.soSerial && (
-                <p className="truncate text-xs text-muted-foreground">
-                  Serial: {t.soSerial}
-                </p>
-              )}
-            </div>
-          )
-        },
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
-
-      // 6. Kỹ thuật
       {
         id: 'kyThuat',
         accessorKey: 'kyThuat',
-        header: 'Kỹ thuật',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <span className="whitespace-nowrap text-sm">
-            {row.original.kyThuat || '—'}
-          </span>
-        ),
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
-
-      // 7. Loại SC
       {
         id: 'loaiSc',
-        header: 'Loại SC',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <span className="whitespace-nowrap text-sm">
-            {HINH_THUC_LABEL[row.original.hinhThuc]}
-          </span>
-        ),
+        accessorKey: 'hinhThuc',
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
-
-      // 8. Chi phí
       {
         id: 'chiPhi',
         accessorKey: 'chiPhiDuKien',
-        header: 'Chi phí',
-        enableSorting: false,
-        cell: ({ row }) => {
-          const t = row.original
-          const value = t.giaBaoGia ?? t.chiPhiDuKien
-          return (
-            <span className="whitespace-nowrap text-sm tabular-nums">
-              {formatVND(value)}
-            </span>
-          )
-        },
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
-
-      // 9. Ngày nhận
       {
         id: 'ngayNhan',
         accessorKey: 'ngayNhan',
-        header: 'Ngày nhận',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <span className="whitespace-nowrap text-xs tabular-nums">
-            {formatDateTime(row.original.ngayNhan)}
-          </span>
-        ),
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
-
-      // 10. Ngày giao
       {
         id: 'ngayGiao',
         accessorKey: 'ngayGiao',
-        header: 'Ngày giao',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-            {row.original.ngayGiao ? formatDate(row.original.ngayGiao) : '—'}
-          </span>
-        ),
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
-
-      // 11. Chi tiết SC
       {
         id: 'chiTietSc',
-        header: 'Chi tiết SC',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <div className="max-w-[200px] text-xs">
-            <p className="line-clamp-2">
-              {row.original.noiDungSuaChua ?? '—'}
-            </p>
-          </div>
-        ),
+        accessorKey: 'noiDungSuaChua',
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
-
-      // 12. Ghi chú
       {
         id: 'ghiChu',
         accessorKey: 'ghiChu',
-        header: 'Ghi chú',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <div className="max-w-[160px] text-xs">
-            <p className="line-clamp-2">{row.original.ghiChu ?? '—'}</p>
-          </div>
-        ),
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
-
-      // 13. Người nhận
       {
         id: 'nguoiNhan',
         accessorKey: 'nguoiNhan',
-        header: 'Người nhận',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <span className="whitespace-nowrap text-sm">
-            {row.original.nguoiNhan}
-          </span>
-        ),
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
-
-      // 14. Khu vực
       {
         id: 'khuVuc',
         accessorKey: 'khuVuc',
-        header: 'Khu vực',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <span className="whitespace-nowrap text-sm">
-            {row.original.khuVuc ?? '—'}
-          </span>
-        ),
+        enableSorting: true,
+        meta: { presentation: 'sort-only' },
       },
     ],
     [],

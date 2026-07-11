@@ -9,6 +9,7 @@
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
 import {
   Select,
   SelectContent,
@@ -68,7 +69,7 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
           value={filters.branchId ?? UNSET}
           onValueChange={(v) => onChange({ branchId: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-cn`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả chi nhánh" />
           </SelectTrigger>
           <SelectContent>
@@ -87,7 +88,7 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
           value={filters.khoId ?? UNSET}
           onValueChange={(v) => onChange({ khoId: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-kho`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-kho`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả nhà kho" />
           </SelectTrigger>
           <SelectContent>
@@ -106,7 +107,7 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
           value={filters.hinhThucThuChi ?? UNSET}
           onValueChange={(v) => onChange({ hinhThucThuChi: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-httc`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-httc`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả" />
           </SelectTrigger>
           <SelectContent>
@@ -123,7 +124,7 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
       <Field label="Số phiếu/Ghi chú" htmlFor={`${uid}-sp`}>
         <Input
           id={`${uid}-sp`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.soPhieu ?? ''}
           onChange={(e) => onChange({ soPhieu: e.target.value || undefined })}
         />
@@ -132,7 +133,7 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
       <Field label="Tên khách hàng" htmlFor={`${uid}-kh`}>
         <Input
           id={`${uid}-kh`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.tenKhachHang ?? ''}
           onChange={(e) => onChange({ tenKhachHang: e.target.value || undefined })}
         />
@@ -141,7 +142,7 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
       <Field label="Mã hàng/Tên hàng" htmlFor={`${uid}-mh`}>
         <Input
           id={`${uid}-mh`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.maHang ?? ''}
           onChange={(e) => onChange({ maHang: e.target.value || undefined })}
         />
@@ -151,7 +152,7 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
         <Input
           id={`${uid}-df`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
@@ -160,7 +161,7 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
         <Input
           id={`${uid}-dt`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />

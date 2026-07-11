@@ -1,9 +1,15 @@
 /**
  * Repair list page — the Index_8 operations console. Legend with live counts,
- * 14-column table with rich cells + row actions, checkbox multi-select driving
- * the batch toolbar, reference filter set, Xuất Excel. Route: /sua-chua-bao-hanh
+ * grouped operational table + row actions, checkbox multi-select driving the
+ * batch toolbar, reference filter set, Xuất Excel. Route: /sua-chua-bao-hanh
  */
-import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react'
+import {
+  useCallback,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import type {
   SortingState,
@@ -40,7 +46,17 @@ import { cn } from '@/lib/utils'
 const PAGE_SIZE_OPTIONS = [20, 50, 100]
 const DEFAULT_PAGE_SIZE = 20
 
-function RepairMobileCards({
+const REPAIR_SORT_FIELD_MAP: Record<string, keyof RepairTicket> = {
+  tinhTrang: 'tinhTrang',
+  soPhieu: 'soPhieu',
+  sanPham: 'tenSanPham',
+  chiPhi: 'chiPhiDuKien',
+  ngayNhan: 'ngayNhan',
+  ngayHt: 'ngayHoanThanh',
+  nguoiNhan: 'nguoiNhan',
+}
+
+export function RepairMobileCards({
   tickets,
   rowSelection,
   onSelectionChange,
@@ -143,7 +159,9 @@ export default function RepairListPage() {
   const { columns } = useRepairTableColumns()
 
   const queryParams = useMemo(() => {
-    const sortField = sorting[0]?.id as keyof RepairTicket | undefined
+    const sortField = sorting[0]
+      ? REPAIR_SORT_FIELD_MAP[sorting[0].id]
+      : undefined
     const sortDir: 'asc' | 'desc' | undefined = sorting[0]
       ? sorting[0].desc
         ? 'desc'
@@ -241,7 +259,7 @@ export default function RepairListPage() {
             onSelectionChange={setRowSelection}
           />
 
-          <div className="hidden min-w-[1700px] md:block">
+          <div className="hidden md:block">
             <DataTable
               tableId={TABLE_ID}
               columns={columns}
@@ -259,6 +277,9 @@ export default function RepairListPage() {
               rowSelection={rowSelection}
               onRowSelectionChange={setRowSelection}
               getRowId={(t) => t.id}
+              scrollLabel="Bảng sửa chữa bảo hành"
+              tableLayout="content-safe"
+              tableMinWidth={1560}
             />
           </div>
         </div>

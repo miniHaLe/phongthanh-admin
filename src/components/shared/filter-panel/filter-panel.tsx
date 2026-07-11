@@ -34,7 +34,7 @@ export function FilterPanel({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1.5 px-2 font-medium"
+          className="h-11 gap-1.5 px-2 font-medium md:h-8"
           onClick={() => setExpanded((prev) => !prev)}
           aria-expanded={expanded}
         >
@@ -67,7 +67,7 @@ export function FilterPanel({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1 px-2 text-muted-foreground"
+          className="h-11 gap-1 px-2 text-muted-foreground md:h-8"
           onClick={onClear}
           disabled={filterCount === 0}
         >

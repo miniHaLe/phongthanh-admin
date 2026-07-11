@@ -162,7 +162,12 @@ export default function CongNoPage() {
         header: 'Chọn',
         enableSorting: false,
         cell: ({ row }) => (
-          <Button size="sm" variant="outline" className="h-7" onClick={() => setSettleRow(row.original)}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-11 md:h-7"
+            onClick={() => setSettleRow(row.original)}
+          >
             Thanh toán
           </Button>
         ),
@@ -253,14 +258,14 @@ export default function CongNoPage() {
           </Select>
 
           {filters.ngayToggle === 'theo_ngay' && (
-            <div className="flex items-center gap-1.5">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
               <Input
                 type="date"
                 value={filters.dateFrom ?? ''}
                 onChange={(e) => handleFilterChange({ dateFrom: e.target.value || undefined })}
                 aria-label="Từ ngày"
               />
-              <span className="text-muted-foreground">–</span>
+              <span className="hidden text-center text-muted-foreground sm:block">–</span>
               <Input
                 type="date"
                 value={filters.dateTo ?? ''}
@@ -271,20 +276,20 @@ export default function CongNoPage() {
           )}
         </FilterPanel>
 
-        <div className="overflow-x-auto">
-          <DataTable
-            tableId={TABLE_ID}
-            columns={columns}
-            data={pageRows}
-            isLoading={isLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            emptyMessage="Không có công nợ nào"
-            manualPagination
-            pagination={{ pageIndex: page - 1, pageSize }}
-            pageCount={totalPages}
-          />
-        </div>
+        <DataTable
+          tableId={TABLE_ID}
+          columns={columns}
+          data={pageRows}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyMessage="Không có công nợ nào"
+          manualPagination
+          pagination={{ pageIndex: page - 1, pageSize }}
+          pageCount={totalPages}
+          scrollLabel="Bảng công nợ"
+          tableClassName="min-w-[1120px]"
+        />
 
         {!isError && (
           <DataTablePagination

@@ -21,7 +21,7 @@ export function IssuedUsageStatusCell({ row }: { row: IssuedPartUsage }) {
         <Button
           size="sm"
           variant="outline"
-          className="h-7 text-xs"
+          className="min-h-11 whitespace-nowrap px-1.5 text-xs lg:min-h-7"
           onClick={() => void printTemTraXac(row)}
         >
           In Tem Trả Xác
@@ -36,7 +36,7 @@ export function IssuedUsageStatusCell({ row }: { row: IssuedPartUsage }) {
       <Button
         size="sm"
         variant="outline"
-        className="h-7 text-xs"
+        className="min-h-11 whitespace-nowrap px-1.5 text-xs lg:min-h-7"
         onClick={() => setThuXacOpen(true)}
       >
         Thu xác LK
@@ -44,13 +44,17 @@ export function IssuedUsageStatusCell({ row }: { row: IssuedPartUsage }) {
       <Button
         size="sm"
         variant="outline"
-        className="h-7 text-xs"
+        className="min-h-11 whitespace-nowrap px-1.5 text-xs lg:min-h-7"
         onClick={() => setTraLkOpen(true)}
       >
         Trả Linh kiện
       </Button>
       {thuXacOpen && (
-        <ThuXacModal open={thuXacOpen} onOpenChange={setThuXacOpen} id={row.id} />
+        <ThuXacModal
+          open={thuXacOpen}
+          onOpenChange={setThuXacOpen}
+          id={row.id}
+        />
       )}
       {traLkOpen && (
         <TraLkModal open={traLkOpen} onOpenChange={setTraLkOpen} id={row.id} />

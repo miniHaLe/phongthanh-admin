@@ -151,24 +151,25 @@ export default function DsTraLKPage() {
 
         <BulkActionsBar count={selectedRows.length} />
 
-        <div className="min-w-[1400px] overflow-x-auto">
-          <DataTable
-            tableId={PART_RETURN_TABLE_ID}
-            columns={columns}
-            data={pageRows}
-            isLoading={isLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            emptyMessage="Không có phiếu trả linh kiện nào"
-            manualPagination
-            pagination={pagination}
-            pageCount={totalPages}
-            enableRowSelection
-            rowSelection={rowSelection}
-            onRowSelectionChange={setRowSelection}
-            getRowId={(r) => r.id}
-          />
-        </div>
+        <DataTable
+          tableId={PART_RETURN_TABLE_ID}
+          columns={columns}
+          data={pageRows}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyMessage="Không có phiếu trả linh kiện nào"
+          manualPagination
+          pagination={pagination}
+          pageCount={totalPages}
+          enableRowSelection
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+          getRowId={(r) => r.id}
+          scrollLabel="Bảng danh sách trả linh kiện"
+          tableMinWidth={1560}
+          tableLayout="content-safe"
+        />
 
         {!isError && (
           <DataTablePagination

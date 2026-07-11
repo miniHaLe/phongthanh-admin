@@ -5,11 +5,10 @@
  * bulk-select. Route: /tai-chinh/thu-chi
  */
 import { useMemo, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { isWithinInterval, parseISO, subDays } from 'date-fns'
-import { Printer } from 'lucide-react'
-import type { ColumnDef, RowSelectionState } from '@tanstack/react-table'
+import type { RowSelectionState } from '@tanstack/react-table'
 import {
   DataTable,
   DataTablePagination,
@@ -37,13 +36,13 @@ import { FilterPanel } from '@/components/shared'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
 import { thuChiApi, THU_CHI_ROWS } from '@/mock/finance-mock'
-import { MOCK_TICKETS } from '@/domains/repair/mock-data'
 import { formatVND, formatDateTime } from '@/lib/format'
 import { exportToXlsx } from '@/lib/export-xlsx'
 import { openPrintWindow } from '@/components/print/print-window'
 import { PrintLayout } from '@/components/print/print-layout'
 import { LapPhieuThuModal } from '@/features/finance/lap-phieu-thu-modal'
 import { LapPhieuChiModal } from '@/features/finance/lap-phieu-chi-modal'
+import { useThuChiCompositeColumns } from '@/features/finance/thu-chi-composite-table-columns'
 import {
   LOAI_THU_CHI_FILTER_OPTIONS,
   TINH_TRANG_FILTER_OPTIONS,
@@ -52,8 +51,6 @@ import {
   LOAI_NGAY_OPTIONS,
   isThuType,
   loaiThuChiLabel,
-  tinhTrangLabel,
-  hinhThucLabel,
   type LoaiNgay,
 } from '@/config/finance-tables/thu-chi.config'
 import type { ThuChi } from '@/types/finance-types'
@@ -61,8 +58,6 @@ import type { ThuChi } from '@/types/finance-types'
 const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
 const DEFAULT_PAGE_SIZE = 20
 const TABLE_ID = 'thu-chi'
-
-const TICKET_BY_SO_PHIEU = new Map(MOCK_TICKETS.map((t) => [t.soPhieu, t]))
 
 interface ThuChiFilters {
   branchId?: string
@@ -244,108 +239,7 @@ export default function ThuChiPage() {
 
   const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id])
 
-  const columns = useMemo<ColumnDef<ThuChi, unknown>[]>(
-    () => [
-      {
-        id: 'select',
-        header: () => null,
-        enableSorting: false,
-        size: 40,
-        cell: ({ row }) => (
-          <input
-            type="checkbox"
-            checked={row.getIsSelected()}
-            onChange={row.getToggleSelectedHandler()}
-            aria-label="Chọn dòng"
-          />
-        ),
-      },
-      {
-        id: 'tinhTrang',
-        header: 'Tình Trạng',
-        cell: ({ row }) => tinhTrangLabel(row.original.tinhTrang),
-      },
-      {
-        id: 'soChungTu',
-        accessorKey: 'soChungTu',
-        header: 'Số chứng từ',
-      },
-      {
-        id: 'loaiThuChi',
-        header: 'Loại phiếu',
-        cell: ({ row }) => loaiThuChiLabel(row.original.loaiThuChi),
-      },
-      {
-        id: 'hinhThucId',
-        header: 'Hình thức',
-        cell: ({ row }) => hinhThucLabel(row.original.hinhThucId),
-      },
-      {
-        id: 'soPhieuScNk',
-        header: 'Số Phiếu SC/NK',
-        cell: ({ row }) => {
-          const so = row.original.soPhieuScNk
-          if (!so) return null
-          const ticket = TICKET_BY_SO_PHIEU.get(so)
-          if (ticket) {
-            return (
-              <Link
-                to={ROUTES.repairDetail(ticket.id)}
-                target="_blank"
-                rel="noreferrer"
-                className="font-mono text-xs text-primary hover:underline"
-              >
-                {so}
-              </Link>
-            )
-          }
-          return <span className="font-mono text-xs">{so}</span>
-        },
-      },
-      { id: 'kyThuat', accessorKey: 'kyThuat', header: 'Kỹ thuật' },
-      { id: 'daiLy', accessorKey: 'daiLy', header: 'Đại lý/Trạm' },
-      { id: 'tenKhachHang', accessorKey: 'tenKhachHang', header: 'Tên khách hàng' },
-      {
-        id: 'ngayLap',
-        header: 'Ngày lập',
-        cell: ({ row }) => formatDateTime(row.original.ngayLap),
-      },
-      {
-        id: 'soTien',
-        header: 'Số tiền',
-        cell: ({ row }) => {
-          const v = row.original.soTien
-          return v != null ? formatVND(v) : ''
-        },
-      },
-      { id: 'noiDung', accessorKey: 'noiDung', header: 'Nội dung' },
-      { id: 'nguoiTao', accessorKey: 'nguoiTao', header: 'Người tạo' },
-      { id: 'nguoiThuChi', accessorKey: 'nguoiThuChi', header: 'Người Thu/Chi' },
-      {
-        id: 'ngayThuChi',
-        header: 'Ngày Thu/Chi',
-        cell: ({ row }) =>
-          row.original.ngayThuChi ? formatDateTime(row.original.ngayThuChi) : '',
-      },
-      {
-        id: 'chon',
-        header: 'Chọn',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="ms-btn-receipt-print h-7 w-7"
-            title="in phiếu"
-            onClick={() => void printPhieuThuChi(row.original)}
-          >
-            <Printer className="h-3.5 w-3.5" />
-          </Button>
-        ),
-      },
-    ],
-    [],
-  )
+  const columns = useThuChiCompositeColumns(printPhieuThuChi)
 
   return (
     <div className="space-y-0">
@@ -490,14 +384,14 @@ export default function ThuChiPage() {
             </RadioGroup>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
             <Input
               type="date"
               value={filters.dateFrom ?? ''}
               onChange={(e) => handleFilterChange({ dateFrom: e.target.value || undefined })}
               aria-label="Từ ngày"
             />
-            <span className="text-muted-foreground">–</span>
+            <span className="hidden text-center text-muted-foreground sm:block">–</span>
             <Input
               type="date"
               value={filters.dateTo ?? ''}
@@ -526,43 +420,44 @@ export default function ThuChiPage() {
           </Button>
         </BulkActionsBar>
 
-        <div className="min-w-[1700px] overflow-x-auto">
-          <DataTable
-            tableId={TABLE_ID}
-            columns={columns}
-            data={pageRows}
-            isLoading={isLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            emptyMessage="Không có chứng từ nào"
-            manualPagination
-            pagination={{ pageIndex: page - 1, pageSize }}
-            pageCount={totalPages}
-            enableRowSelection
-            rowSelection={rowSelection}
-            onRowSelectionChange={setRowSelection}
-            getRowId={(r) => r.id}
-            toolbar={
-              <DataTableToolbar
-                right={
-                  <div className={isFetching ? 'opacity-60' : ''}>
-                    <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => void handleExport(false)}>
-                      Xuất ra Excel
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="ml-2 h-8 gap-1"
-                      onClick={() => void handleExport(true)}
-                    >
-                      Xuất ra Excel Thu SC
-                    </Button>
-                  </div>
-                }
-              />
-            }
-          />
-        </div>
+        <DataTable
+          tableId={TABLE_ID}
+          columns={columns}
+          data={pageRows}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyMessage="Không có chứng từ nào"
+          manualPagination
+          pagination={{ pageIndex: page - 1, pageSize }}
+          pageCount={totalPages}
+          enableRowSelection
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+          getRowId={(r) => r.id}
+          scrollLabel="Bảng thu chi"
+          tableMinWidth={1560}
+          tableLayout="content-safe"
+          toolbar={
+            <DataTableToolbar
+              right={
+                <div className={isFetching ? 'opacity-60' : ''}>
+                  <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => void handleExport(false)}>
+                    Xuất ra Excel
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="ml-2 h-8 gap-1"
+                    onClick={() => void handleExport(true)}
+                  >
+                    Xuất ra Excel Thu SC
+                  </Button>
+                </div>
+              }
+            />
+          }
+        />
 
         {!isError && (
           <DataTablePagination

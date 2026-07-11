@@ -1,5 +1,5 @@
 /**
- * Spec: KT board page renders title, 14 headers in order, KT-scoped status
+ * Spec: KT board page renders title, grouped headers, KT-scoped status
  * filter (membership set + presentation sequence — checked separately, never
  * deep-equal one against the other), buttons, and dual pagination label.
  */
@@ -12,20 +12,16 @@ import RepairKtListPage from './RepairKtListPage'
 import { KT_DISPLAY_ORDER } from './RepairKtFilters'
 
 const HEADERS_IN_ORDER = [
-  '#',
-  '#',
-  'Phiếu sửa chữa',
+  'Trạng thái',
+  'Hành động',
+  'Mã phiếu',
   'Khách hàng',
-  'Thông tin sản phẩm',
-  'Kỹ thuật',
-  'Loại SC',
+  'Sản phẩm',
+  'Phân công',
   'Chi phí',
-  'Ngày nhận',
-  'Ngày giao',
-  'Chi tiết SC',
+  'Thời gian',
   'Ghi chú',
   'Người nhận',
-  'Khu vực',
 ]
 
 describe('RepairKtListPage', () => {
@@ -42,7 +38,7 @@ describe('RepairKtListPage', () => {
     expect(screen.getByText('Danh sách phiếu sửa chữa')).toBeInTheDocument()
   })
 
-  it('renders the 14 reference column headers in order', () => {
+  it('renders the 10 composite column headers in order', () => {
     renderWithProviders(<RepairKtListPage />)
     const headerCells = screen.getAllByRole('columnheader')
     expect(headerCells).toHaveLength(HEADERS_IN_ORDER.length)

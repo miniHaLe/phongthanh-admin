@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   flexRender,
   getCoreRowModel,
@@ -10,9 +10,9 @@ import {
   type VisibilityState,
   type RowSelectionState,
   type OnChangeFn,
+  type RowData,
 } from '@tanstack/react-table'
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -26,11 +26,29 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
   CircleAlert,
   Inbox,
 } from 'lucide-react'
 import { useTableState } from './use-table-state'
 import { Button } from '@/components/ui/button'
+import {
+  CompositeSortHeader,
+  type CompositeSortOption,
+} from './composite-sort-header'
+
+export type ColumnPresentation = 'visible' | 'sort-only'
+
+declare module '@tanstack/react-table' {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    sticky?: boolean
+    presentation?: ColumnPresentation
+    compositeSortOptions?: readonly CompositeSortOption[]
+  }
+}
+
+export type DataTableLayout = 'fixed' | 'content-safe'
 
 export interface DataTableProps<TData> {
   /** Stable id for persisting column state. */
@@ -62,6 +80,32 @@ export interface DataTableProps<TData> {
   getRowId?: (row: TData, index: number) => string
   /** Extra className for the scroll container. */
   className?: string
+  /** Accessible label for the horizontal table scroll region. */
+  scrollLabel?: string
+  /** Extra className for the inner table element, e.g. min-w-[1200px]. */
+  tableClassName?: string
+  /** Opt-in minimum inner-table width. Defaults to legacy fixed layout. */
+  tableMinWidth?: number
+  /** Content-safe mode treats explicit column sizes as minimums, never maximums. */
+  tableLayout?: DataTableLayout
+}
+
+function getColumnDefId<TData>(column: ColumnDef<TData, unknown>) {
+  return (
+    column.id ??
+    ('accessorKey' in column && typeof column.accessorKey === 'string'
+      ? column.accessorKey.replaceAll('.', '_')
+      : undefined)
+  )
+}
+
+function flattenColumnDefs<TData>(columns: ColumnDef<TData, unknown>[]) {
+  return columns.flatMap((column): ColumnDef<TData, unknown>[] => {
+    if ('columns' in column && Array.isArray(column.columns)) {
+      return [column, ...flattenColumnDefs(column.columns)]
+    }
+    return [column]
+  })
 }
 
 /**
@@ -92,13 +136,35 @@ export function DataTable<TData>({
   onRowSelectionChange,
   getRowId,
   className,
+  scrollLabel = 'Bảng dữ liệu',
+  tableClassName,
+  tableMinWidth,
+  tableLayout,
 }: DataTableProps<TData>) {
   const persisted = useTableState((s) => s.tables[tableId])
   const density = persisted?.density ?? 'comfortable'
+  const scrollFrameRef = useRef<HTMLDivElement | null>(null)
+  const [scrollState, setScrollState] = useState({
+    hasOverflow: false,
+    canScrollLeft: false,
+    canScrollRight: false,
+  })
 
+  const flatColumns = useMemo(() => flattenColumnDefs(columns), [columns])
+  const sortOnlyColumnIds = useMemo(
+    () =>
+      flatColumns.flatMap((column) => {
+        const id = getColumnDefId(column)
+        return column.meta?.presentation === 'sort-only' && id ? [id] : []
+      }),
+    [flatColumns],
+  )
   const columnVisibility: VisibilityState = useMemo(
-    () => persisted?.columnVisibility ?? {},
-    [persisted?.columnVisibility],
+    () => ({
+      ...(persisted?.columnVisibility ?? {}),
+      ...Object.fromEntries(sortOnlyColumnIds.map((id) => [id, false])),
+    }),
+    [persisted?.columnVisibility, sortOnlyColumnIds],
   )
 
   const table = useReactTable({
@@ -121,122 +187,319 @@ export function DataTable<TData>({
     getSortedRowModel: getSortedRowModel(),
   })
 
-  const rowPad = density === 'compact' ? 'py-1.5' : 'py-3'
-  const visibleColCount = table.getVisibleLeafColumns().length || columns.length
+  const cellPad = density === 'compact' ? 'px-1.5 py-1.5' : 'px-2.5 py-3'
+  const headerPad = density === 'compact' ? 'px-1.5' : 'px-2.5'
+  const resolvedTableLayout =
+    tableMinWidth == null ? undefined : (tableLayout ?? 'fixed')
+  const usesFitLayout = resolvedTableLayout === 'fixed'
+  const usesContentSafeLayout = resolvedTableLayout === 'content-safe'
+  const visibleColCount = Math.max(1, table.getVisibleLeafColumns().length)
+  const explicitColumnSizes = useMemo(
+    () =>
+      new Map(
+        flatColumns.flatMap((column) => {
+          if (typeof column.size !== 'number') return []
+          const columnId = getColumnDefId(column)
+          return columnId ? [[columnId, column.size] as const] : []
+        }),
+      ),
+    [flatColumns],
+  )
+
+  function getColumnSizeStyle(columnId: string) {
+    const columnSize = explicitColumnSizes.get(columnId)
+    if (columnSize == null || resolvedTableLayout == null) return undefined
+    if (usesContentSafeLayout) {
+      return { minWidth: `${columnSize}px` }
+    }
+    return {
+      width: `${columnSize}px`,
+      minWidth: `${columnSize}px`,
+      maxWidth: `${columnSize}px`,
+    }
+  }
+
+  const updateScrollState = useCallback(() => {
+    const el = scrollFrameRef.current
+    if (!el) return
+
+    const maxScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth)
+    setScrollState({
+      hasOverflow: maxScrollLeft > 1,
+      canScrollLeft: el.scrollLeft > 1,
+      canScrollRight: el.scrollLeft < maxScrollLeft - 1,
+    })
+  }, [])
+
+  useEffect(() => {
+    const el = scrollFrameRef.current
+    if (!el) return
+
+    updateScrollState()
+    const raf = window.requestAnimationFrame(updateScrollState)
+    const observer =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(updateScrollState)
+        : null
+
+    observer?.observe(el)
+    if (el.firstElementChild) observer?.observe(el.firstElementChild)
+    window.addEventListener('resize', updateScrollState)
+
+    return () => {
+      window.cancelAnimationFrame(raf)
+      observer?.disconnect()
+      window.removeEventListener('resize', updateScrollState)
+    }
+  }, [data, updateScrollState, visibleColCount])
+
+  function scrollTable(direction: 'left' | 'right') {
+    const el = scrollFrameRef.current
+    if (!el) return
+
+    const left =
+      direction === 'left'
+        ? -Math.max(240, el.clientWidth * 0.75)
+        : Math.max(240, el.clientWidth * 0.75)
+
+    el.scrollBy({ left, behavior: 'smooth' })
+    window.setTimeout(updateScrollState, 180)
+  }
+
+  function handleScrollKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    const el = scrollFrameRef.current
+    if (!el) return
+
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      scrollTable('left')
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      scrollTable('right')
+    } else if (event.key === 'Home') {
+      event.preventDefault()
+      el.scrollTo({ left: 0, behavior: 'auto' })
+      updateScrollState()
+    } else if (event.key === 'End') {
+      event.preventDefault()
+      el.scrollTo({ left: el.scrollWidth, behavior: 'auto' })
+      updateScrollState()
+    }
+  }
 
   return (
     <div className="space-y-3">
       {toolbar}
       <div
         className={cn(
-          'relative overflow-x-auto rounded-lg border bg-card',
+          'relative overflow-hidden rounded-lg border bg-card',
           className,
         )}
       >
-        <Table>
-          <TableHeader className="sticky top-0 z-10 bg-muted/50 backdrop-blur">
-            {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id}>
-                {hg.headers.map((header) => {
-                  const canSort = header.column.getCanSort()
-                  const sorted = header.column.getIsSorted()
-                  return (
-                    <TableHead
-                      key={header.id}
-                      scope="col"
-                      className="whitespace-nowrap"
-                    >
-                      {header.isPlaceholder ? null : canSort ? (
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-1 hover:text-foreground"
-                          onClick={header.column.getToggleSortingHandler()}
-                          aria-label={`Sắp xếp theo cột`}
-                        >
-                          {flexRender(
+        {scrollState.hasOverflow && (
+          <div className="flex items-center justify-end gap-1 border-b bg-muted/30 px-2 py-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              data-table-scroll-button="left"
+              aria-label="Cuộn bảng sang trái"
+              disabled={!scrollState.canScrollLeft}
+              onClick={() => scrollTable('left')}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              data-table-scroll-button="right"
+              aria-label="Cuộn bảng sang phải"
+              disabled={!scrollState.canScrollRight}
+              onClick={() => scrollTable('right')}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+        )}
+        <div
+          ref={scrollFrameRef}
+          data-table-scroll-frame
+          role="region"
+          aria-label={scrollLabel}
+          tabIndex={0}
+          className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          onScroll={updateScrollState}
+          onKeyDown={handleScrollKeyDown}
+        >
+          <table
+            data-table-fit-layout={resolvedTableLayout != null || undefined}
+            data-table-layout={resolvedTableLayout}
+            className={cn(
+              'w-full caption-bottom text-sm',
+              usesFitLayout && 'table-fixed',
+              usesContentSafeLayout && 'table-auto',
+              tableClassName,
+            )}
+            style={
+              tableMinWidth ? { minWidth: `${tableMinWidth}px` } : undefined
+            }
+          >
+            <TableHeader className="sticky top-0 z-10 bg-muted/50 backdrop-blur">
+              {table.getHeaderGroups().map((hg) => (
+                <TableRow key={hg.id}>
+                  {hg.headers.map((header) => {
+                    const canSort = header.column.getCanSort()
+                    const sorted = header.column.getIsSorted()
+                    const compositeSortOptions =
+                      header.column.columnDef.meta?.compositeSortOptions
+                    const usesCompositeSort =
+                      (compositeSortOptions?.length ?? 0) > 0
+                    const compositeSorted = compositeSortOptions
+                      ?.map((option) =>
+                        table.getColumn(option.id)?.getIsSorted(),
+                      )
+                      .find(Boolean)
+                    const headerLabel =
+                      typeof header.column.columnDef.header === 'string'
+                        ? header.column.columnDef.header
+                        : 'dữ liệu'
+                    return (
+                      <TableHead
+                        key={header.id}
+                        scope="col"
+                        className={cn(
+                          headerPad,
+                          'text-[13px] font-semibold leading-tight',
+                          resolvedTableLayout != null
+                            ? 'whitespace-normal'
+                            : 'whitespace-nowrap',
+                          header.column.id === 'select' && 'px-0',
+                        )}
+                        style={getColumnSizeStyle(header.column.id)}
+                        aria-sort={
+                          canSort || usesCompositeSort
+                            ? (usesCompositeSort ? compositeSorted : sorted) ===
+                              'asc'
+                              ? 'ascending'
+                              : (usesCompositeSort
+                                    ? compositeSorted
+                                    : sorted) === 'desc'
+                                ? 'descending'
+                                : 'none'
+                            : undefined
+                        }
+                      >
+                        {header.isPlaceholder ? null : usesCompositeSort ? (
+                          <CompositeSortHeader
+                            table={table}
+                            label={flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            accessibleLabel={headerLabel}
+                            options={compositeSortOptions!}
+                          />
+                        ) : canSort ? (
+                          <button
+                            type="button"
+                            data-table-sort-target
+                            className="inline-flex min-h-11 w-full min-w-11 items-center justify-between gap-1 whitespace-normal text-left hover:text-foreground lg:min-h-0 lg:min-w-0"
+                            onClick={header.column.getToggleSortingHandler()}
+                            aria-label={`Sắp xếp theo cột ${headerLabel}`}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            {sorted === 'asc' ? (
+                              <ArrowUp className="size-3.5" />
+                            ) : sorted === 'desc' ? (
+                              <ArrowDown className="size-3.5" />
+                            ) : (
+                              <ArrowUpDown className="size-3.5 opacity-40" />
+                            )}
+                          </button>
+                        ) : (
+                          flexRender(
                             header.column.columnDef.header,
                             header.getContext(),
-                          )}
-                          {sorted === 'asc' ? (
-                            <ArrowUp className="size-3.5" />
-                          ) : sorted === 'desc' ? (
-                            <ArrowDown className="size-3.5" />
-                          ) : (
-                            <ArrowUpDown className="size-3.5 opacity-40" />
-                          )}
-                        </button>
-                      ) : (
-                        flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )
-                      )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              Array.from({ length: 8 }).map((_, i) => (
-                <TableRow key={`sk-${i}`}>
-                  {Array.from({ length: visibleColCount }).map((__, j) => (
-                    <TableCell key={j} className={rowPad}>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  ))}
+                          )
+                        )}
+                      </TableHead>
+                    )
+                  })}
                 </TableRow>
-              ))
-            ) : isError ? (
-              <TableRow>
-                <TableCell colSpan={visibleColCount} className="h-64">
-                  <EmptyState
-                    icon={CircleAlert}
-                    heading="Có lỗi xảy ra"
-                    body="Không thể tải dữ liệu."
-                    action={
-                      onRetry
-                        ? { label: 'Thử lại', onClick: onRetry }
-                        : undefined
+              ))}
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: 8 }).map((_, i) => (
+                  <TableRow key={`sk-${i}`}>
+                    {Array.from({ length: visibleColCount }).map((__, j) => (
+                      <TableCell key={j} className={cellPad}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : isError ? (
+                <TableRow>
+                  <TableCell colSpan={visibleColCount} className="h-64">
+                    <EmptyState
+                      icon={CircleAlert}
+                      heading="Có lỗi xảy ra"
+                      body="Không thể tải dữ liệu."
+                      action={
+                        onRetry
+                          ? { label: 'Thử lại', onClick: onRetry }
+                          : undefined
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={visibleColCount} className="h-64">
+                    <EmptyState
+                      icon={Inbox}
+                      heading={emptyMessage}
+                      action={undefined}
+                    >
+                      {emptyAction}
+                    </EmptyState>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className={cn(onRowClick && 'cursor-pointer')}
+                    onClick={
+                      onRowClick ? () => onRowClick(row.original) : undefined
                     }
-                  />
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={visibleColCount} className="h-64">
-                  <EmptyState
-                    icon={Inbox}
-                    heading={emptyMessage}
-                    action={undefined}
                   >
-                    {emptyAction}
-                  </EmptyState>
-                </TableCell>
-              </TableRow>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className={cn(onRowClick && 'cursor-pointer')}
-                  onClick={
-                    onRowClick ? () => onRowClick(row.original) : undefined
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className={rowPad}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className={cn(
+                          cellPad,
+                          cell.column.id === 'select' && 'px-0',
+                        )}
+                        style={getColumnSizeStyle(cell.column.id)}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </table>
+        </div>
       </div>
     </div>
   )

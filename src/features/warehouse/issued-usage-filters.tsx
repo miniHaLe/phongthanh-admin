@@ -8,6 +8,7 @@
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
 import {
   Select,
   SelectContent,
@@ -95,7 +96,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
             onChange({ branchId: v === UNSET ? undefined : v, khoId: undefined })
           }
         >
-          <SelectTrigger id={`${uid}-cn`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả chi nhánh" />
           </SelectTrigger>
           <SelectContent>
@@ -114,7 +115,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
           value={filters.khoId ?? UNSET}
           onValueChange={(v) => onChange({ khoId: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-kho`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-kho`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả nhà kho" />
           </SelectTrigger>
           <SelectContent>
@@ -133,7 +134,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
           value={filters.kyThuat ?? UNSET}
           onValueChange={(v) => onChange({ kyThuat: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-kt`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-kt`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả KTV" />
           </SelectTrigger>
           <SelectContent>
@@ -150,7 +151,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
       <Field label="Số phiếu cấp" htmlFor={`${uid}-spc`}>
         <Input
           id={`${uid}-spc`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.soPhieuCap ?? ''}
           onChange={(e) => onChange({ soPhieuCap: e.target.value || undefined })}
         />
@@ -165,7 +166,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
             })
           }
         >
-          <SelectTrigger id={`${uid}-ttp`} className="h-8 text-sm" aria-label="Tình trạng phiếu">
+          <SelectTrigger id={`${uid}-ttp`} className={filterControlClassName} aria-label="Tình trạng phiếu">
             <SelectValue placeholder="Tất cả tình trạng phiếu" />
           </SelectTrigger>
           <SelectContent>
@@ -182,7 +183,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
       <Field label="Số phiếu SC" htmlFor={`${uid}-spsc`}>
         <Input
           id={`${uid}-spsc`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.soPhieuSC ?? ''}
           onChange={(e) => onChange({ soPhieuSC: e.target.value || undefined })}
         />
@@ -191,7 +192,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
       <Field label="Số phiếu hãng" htmlFor={`${uid}-sph`}>
         <Input
           id={`${uid}-sph`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.soPhieuHang ?? ''}
           onChange={(e) => onChange({ soPhieuHang: e.target.value || undefined })}
         />
@@ -200,7 +201,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
       <Field label="Mã sản phẩm" htmlFor={`${uid}-msp`}>
         <Input
           id={`${uid}-msp`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           placeholder="Mã/tên hàng…"
           value={filters.maSanPham ?? ''}
           onChange={(e) => onChange({ maSanPham: e.target.value || undefined })}
@@ -212,7 +213,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
           value={filters.mucDich ?? UNSET}
           onValueChange={(v) => onChange({ mucDich: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-md`} className="h-8 text-sm" aria-label="Mục Đích">
+          <SelectTrigger id={`${uid}-md`} className={filterControlClassName} aria-label="Mục Đích">
             <SelectValue placeholder="Tất cả mục đích" />
           </SelectTrigger>
           <SelectContent>
@@ -235,7 +236,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
             })
           }
         >
-          <SelectTrigger id={`${uid}-tt`} className="h-8 text-sm" aria-label="Tình trạng">
+          <SelectTrigger id={`${uid}-tt`} className={filterControlClassName} aria-label="Tình trạng">
             <SelectValue placeholder="Tất cả tình trạng" />
           </SelectTrigger>
           <SelectContent>
@@ -254,7 +255,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
           value={filters.nsx ?? UNSET}
           onValueChange={(v) => onChange({ nsx: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-nsx`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-nsx`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả NSX" />
           </SelectTrigger>
           <SelectContent>
@@ -273,7 +274,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
           value={filters.dateType ?? 'cap'}
           onValueChange={(v) => onChange({ dateType: v as 'cap' | 'giao' })}
         >
-          <SelectTrigger id={`${uid}-dt`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-dt`} className={filterControlClassName}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -290,7 +291,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
         <Input
           id={`${uid}-df`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
@@ -299,7 +300,7 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
         <Input
           id={`${uid}-dtt`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />

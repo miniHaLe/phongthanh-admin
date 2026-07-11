@@ -177,24 +177,24 @@ export default function BanHangPage() {
 
         <BulkActionsBar count={selectedRows.length} />
 
-        <div className="min-w-[1300px] overflow-x-auto">
-          <DataTable
-            tableId={BAN_HANG_TABLE_ID}
-            columns={columns}
-            data={pageRows}
-            isLoading={isLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            emptyMessage="Không có phiếu bán hàng nào"
-            manualPagination
-            pagination={pagination}
-            pageCount={totalPages}
-            enableRowSelection
-            rowSelection={rowSelection}
-            onRowSelectionChange={setRowSelection}
-            getRowId={(r) => r.id}
-          />
-        </div>
+        <DataTable
+          tableId={BAN_HANG_TABLE_ID}
+          columns={columns}
+          data={pageRows}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyMessage="Không có phiếu bán hàng nào"
+          manualPagination
+          pagination={pagination}
+          pageCount={totalPages}
+          enableRowSelection
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+          getRowId={(r) => r.id}
+          scrollLabel="Bảng bán hàng"
+          tableClassName="min-w-[1300px]"
+        />
 
         {!isError && (
           <DataTablePagination

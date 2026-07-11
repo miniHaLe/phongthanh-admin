@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { notify } from '@/components/shared'
+import { TableDescription } from '@/components/shared/data-table/table-cell-content'
 import { cancelDispatch } from '@/domains/repair/mock-mutations'
 import type { RepairTicket } from '@/domains/repair/types'
 import { DispatchTechnicianModal } from './dispatch-technician-modal'
@@ -41,7 +42,7 @@ export function DispatchCell({ ticket }: { ticket: RepairTicket }) {
         <Button
           size="sm"
           variant="outline"
-          className="h-7"
+          className="h-11 whitespace-nowrap xl:h-7"
           onClick={() => setDispatchOpen(true)}
         >
           Điều phối
@@ -58,19 +59,22 @@ export function DispatchCell({ ticket }: { ticket: RepairTicket }) {
   }
 
   return (
-    <div className="flex flex-col items-start gap-0.5">
-      <span className="font-bold text-blue-600">{ticket.kyThuat}</span>
-      <div className="flex gap-1">
+    <div className="flex min-w-0 flex-col items-start gap-0.5">
+      <TableDescription
+        value={ticket.kyThuat}
+        className="font-bold leading-tight text-blue-600"
+      />
+      <div className="flex flex-col items-start gap-0.5">
         <button
           type="button"
-          className="text-xs text-primary hover:underline"
+          className="min-h-11 whitespace-nowrap text-xs text-primary hover:underline xl:min-h-0"
           onClick={() => setDispatchOpen(true)}
         >
           Đổi kỹ thuật
         </button>
         <button
           type="button"
-          className="text-xs text-destructive hover:underline"
+          className="min-h-11 whitespace-nowrap text-xs text-destructive hover:underline xl:min-h-0"
           onClick={() => setConfirmCancel(true)}
         >
           Hủy điều phối

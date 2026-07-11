@@ -1,16 +1,21 @@
 /**
  * Sửa Chữa-Bảo Hành KT — the technician-scoped repair board (RepairingM/Index
  * counterpart). KT-scoped list (10-status workshop subset only, filtered by
- * fetchRepairKtList), 14-column table, dual pagination, collapsible search.
+ * fetchRepairKtList), grouped table, dual pagination, collapsible search.
  */
 import { useCallback, useMemo, useState } from 'react'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
+import type { SortingState } from '@tanstack/react-table'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DataTable, DataTablePagination, PageHeader } from '@/components/shared'
 import { ROUTES } from '@/constants/routes'
 import { fetchRepairKtList } from '@/domains/repair/mock-data'
-import type { RepairListFilters, RepairListParams } from '@/domains/repair/types'
+import type {
+  RepairListFilters,
+  RepairListParams,
+  RepairTicket,
+} from '@/domains/repair/types'
 import { cn } from '@/lib/utils'
 import { RepairKtFilters } from './RepairKtFilters'
 import { useRepairKtColumns, TABLE_ID } from './hooks/use-repair-kt-columns'
@@ -20,6 +25,21 @@ const DEFAULT_PAGE_SIZE = 20
 
 const EMPTY_FILTERS: RepairListFilters = {}
 
+const REPAIR_KT_SORT_FIELD_MAP: Record<string, keyof RepairTicket> = {
+  tinhTrang: 'tinhTrang',
+  soPhieu: 'soPhieu',
+  sanPham: 'tenSanPham',
+  kyThuat: 'kyThuat',
+  loaiSc: 'hinhThuc',
+  chiPhi: 'chiPhiDuKien',
+  ngayNhan: 'ngayNhan',
+  ngayGiao: 'ngayGiao',
+  chiTietSc: 'noiDungSuaChua',
+  ghiChu: 'ghiChu',
+  nguoiNhan: 'nguoiNhan',
+  khuVuc: 'khuVuc',
+}
+
 export default function RepairKtListPage() {
   const [filters, setFilters] = useState<RepairListFilters>(EMPTY_FILTERS)
   const [appliedFilters, setAppliedFilters] =
@@ -27,6 +47,7 @@ export default function RepairKtListPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [panelOpen, setPanelOpen] = useState(true)
+  const [sorting, setSorting] = useState<SortingState>([])
 
   const { columns } = useRepairKtColumns()
 
@@ -46,8 +67,16 @@ export default function RepairKtListPage() {
   }, [])
 
   const queryParams: RepairListParams = useMemo(
-    () => ({ ...appliedFilters, page, pageSize }),
-    [appliedFilters, page, pageSize],
+    () => ({
+      ...appliedFilters,
+      page,
+      pageSize,
+      sortField: sorting[0]
+        ? REPAIR_KT_SORT_FIELD_MAP[sorting[0].id]
+        : undefined,
+      sortDir: sorting[0] ? (sorting[0].desc ? 'desc' : 'asc') : undefined,
+    }),
+    [appliedFilters, page, pageSize, sorting],
   )
 
   const { data, isLoading, isError, isFetching, refetch } = useQuery({
@@ -105,13 +134,12 @@ export default function RepairKtListPage() {
             aria-hidden={!panelOpen}
           >
             <div className="border-t border-border px-4 pb-4 pt-3">
-              <RepairKtFilters filters={filters} onChange={handleFilterChange} />
+              <RepairKtFilters
+                filters={filters}
+                onChange={handleFilterChange}
+              />
               <div className="mt-3 flex gap-2">
-                <Button
-                  size="sm"
-                  className="h-8"
-                  onClick={handleSearch}
-                >
+                <Button size="sm" className="h-8" onClick={handleSearch}>
                   Tìm kiếm
                 </Button>
                 <Button
@@ -136,23 +164,28 @@ export default function RepairKtListPage() {
             isFetching && !isLoading && 'opacity-60',
           )}
         >
-          <div className="min-w-[1250px]">
-            <DataTable
-              tableId={TABLE_ID}
-              columns={columns}
-              data={tickets}
-              isLoading={isLoading}
-              isError={isError}
-              onRetry={() => refetch()}
-              emptyMessage="Không tìm thấy phiếu sửa chữa nào"
-            />
-          </div>
+          <DataTable
+            tableId={TABLE_ID}
+            columns={columns}
+            data={tickets}
+            isLoading={isLoading}
+            isError={isError}
+            onRetry={() => refetch()}
+            emptyMessage="Không tìm thấy phiếu sửa chữa nào"
+            sorting={sorting}
+            onSortingChange={setSorting}
+            scrollLabel="Bảng sửa chữa bảo hành kỹ thuật"
+            tableLayout="content-safe"
+            tableMinWidth={1560}
+          />
         </div>
 
         {!isError && (
           <>
             {/* Dual pagination — below the table */}
-            <div className="flex items-center justify-end">{paginationLabel}</div>
+            <div className="flex items-center justify-end">
+              {paginationLabel}
+            </div>
             <DataTablePagination
               page={page}
               pageSize={pageSize}

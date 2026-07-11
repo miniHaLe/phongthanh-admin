@@ -329,19 +329,19 @@ export default function TonKhoKyThuatPage() {
           />
         </div>
 
-        <div className="min-w-[1200px]">
-          <DataTable
-            tableId="ton-kho-ky-thuat"
-            columns={columns}
-            data={rows}
-            isLoading={isLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            emptyMessage="Không có dữ liệu tồn kho kỹ thuật"
-            getRowId={(r) => r.id}
-            className={isFetching && !isLoading ? 'opacity-60' : undefined}
-          />
-        </div>
+        <DataTable
+          tableId="ton-kho-ky-thuat"
+          columns={columns}
+          data={rows}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyMessage="Không có dữ liệu tồn kho kỹ thuật"
+          getRowId={(r) => r.id}
+          className={isFetching && !isLoading ? 'opacity-60' : undefined}
+          scrollLabel="Bảng tồn kho kỹ thuật"
+          tableClassName="min-w-[1200px]"
+        />
 
         {!isError && (
           <DataTablePagination

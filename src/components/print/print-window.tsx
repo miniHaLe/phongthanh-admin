@@ -40,8 +40,11 @@ export async function openPrintWindow(
   const { renderToStaticMarkup } = await import('react-dom/server')
   const bodyHtml = renderToStaticMarkup(element)
 
-  const win = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700')
+  const win = window.open('', '_blank', 'width=900,height=700')
   if (!win) return null
+
+  // Keep a usable document handle in Chromium while isolating the new window.
+  win.opener = null
 
   const doc = win.document
   // Base skeleton WITHOUT the untrusted title — write only trusted markup +

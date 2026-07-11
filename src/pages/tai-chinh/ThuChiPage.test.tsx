@@ -1,4 +1,4 @@
-/** Spec: Chứng Từ (Thu Chi) — verified 15-col + 12-type Loại + 5-state Tình trạng. */
+/** Spec: Chứng Từ grouped table + 12-type Loại + 5-state Tình trạng. */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import { renderWithProviders } from '@/test/render-with-providers'
@@ -33,12 +33,23 @@ describe('ThuChiPage', () => {
     ])
   })
 
-  it('renders the 15 data columns plus the leading checkbox column', async () => {
+  it('renders the grouped finance columns', async () => {
     renderWithProviders(<ThuChiPage />)
     const headerCells = await screen.findAllByRole('columnheader')
-    expect(headerCells).toHaveLength(THU_CHI_COLUMN_LABELS.length + 1)
-    THU_CHI_COLUMN_LABELS.forEach((label, i) => {
-      expect(headerCells[i + 1]).toHaveTextContent(label)
+    const groupedHeaders = [
+      '',
+      'Trạng thái / Loại',
+      'Tham chiếu chứng từ',
+      'Đối tượng',
+      'Số tiền',
+      'Nội dung',
+      'Tạo chứng từ',
+      'Thu / Chi',
+      'In',
+    ]
+    expect(headerCells).toHaveLength(groupedHeaders.length)
+    groupedHeaders.forEach((label, i) => {
+      expect(headerCells[i]).toHaveTextContent(label)
     })
   })
 

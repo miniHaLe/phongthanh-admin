@@ -4,6 +4,7 @@
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
 import {
   Select,
   SelectContent,
@@ -64,7 +65,7 @@ export function TraHangFilters({ filters, onChange }: TraHangFiltersProps) {
           value={filters.branchId ?? UNSET}
           onValueChange={(v) => onChange({ branchId: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-cn`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả chi nhánh" />
           </SelectTrigger>
           <SelectContent>
@@ -83,7 +84,7 @@ export function TraHangFilters({ filters, onChange }: TraHangFiltersProps) {
           value={filters.hinhThucTra ?? UNSET}
           onValueChange={(v) => onChange({ hinhThucTra: v === UNSET ? undefined : v })}
         >
-          <SelectTrigger id={`${uid}-httr`} className="h-8 text-sm" aria-label="Hình thức trả">
+          <SelectTrigger id={`${uid}-httr`} className={filterControlClassName} aria-label="Hình thức trả">
             <SelectValue placeholder="Tất cả hình thức" />
           </SelectTrigger>
           <SelectContent>
@@ -100,7 +101,7 @@ export function TraHangFilters({ filters, onChange }: TraHangFiltersProps) {
       <Field label="Số phiếu" htmlFor={`${uid}-sp`}>
         <Input
           id={`${uid}-sp`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.soPhieu ?? ''}
           onChange={(e) => onChange({ soPhieu: e.target.value || undefined })}
         />
@@ -110,7 +111,7 @@ export function TraHangFilters({ filters, onChange }: TraHangFiltersProps) {
         <Input
           id={`${uid}-df`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
@@ -119,7 +120,7 @@ export function TraHangFilters({ filters, onChange }: TraHangFiltersProps) {
         <Input
           id={`${uid}-dt`}
           type="date"
-          className="h-8 text-sm"
+          className={filterControlClassName}
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />
