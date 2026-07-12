@@ -1,7 +1,8 @@
 import { formatDate } from '@/lib/format'
+import { apiFor } from '@/api/api-for'
 import type { CrudConfig } from '@/types/crud-types'
 import type { Model } from '@/types/masterdata-types'
-import { modelApi } from '@/mock/masterdata/model.mock'
+import { MODEL_ROWS } from '@/mock/masterdata/model.mock'
 import { NHA_SAN_XUAT_ROWS } from '@/mock/masterdata/nha-san-xuat.mock'
 import { SAN_PHAM_ROWS } from '@/mock/masterdata/san-pham.mock'
 
@@ -10,7 +11,7 @@ export const modelConfig: CrudConfig<Model> = {
   title: 'Model',
   pageSize: 20,
   defaultSort: { key: 'tenModel', dir: 'asc' },
-  mockApi: modelApi,
+  mockApi: apiFor('model', MODEL_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   export: true,
@@ -44,7 +45,7 @@ export const modelConfig: CrudConfig<Model> = {
   fields: [
     {
       key: 'sanPhamId',
-      label: 'Sản phẩm',
+      label: 'Tên Sản Phẩm',
       type: 'select',
       required: true,
       options: SAN_PHAM_ROWS.map((r) => ({ label: r.tenSP, value: r.id })),
@@ -56,7 +57,6 @@ export const modelConfig: CrudConfig<Model> = {
       required: true,
       options: NHA_SAN_XUAT_ROWS.map((r) => ({ label: r.tenNSX, value: r.id })),
     },
-    { key: 'maModel', label: 'Model Code', type: 'text' },
     { key: 'tenModel', label: 'Tên model', type: 'text', required: true },
     { key: 'ghiChu', label: 'Ghi chú', type: 'textarea', span: 2 },
   ],

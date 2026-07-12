@@ -1,12 +1,13 @@
 import type { CrudConfig } from '@/types/crud-types'
 import type { NganHang } from '@/domains/hr/types'
-import { nganHangApi } from '@/domains/hr/ngan-hang.mock'
+import { NGAN_HANG_ROWS } from '@/domains/hr/ngan-hang.mock'
+import { apiFor } from '@/api/api-for'
 
 export const nganHangConfig: CrudConfig<NganHang> = {
   resourceKey: 'ngan-hang',
   title: 'Ngân Hàng',
   pageSize: 20,
-  mockApi: nganHangApi,
+  mockApi: apiFor('ngan-hang', NGAN_HANG_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [

@@ -50,13 +50,18 @@ export interface Manufacturer {
 export interface Product {
   id: string
   ten: string
-  nhaSanXuatId: string
+  /** Legacy seeded products were grouped by manufacturer; the real catalog is global. */
+  nhaSanXuatId?: string
 }
 
 export interface Model {
   id: string
   ten: string
-  productId: string
+  nhaSanXuatId: string
+  sanPhamId: string
+  /** Compatibility alias for untouched legacy consumers. */
+  productId?: string
+  ghiChu?: string
 }
 
 export interface Technician {

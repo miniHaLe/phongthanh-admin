@@ -7,6 +7,11 @@ import { loadEnv } from './config/env'
 import { DbModule } from './db/db.module'
 import { HealthModule } from './health/health.module'
 import { KhachHangModule } from './khach-hang/khach-hang.module'
+import { DiaLyModule } from './dia-ly/dia-ly.module'
+import { ModelModule } from './model/model.module'
+import { NganHangModule } from './ngan-hang/ngan-hang.module'
+import { NhaSanXuatModule } from './nha-san-xuat/nha-san-xuat.module'
+import { SanPhamModule } from './san-pham/san-pham.module'
 
 @Module({
   imports: [
@@ -17,7 +22,12 @@ import { KhachHangModule } from './khach-hang/khach-hang.module'
     DbModule,
     AuthModule,
     HealthModule,
+    DiaLyModule,
     KhachHangModule,
+    NhaSanXuatModule,
+    SanPhamModule,
+    ModelModule,
+    NganHangModule,
   ],
   providers: [
     {

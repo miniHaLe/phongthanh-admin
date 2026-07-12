@@ -11,6 +11,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "seed": "tsx src/seed/run-seed.ts",
+    "fixtures:geography": "node scripts/build-official-geography.mjs",
     "test": "jest --config jest.config.mjs --runInBand",
     "test:watch": "jest --config jest.config.mjs --watch",
     "lint": "tsc -p tsconfig.json --noEmit"

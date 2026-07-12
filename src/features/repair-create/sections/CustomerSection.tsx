@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ServerAutocomplete } from '@/components/shared'
-import { searchCustomers } from '@/domains/repair/mock-data'
+import { listCustomers } from '@/features/customer/create-customer'
 import type { CreateRepairFormValues } from '../RepairCreateForm'
 import {
   QuickCreateKhachHang,
@@ -16,13 +16,17 @@ import {
 } from '../quick-create/QuickCreateKhachHang'
 
 async function searchKhachHang(query: string) {
-  const customers = await searchCustomers(query)
-  return customers.map((c) => ({
+  const result = await listCustomers({
+    page: 1,
+    pageSize: 20,
+    search: query || undefined,
+  })
+  return result.data.map((c) => ({
     id: c.id,
-    label: c.ten,
-    ten: c.ten,
-    sdt: c.sdt,
-    diaChi: c.diaChi,
+    label: `${c.tenKH} — ${c.dienThoai}`,
+    ten: c.tenKH,
+    sdt: c.dienThoai,
+    diaChi: c.diaChi ?? '',
   }))
 }
 
