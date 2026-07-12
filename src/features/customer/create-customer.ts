@@ -1,38 +1,48 @@
-/**
- * Mock create mutation shared by both customer create flows (Thêm Khách Hàng
- * / Thêm Đại Lý). Writes directly into the live `KHACH_HANG_ROWS` store
- * (owned by mock/masterdata/khach-hang.mock.ts) so the list immediately
- * reflects the new row on refetch — module-memory only, lost on reload.
- */
-import { KHACH_HANG_ROWS } from '@/mock/masterdata/khach-hang.mock'
+import { apiFor } from '@/api/api-for'
 import { CURRENT_USER } from '@/mock/current-user-mock'
+import { KHACH_HANG_ROWS } from '@/mock/masterdata/khach-hang.mock'
 import type { KhachHang } from '@/types/masterdata-types'
+import type { ListParams } from '@/mock/seed'
 
-let khachHangSeq = KHACH_HANG_ROWS.length
+export const customerApi = apiFor('khach-hang', KHACH_HANG_ROWS)
 
-export interface CreateCustomerInput {
-  tenKH: string
-  dienThoai: string
-  dienThoai2?: string
-  email?: string
-  diaChi?: string
-  tinhId?: string
-  quanId?: string
-  phuongXaId?: string
-  loaiKhachHangId: number
-  daiLyId?: string
-  ghiChu?: string
+export type CustomerMutationInput = Omit<KhachHang, 'id' | 'createdAt'>
+
+export async function persistCustomer(
+  input: Omit<CustomerMutationInput, 'nguoiTao' | 'active'>,
+): Promise<KhachHang> {
+  return customerApi.create({
+    ...input,
+    nguoiTao: CURRENT_USER.hoVaTen,
+    active: true,
+  })
 }
 
-export function createCustomer(input: CreateCustomerInput): KhachHang {
-  khachHangSeq += 1
+let legacyCustomerSequence = KHACH_HANG_ROWS.length
+
+/** Dealer compatibility path. New customer editors use persistCustomer(). */
+export function createCustomer(
+  input: Omit<CustomerMutationInput, 'nguoiTao' | 'active'>,
+): KhachHang {
+  legacyCustomerSequence += 1
   const row: KhachHang = {
-    id: `kh-new-${khachHangSeq}`,
     ...input,
+    id: `kh-new-${legacyCustomerSequence}`,
     nguoiTao: CURRENT_USER.hoVaTen,
     active: true,
     createdAt: new Date().toISOString(),
   }
   KHACH_HANG_ROWS.unshift(row)
   return row
+}
+
+export async function updateCustomer(
+  id: string,
+  input: Partial<KhachHang>,
+): Promise<KhachHang> {
+  return customerApi.update(id, input)
+}
+
+export function listCustomers(params: ListParams) {
+  return customerApi.list(params)
 }

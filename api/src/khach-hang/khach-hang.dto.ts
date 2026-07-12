@@ -1,33 +1,67 @@
 import { z } from 'zod'
 
-/** Server-owned fields (id/createdAt/updatedAt/active/branchId/nguoiTao) are
- * NEVER accepted from the client — mirrors `Omit<T, 'id' | 'createdAt'>` from
- * the wire contract, and additionally excludes branchId/nguoiTao which the
- * mock's `MockApi<T>` type allows through but this server stamps itself.
- *
- * Deviation from the mock's `KhachHang` type (where `tinhId` is optional):
- * `tinhId` is REQUIRED on create here because `branch_id` (D4 branch scoping,
- * NOT NULL) is derived from it — a khach-hang with no tinhId has no
- * determinable branch, which would violate the "empty branch set ⇒ deny"
- * invariant at the row level. Update keeps it optional (branch is fixed
- * after creation; changing tinhId post-create does not re-derive branchId
- * in this slice — out of scope for Phase 1). */
-export const createKhachHangSchema = z.object({
-  tenKH: z.string().min(1, 'Tên khách hàng không được để trống'),
-  dienThoai: z.string().min(1, 'Số điện thoại không được để trống'),
-  dienThoai2: z.string().optional(),
-  diaChi: z.string().optional(),
-  phuongXaId: z.string().optional(),
-  quanId: z.string().optional(),
-  tinhId: z.string().min(1, 'Tỉnh không được để trống'),
-  email: z.string().email('Email không hợp lệ').optional().or(z.literal('')),
-  loaiKhachHangId: z.number().int(),
-  daiLyId: z.string().optional(),
-  ghiChu: z.string().optional(),
-  active: z.boolean().optional(),
-})
+const optionalTrimmedText = z.string().trim().nullable().optional()
+const optionalEmptyText = z
+  .string()
+  .nullable()
+  .optional()
+  .transform((value) => (typeof value === 'string' ? value.trim() : value))
+const officialCode = z
+  .string()
+  .trim()
+  .nullable()
+  .optional()
+  .transform((value) => value || null)
+const taxCode = z
+  .string()
+  .trim()
+  .regex(/^(?:|\d{10}(?:-\d{3})?)$/, 'Mã số thuế phải có 10 số hoặc 10 số-3 số')
+  .nullable()
+  .optional()
 
-export const updateKhachHangSchema = createKhachHangSchema.partial()
+/** Client-writable customer fields. Identity, audit fields, creator, and branch
+ * ownership are stamped by the server. Modern province/commune codes are
+ * optional as a pair so legacy customers remain editable without guessed data. */
+const khachHangFields = {
+  tenKH: z.string().trim().min(1, 'Tên khách hàng không được để trống'),
+  dienThoai: z.string().trim().min(1, 'Số điện thoại không được để trống'),
+  dienThoai2: optionalTrimmedText,
+  diaChi: optionalTrimmedText,
+  tenDuong: optionalTrimmedText,
+  tinhThanhCode: officialCode,
+  phuongXaCode: officialCode,
+  maSoThue: taxCode,
+  nganHangId: officialCode,
+  /** Text on purpose: trimming surrounding whitespace preserves leading zeroes. */
+  soTaiKhoan: optionalEmptyText,
+  phuongXaId: officialCode,
+  quanId: officialCode,
+  tinhId: officialCode,
+  email: z
+    .string()
+    .email('Email không hợp lệ')
+    .or(z.literal(''))
+    .nullable()
+    .optional(),
+  loaiKhachHangId: z.number().int(),
+  daiLyId: officialCode,
+  ghiChu: optionalTrimmedText,
+  active: z.boolean().optional(),
+}
+
+export const createKhachHangSchema = z
+  .object(khachHangFields)
+  .superRefine((value, ctx) => {
+    if (Boolean(value.tinhThanhCode) !== Boolean(value.phuongXaCode)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['phuongXaCode'],
+        message: 'Tỉnh/Thành phố và Phường/Xã phải được chọn cùng nhau',
+      })
+    }
+  })
+
+export const updateKhachHangSchema = z.object(khachHangFields).partial()
 
 export type CreateKhachHangDto = z.infer<typeof createKhachHangSchema>
 export type UpdateKhachHangDto = z.infer<typeof updateKhachHangSchema>

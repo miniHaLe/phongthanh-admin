@@ -1,16 +1,10 @@
-import { BadRequestException } from '@nestjs/common'
+import { ForbiddenException } from '@nestjs/common'
 import { khachHang } from '../db/schema'
 import type { CrudResourceConfig } from '../crud/crud-resource-config'
-import { branchIdForTinh } from '../seed/branch-map'
 import { generateKhachHangId } from './khach-hang.id'
 
-/**
- * khach-hang allowlists (plan-locked, byte-identical to the requirements):
- * sortable = [tenKH, createdAt, dienThoai]; filterable = [loaiKhachHangId,
- * tinhId, quanId, phuongXaId, active] (branch_id intentionally absent —
- * security gate 2); search columns = [tenKH, dienThoai, dienThoai2, email,
- * diaChi] (mirrors the mock's "any string field contains").
- */
+/** Customer query allowlists. Branch ownership remains deliberately absent
+ * from client filters and is applied by the shared CRUD scope instead. */
 export const khachHangResourceConfig: CrudResourceConfig = {
   table: khachHang,
   idColumn: khachHang.id,
@@ -23,6 +17,11 @@ export const khachHangResourceConfig: CrudResourceConfig = {
     dienThoai: khachHang.dienThoai,
   },
   filterableColumns: {
+    tenKH: { column: khachHang.tenKH },
+    dienThoai: { column: khachHang.dienThoai },
+    email: { column: khachHang.email },
+    diaChi: { column: khachHang.diaChi },
+    maSoThue: { column: khachHang.maSoThue },
     loaiKhachHangId: {
       column: khachHang.loaiKhachHangId,
       parse: (raw) => Number(raw),
@@ -30,6 +29,9 @@ export const khachHangResourceConfig: CrudResourceConfig = {
     tinhId: { column: khachHang.tinhId },
     quanId: { column: khachHang.quanId },
     phuongXaId: { column: khachHang.phuongXaId },
+    tinhThanhCode: { column: khachHang.tinhThanhCode },
+    phuongXaCode: { column: khachHang.phuongXaCode },
+    nganHangId: { column: khachHang.nganHangId },
     active: {
       column: khachHang.active,
       parse: (raw) => raw === 'true' || raw === true,
@@ -41,24 +43,18 @@ export const khachHangResourceConfig: CrudResourceConfig = {
     khachHang.dienThoai2,
     khachHang.email,
     khachHang.diaChi,
+    khachHang.tenDuong,
+    khachHang.maSoThue,
+    khachHang.soTaiKhoan,
   ],
   branchColumn: khachHang.branchId,
   notFoundMessage: (id) => `Không tìm thấy bản ghi id=${id}`,
   genId: generateKhachHangId,
-  // Server owns branch_id (derived from tinhId, D4) + nguoiTao (from the
-  // JWT's `tenDangNhap` — the token doesn't carry `hoTen`, and adding a DB
-  // round-trip here to fetch it would be a second query per create for a
-  // display-only audit field; tenDangNhap is stable/unique and sufficient).
   stampCreate: (dto, ctx) => {
-    // Client-supplied tinhId → branch. An unmapped/missing tinhId is bad client
-    // input (400 VI), not a server fault (500) — branchIdForTinh throws a plain
-    // Error for the seeder's fixture-integrity use; translate it at the edge.
-    let branchId: string
-    try {
-      branchId = branchIdForTinh(dto.tinhId as string | undefined)
-    } catch {
-      throw new BadRequestException(
-        `Tỉnh không hợp lệ hoặc chưa gán chi nhánh: "${dto.tinhId ?? ''}"`,
+    const branchId = ctx.user.branchIds[0]
+    if (!branchId) {
+      throw new ForbiddenException(
+        'Tài khoản chưa có chi nhánh chính để tạo khách hàng',
       )
     }
     return { ...dto, branchId, nguoiTao: ctx.user.tenDangNhap }

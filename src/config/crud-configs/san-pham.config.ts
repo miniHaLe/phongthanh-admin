@@ -1,15 +1,16 @@
 import { formatVND } from '@/lib/format'
 import type { CrudConfig } from '@/types/crud-types'
 import type { SanPham } from '@/types/masterdata-types'
-import { sanPhamApi } from '@/mock/masterdata/san-pham.mock'
+import { SAN_PHAM_ROWS } from '@/mock/masterdata/san-pham.mock'
 import { NHOM_SAN_PHAM_ROWS } from '@/mock/masterdata/nhom-san-pham.mock'
+import { apiFor } from '@/api/api-for'
 
 export const sanPhamConfig: CrudConfig<SanPham> = {
   resourceKey: 'san-pham',
   title: 'Sản Phẩm',
   pageSize: 20,
   defaultSort: { key: 'tenSP', dir: 'asc' },
-  mockApi: sanPhamApi,
+  mockApi: apiFor('san-pham', SAN_PHAM_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [

@@ -3,6 +3,7 @@
  * shape is validated structurally by the FK-closure check in `run-seed.ts`,
  * not by a schema here (YAGNI — one-shot seed data, not a runtime API). */
 import { readFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 
 const FIXTURES_DIR = join(__dirname, '../../seed-fixtures')
@@ -10,6 +11,12 @@ const FIXTURES_DIR = join(__dirname, '../../seed-fixtures')
 function loadJson<T>(file: string): T {
   const raw = readFileSync(join(FIXTURES_DIR, file), 'utf-8')
   return JSON.parse(raw) as T
+}
+
+function sha256(file: string): string {
+  return createHash('sha256')
+    .update(readFileSync(join(FIXTURES_DIR, file)))
+    .digest('hex')
 }
 
 export interface ChiNhanhFixture {
@@ -99,7 +106,71 @@ export interface KhachHangFixture {
   updatedAt?: string
 }
 
+export interface CatalogFixtureBase {
+  id: string
+  active: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface NhaSanXuatFixture extends CatalogFixtureBase {
+  maNSX?: string
+  tenNSX: string
+  ghiChu?: string
+}
+
+export interface SanPhamFixture extends CatalogFixtureBase {
+  maSP?: string
+  tenSP: string
+  nhomSanPhamId?: string
+  tienKhoan?: number
+}
+
+export interface ModelFixture extends CatalogFixtureBase {
+  tenModel: string
+  tenModelNormalized: string
+  nhaSanXuatId: string
+  sanPhamId: string
+  ghiChu?: string
+}
+
+export interface NganHangFixture extends CatalogFixtureBase {
+  maNganHang: string
+  tenNganHang: string
+  diaChi?: string
+}
+
+export interface TinhThanhFixture {
+  code: string
+  name: string
+  type: string
+  normalizedName: string
+}
+
+export interface PhuongXaFixture extends TinhThanhFixture {
+  provinceCode: string
+}
+
+export interface DiaLyMetadataFixture {
+  version: string
+  effectiveFrom: string
+  sourceDocument: string
+  officialSourceUrl: string
+  counts: { provinces: number; communes: number }
+  checksums: { provincesSha256: string; communesSha256: string }
+}
+
 export function loadFixtures() {
+  const diaLyMetadata = loadJson<DiaLyMetadataFixture>('dia-ly-metadata.json')
+  const actualProvinceChecksum = sha256('tinh-thanh.json')
+  const actualCommuneChecksum = sha256('phuong-xa-2025.json')
+  if (
+    actualProvinceChecksum !== diaLyMetadata.checksums.provincesSha256 ||
+    actualCommuneChecksum !== diaLyMetadata.checksums.communesSha256
+  ) {
+    throw new Error('Official geography fixture checksum mismatch')
+  }
+
   return {
     chiNhanh: loadJson<ChiNhanhFixture[]>('chi-nhanh.json'),
     tinh: loadJson<TinhFixture[]>('tinh.json'),
@@ -109,5 +180,12 @@ export function loadFixtures() {
     nhomQuyen: loadJson<NhomQuyenFixture[]>('nhom-quyen.json'),
     nguoiDung: loadJson<NguoiDungFixture[]>('nguoi-dung.json'),
     khachHang: loadJson<KhachHangFixture[]>('khach-hang.json'),
+    nhaSanXuat: loadJson<NhaSanXuatFixture[]>('nha-san-xuat.json'),
+    sanPham: loadJson<SanPhamFixture[]>('san-pham.json'),
+    model: loadJson<ModelFixture[]>('model.json'),
+    nganHang: loadJson<NganHangFixture[]>('ngan-hang.json'),
+    tinhThanh: loadJson<TinhThanhFixture[]>('tinh-thanh.json'),
+    phuongXa: loadJson<PhuongXaFixture[]>('phuong-xa-2025.json'),
+    diaLyMetadata,
   }
 }

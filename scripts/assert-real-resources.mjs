@@ -12,7 +12,14 @@
  */
 
 // v1 resources that MUST be real in a production bundle. Extend per phase.
-const V1_RELEASE_RESOURCES = ['khach-hang']
+const V1_RELEASE_RESOURCES = [
+  'khach-hang',
+  'nha-san-xuat',
+  'san-pham',
+  'model',
+  'ngan-hang',
+  'dia-ly',
+]
 
 const isProd = process.env.NODE_ENV === 'production' || process.argv.includes('--prod')
 const allowMock = process.env.ALLOW_MOCK_BUILD === '1'

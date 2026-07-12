@@ -1,0 +1,66 @@
+[
+  {
+    "id": "ngh-1",
+    "maNganHang": "VCB",
+    "tenNganHang": "Vietcombank",
+    "diaChi": "198 Trần Quang Khải, Hà Nội",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "ngh-2",
+    "maNganHang": "BIDV",
+    "tenNganHang": "BIDV",
+    "diaChi": "35 Hàng Vôi, Hà Nội",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "ngh-3",
+    "maNganHang": "VTB",
+    "tenNganHang": "Vietinbank",
+    "diaChi": "108 Trần Hưng Đạo, Hà Nội",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "ngh-4",
+    "maNganHang": "ACB",
+    "tenNganHang": "Á Châu (ACB)",
+    "diaChi": "442 Nguyễn Thị Minh Khai, TP.HCM",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "ngh-5",
+    "maNganHang": "TCB",
+    "tenNganHang": "Techcombank",
+    "diaChi": "191 Bà Triệu, Hà Nội",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "ngh-6",
+    "maNganHang": "MB",
+    "tenNganHang": "Quân Đội (MB Bank)",
+    "diaChi": "18 Lê Văn Lương, Hà Nội",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "ngh-7",
+    "maNganHang": "SACOM",
+    "tenNganHang": "Sacombank",
+    "diaChi": "266-268 Nam Kỳ Khởi Nghĩa, TP.HCM",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "ngh-8",
+    "maNganHang": "AGRI",
+    "tenNganHang": "Agribank",
+    "diaChi": "2 Láng Hạ, Hà Nội",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  }
+]

@@ -1,0 +1,239 @@
+[
+  {
+    "id": "mod-1",
+    "tenModel": "iPhone 15",
+    "tenModelNormalized": "iphone 15",
+    "nhaSanXuatId": "nsx-1",
+    "sanPhamId": "sp-1",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-2",
+    "tenModel": "iPhone 15 Pro",
+    "tenModelNormalized": "iphone 15 pro",
+    "nhaSanXuatId": "nsx-1",
+    "sanPhamId": "sp-1",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-3",
+    "tenModel": "iPhone 14",
+    "tenModelNormalized": "iphone 14",
+    "nhaSanXuatId": "nsx-1",
+    "sanPhamId": "sp-2",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-4",
+    "tenModel": "iPhone 14 Pro",
+    "tenModelNormalized": "iphone 14 pro",
+    "nhaSanXuatId": "nsx-1",
+    "sanPhamId": "sp-1",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-5",
+    "tenModel": "iPhone 13",
+    "tenModelNormalized": "iphone 13",
+    "nhaSanXuatId": "nsx-1",
+    "sanPhamId": "sp-1",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-6",
+    "tenModel": "iPad Air 5",
+    "tenModelNormalized": "ipad air 5",
+    "nhaSanXuatId": "nsx-1",
+    "sanPhamId": "sp-1",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-7",
+    "tenModel": "MacBook Air M2",
+    "tenModelNormalized": "macbook air m2",
+    "nhaSanXuatId": "nsx-1",
+    "sanPhamId": "sp-1",
+    "ghiChu": "Model phổ biến",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-8",
+    "tenModel": "Galaxy S24",
+    "tenModelNormalized": "galaxy s24",
+    "nhaSanXuatId": "nsx-2",
+    "sanPhamId": "sp-3",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-9",
+    "tenModel": "Galaxy S24+",
+    "tenModelNormalized": "galaxy s24+",
+    "nhaSanXuatId": "nsx-2",
+    "sanPhamId": "sp-3",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-10",
+    "tenModel": "Galaxy A54",
+    "tenModelNormalized": "galaxy a54",
+    "nhaSanXuatId": "nsx-2",
+    "sanPhamId": "sp-4",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-11",
+    "tenModel": "Galaxy A34",
+    "tenModelNormalized": "galaxy a34",
+    "nhaSanXuatId": "nsx-2",
+    "sanPhamId": "sp-3",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-12",
+    "tenModel": "Galaxy Tab S9",
+    "tenModelNormalized": "galaxy tab s9",
+    "nhaSanXuatId": "nsx-2",
+    "sanPhamId": "sp-11",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-13",
+    "tenModel": "Xiaomi 14",
+    "tenModelNormalized": "xiaomi 14",
+    "nhaSanXuatId": "nsx-3",
+    "sanPhamId": "sp-5",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-14",
+    "tenModel": "Redmi Note 13",
+    "tenModelNormalized": "redmi note 13",
+    "nhaSanXuatId": "nsx-3",
+    "sanPhamId": "sp-6",
+    "ghiChu": "Model phổ biến",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-15",
+    "tenModel": "Redmi 13C",
+    "tenModelNormalized": "redmi 13c",
+    "nhaSanXuatId": "nsx-3",
+    "sanPhamId": "sp-5",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-16",
+    "tenModel": "POCO X6",
+    "tenModelNormalized": "poco x6",
+    "nhaSanXuatId": "nsx-3",
+    "sanPhamId": "sp-5",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-17",
+    "tenModel": "Oppo Reno 11",
+    "tenModelNormalized": "oppo reno 11",
+    "nhaSanXuatId": "nsx-4",
+    "sanPhamId": "sp-7",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-18",
+    "tenModel": "Oppo A78",
+    "tenModelNormalized": "oppo a78",
+    "nhaSanXuatId": "nsx-4",
+    "sanPhamId": "sp-7",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-19",
+    "tenModel": "Oppo A58",
+    "tenModelNormalized": "oppo a58",
+    "nhaSanXuatId": "nsx-4",
+    "sanPhamId": "sp-7",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-20",
+    "tenModel": "Vivo Y36",
+    "tenModelNormalized": "vivo y36",
+    "nhaSanXuatId": "nsx-5",
+    "sanPhamId": "sp-8",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-21",
+    "tenModel": "Vivo V29",
+    "tenModelNormalized": "vivo v29",
+    "nhaSanXuatId": "nsx-5",
+    "sanPhamId": "sp-8",
+    "ghiChu": "Model phổ biến",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-22",
+    "tenModel": "Vivo Y16",
+    "tenModelNormalized": "vivo y16",
+    "nhaSanXuatId": "nsx-5",
+    "sanPhamId": "sp-8",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-23",
+    "tenModel": "Huawei Nova 11",
+    "tenModelNormalized": "huawei nova 11",
+    "nhaSanXuatId": "nsx-6",
+    "sanPhamId": "sp-3",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-24",
+    "tenModel": "Huawei P60",
+    "tenModelNormalized": "huawei p60",
+    "nhaSanXuatId": "nsx-6",
+    "sanPhamId": "sp-3",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-25",
+    "tenModel": "Xperia 1 V",
+    "tenModelNormalized": "xperia 1 v",
+    "nhaSanXuatId": "nsx-7",
+    "sanPhamId": "sp-3",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "mod-26",
+    "tenModel": "Xperia 5 V",
+    "tenModelNormalized": "xperia 5 v",
+    "nhaSanXuatId": "nsx-7",
+    "sanPhamId": "sp-3",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  }
+]

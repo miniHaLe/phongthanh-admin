@@ -1,4 +1,5 @@
 export * from './chi-nhanh'
+export * from './danh-muc-thiet-bi'
 export * from './dia-ly'
 export * from './loai-khach-hang'
 export * from './nhom-quyen'

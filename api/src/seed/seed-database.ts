@@ -21,6 +21,12 @@ export interface SeedResult {
   nhomQuyen: number
   nguoiDung: number
   khachHang: number
+  nhaSanXuat: number
+  sanPham: number
+  model: number
+  nganHang: number
+  tinhThanh: number
+  phuongXa: number
 }
 
 export async function seedDatabase(
@@ -38,6 +44,14 @@ export async function seedDatabase(
     loaiKhachHangIds: new Set(fixtures.loaiKhachHang.map((l) => l.id)),
     nguoiDung: fixtures.nguoiDung,
     khachHang: fixtures.khachHang,
+    nhaSanXuatIds: new Set(fixtures.nhaSanXuat.map((row) => row.id)),
+    sanPhamIds: new Set(fixtures.sanPham.map((row) => row.id)),
+    nganHangIds: new Set(fixtures.nganHang.map((row) => row.id)),
+    model: fixtures.model,
+    tinhThanh: fixtures.tinhThanh,
+    phuongXa: fixtures.phuongXa,
+    expectedProvinceCount: fixtures.diaLyMetadata.counts.provinces,
+    expectedCommuneCount: fixtures.diaLyMetadata.counts.communes,
   })
 
   // FK order: chi_nhanh, tinh, quan, xa, loai_khach_hang, nhom_quyen,
@@ -94,6 +108,86 @@ export async function seedDatabase(
         })),
       )
       .onConflictDoNothing({ target: schema.xa.id })
+  }
+
+  if (fixtures.tinhThanh.length > 0) {
+    await db
+      .insert(schema.tinhThanh)
+      .values(
+        fixtures.tinhThanh.map((row) => ({
+          ...row,
+          effectiveFrom: fixtures.diaLyMetadata.effectiveFrom,
+          snapshotVersion: fixtures.diaLyMetadata.version,
+          sourceDocument: fixtures.diaLyMetadata.sourceDocument,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.tinhThanh.code })
+  }
+
+  if (fixtures.phuongXa.length > 0) {
+    await db
+      .insert(schema.phuongXa)
+      .values(
+        fixtures.phuongXa.map((row) => ({
+          ...row,
+          effectiveFrom: fixtures.diaLyMetadata.effectiveFrom,
+          snapshotVersion: fixtures.diaLyMetadata.version,
+          sourceDocument: fixtures.diaLyMetadata.sourceDocument,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.phuongXa.code })
+  }
+
+  if (fixtures.nhaSanXuat.length > 0) {
+    await db
+      .insert(schema.nhaSanXuat)
+      .values(
+        fixtures.nhaSanXuat.map((row) => ({
+          ...row,
+          createdAt: new Date(row.createdAt),
+          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.nhaSanXuat.id })
+  }
+
+  if (fixtures.sanPham.length > 0) {
+    await db
+      .insert(schema.sanPham)
+      .values(
+        fixtures.sanPham.map((row) => ({
+          ...row,
+          createdAt: new Date(row.createdAt),
+          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.sanPham.id })
+  }
+
+  if (fixtures.nganHang.length > 0) {
+    await db
+      .insert(schema.nganHang)
+      .values(
+        fixtures.nganHang.map((row) => ({
+          ...row,
+          createdAt: new Date(row.createdAt),
+          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.nganHang.id })
+  }
+
+  if (fixtures.model.length > 0) {
+    await db
+      .insert(schema.model)
+      .values(
+        fixtures.model.map((row) => ({
+          ...row,
+          createdAt: new Date(row.createdAt),
+          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.model.id })
   }
 
   if (fixtures.loaiKhachHang.length > 0) {
@@ -187,5 +281,11 @@ export async function seedDatabase(
     nhomQuyen: fixtures.nhomQuyen.length,
     nguoiDung: fixtures.nguoiDung.length,
     khachHang: fixtures.khachHang.length,
+    nhaSanXuat: fixtures.nhaSanXuat.length,
+    sanPham: fixtures.sanPham.length,
+    model: fixtures.model.length,
+    nganHang: fixtures.nganHang.length,
+    tinhThanh: fixtures.tinhThanh.length,
+    phuongXa: fixtures.phuongXa.length,
   }
 }

@@ -7,18 +7,11 @@
  */
 import type { BaseEntity, ListParams, PagedResult } from '@/mock/seed'
 import type { MockApi } from '@/types/crud-types'
-import {
-  getAccessToken,
-  coalescedRefresh,
-} from './auth-token'
+import { getAccessToken, coalescedRefresh } from './auth-token'
 import { refreshAccessToken } from './auth-client'
 import { apiUrl } from './api-url'
 import { toQuery } from './list-params-query'
-import {
-  viErrorMessage,
-  NETWORK_ERROR,
-  TIMEOUT_ERROR,
-} from './vi-error-map'
+import { viErrorMessage, NETWORK_ERROR, TIMEOUT_ERROR } from './vi-error-map'
 
 const REQUEST_TIMEOUT_MS = 15_000
 
@@ -46,7 +39,8 @@ async function req<T>(url: string, options: ReqOptions = {}): Promise<T> {
       headers,
       credentials: 'include',
       signal: controller.signal,
-      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      body:
+        options.body !== undefined ? JSON.stringify(options.body) : undefined,
     })
   } catch (err) {
     clearTimeout(timer)
@@ -78,12 +72,20 @@ async function req<T>(url: string, options: ReqOptions = {}): Promise<T> {
   return (await res.json()) as T
 }
 
+/** Authenticated GET for non-CRUD endpoints that still need the shared
+ * timeout, refresh, and Vietnamese error mapping behavior. */
+export function getApiJson<T>(path: string): Promise<T> {
+  return req<T>(`${apiUrl()}${path}`)
+}
+
 /**
  * Factory: a real HTTP `MockApi<T>` for a REST resource under `/api/v1/<resource>`.
  * Satisfies the exact interface the CRUD pages consume — no page change beyond
  * the `apiFor()` config line.
  */
-export function makeHttpApi<T extends BaseEntity>(resource: string): MockApi<T> {
+export function makeHttpApi<T extends BaseEntity>(
+  resource: string,
+): MockApi<T> {
   // Built per-call (not captured once) so `apiUrl()` reflects the env at request
   // time — matters for tests that stub VITE_API_URL after the factory runs.
   const base = () => `${apiUrl()}/api/v1/${resource}`
@@ -94,7 +96,6 @@ export function makeHttpApi<T extends BaseEntity>(resource: string): MockApi<T> 
     create: (data) => req<T>(base(), { method: 'POST', body: data }),
     update: (id: string, data) =>
       req<T>(`${base()}/${id}`, { method: 'PATCH', body: data }),
-    remove: (id: string) =>
-      req<void>(`${base()}/${id}`, { method: 'DELETE' }),
+    remove: (id: string) => req<void>(`${base()}/${id}`, { method: 'DELETE' }),
   }
 }

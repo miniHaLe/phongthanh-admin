@@ -1,0 +1,28 @@
+{
+  "version": "official-2025.07.01",
+  "effectiveFrom": "2025-07-01",
+  "sourceDocument": "Quyết định 19/2025/QĐ-TTg — Danh mục và mã số các đơn vị hành chính Việt Nam",
+  "officialSourceUrl": "https://danhmuchanhchinh.nso.gov.vn/",
+  "transformationAid": {
+    "repository": "https://github.com/zindont/vietnam-address-kit",
+    "commit": "faa205f656149acbd4c6f03ec1407a2e7cd6dff4",
+    "license": "MIT",
+    "sourceConversionTableSha256": "213966723785859dedd7c88965d6f12f8c3c508c91796e003804cf60a1054fc2"
+  },
+  "officialCorrections": [
+    {
+      "code": "24496",
+      "source": "https://danhmuchanhchinh.nso.gov.vn/DMDVHC.asmx",
+      "verifiedName": "Xã Ea Kly",
+      "verifiedType": "Xã"
+    }
+  ],
+  "counts": {
+    "provinces": 34,
+    "communes": 3321
+  },
+  "checksums": {
+    "provincesSha256": "64085f3a7c9100f322f8da896ed901449e878733278cee363044431c6bba7563",
+    "communesSha256": "773edd21db2db11d2668df47ef7af18393f403198464b5768ffdbe1032f7df22"
+  }
+}

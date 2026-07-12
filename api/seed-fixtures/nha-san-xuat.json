@@ -1,0 +1,142 @@
+[
+  {
+    "id": "nsx-1",
+    "maNSX": "NSX001",
+    "tenNSX": "Apple",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-2",
+    "maNSX": "NSX002",
+    "tenNSX": "Samsung",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-3",
+    "maNSX": "NSX003",
+    "tenNSX": "Xiaomi",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-4",
+    "maNSX": "NSX004",
+    "tenNSX": "Oppo",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-5",
+    "maNSX": "NSX005",
+    "tenNSX": "Vivo",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-6",
+    "maNSX": "NSX006",
+    "tenNSX": "Huawei",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-7",
+    "maNSX": "NSX007",
+    "tenNSX": "Sony",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-8",
+    "maNSX": "NSX008",
+    "tenNSX": "LG",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-9",
+    "maNSX": "NSX009",
+    "tenNSX": "Nokia",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-10",
+    "maNSX": "NSX010",
+    "tenNSX": "Realme",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-11",
+    "maNSX": "NSX011",
+    "tenNSX": "OnePlus",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-12",
+    "maNSX": "NSX012",
+    "tenNSX": "Motorola",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-13",
+    "maNSX": "NSX013",
+    "tenNSX": "Asus",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-14",
+    "maNSX": "NSX014",
+    "tenNSX": "Lenovo",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-15",
+    "maNSX": "NSX015",
+    "tenNSX": "HP",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-16",
+    "maNSX": "NSX016",
+    "tenNSX": "Dell",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-17",
+    "maNSX": "NSX017",
+    "tenNSX": "Acer",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-18",
+    "maNSX": "NSX018",
+    "tenNSX": "Microsoft",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-19",
+    "maNSX": "NSX019",
+    "tenNSX": "Google",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "nsx-20",
+    "maNSX": "NSX020",
+    "tenNSX": "TCL",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  }
+]

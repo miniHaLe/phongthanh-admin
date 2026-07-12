@@ -1,0 +1,156 @@
+[
+  {
+    "id": "sp-1",
+    "maSP": "SP0001",
+    "tenSP": "iPhone 15",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-2",
+    "maSP": "SP0002",
+    "tenSP": "iPhone 14",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-3",
+    "maSP": "SP0003",
+    "tenSP": "Galaxy S24",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-4",
+    "maSP": "SP0004",
+    "tenSP": "Galaxy A54",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-5",
+    "maSP": "SP0005",
+    "tenSP": "Xiaomi 14",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-6",
+    "maSP": "SP0006",
+    "tenSP": "Redmi Note 13",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-7",
+    "maSP": "SP0007",
+    "tenSP": "Oppo Reno 11",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-8",
+    "maSP": "SP0008",
+    "tenSP": "Vivo Y36",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-9",
+    "maSP": "SP0009",
+    "tenSP": "iPad Air",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-10",
+    "maSP": "SP0010",
+    "tenSP": "iPad Pro",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-11",
+    "maSP": "SP0011",
+    "tenSP": "Galaxy Tab S9",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-12",
+    "maSP": "SP0012",
+    "tenSP": "Xiaomi Pad 6",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-13",
+    "maSP": "SP0013",
+    "tenSP": "MacBook Air M3",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-14",
+    "maSP": "SP0014",
+    "tenSP": "MacBook Pro M3",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-15",
+    "maSP": "SP0015",
+    "tenSP": "Galaxy Book 4",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-16",
+    "maSP": "SP0016",
+    "tenSP": "IdeaPad 5",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-17",
+    "maSP": "SP0017",
+    "tenSP": "Apple Watch Series 9",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-18",
+    "maSP": "SP0018",
+    "tenSP": "Galaxy Watch 6",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-19",
+    "maSP": "SP0019",
+    "tenSP": "Xiaomi Watch S3",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-20",
+    "maSP": "SP0020",
+    "tenSP": "AirPods Pro",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-21",
+    "maSP": "SP0021",
+    "tenSP": "Galaxy Buds 2",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "sp-22",
+    "maSP": "SP0022",
+    "tenSP": "Xiaomi Buds 4",
+    "active": true,
+    "createdAt": "2025-07-01T00:00:00.000Z"
+  }
+]
