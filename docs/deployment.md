@@ -11,7 +11,7 @@ Frontend:
 - Hosted by GitHub Pages from `.github/workflows/deploy-pages.yml`
 - URL: `https://minihale.github.io/phongthanh-admin/`
 - Build env:
-  - `VITE_REAL_RESOURCES=khach-hang`
+  - `VITE_REAL_RESOURCES=khach-hang,nha-san-xuat,san-pham,model,ngan-hang,dia-ly`
   - `VITE_API_URL=https://phongthanh-admin-api-minihale.onrender.com`
   - `VITE_ROUTER_MODE=hash`
   - `VITE_BASE_PATH=/phongthanh-admin/`
@@ -51,7 +51,7 @@ Do not commit this value. The seed forces users to change password on first logi
 
 Frontend GitHub Pages workflow:
 
-- `VITE_REAL_RESOURCES=khach-hang`
+- `VITE_REAL_RESOURCES=khach-hang,nha-san-xuat,san-pham,model,ngan-hang,dia-ly`
 - `VITE_API_URL=https://phongthanh-admin-api-minihale.onrender.com`
 - `VITE_ROUTER_MODE=hash`
 - `VITE_BASE_PATH=/phongthanh-admin/`
@@ -74,7 +74,7 @@ npm run type-check
 npm run lint
 npm run test
 npm run test:e2e:uiux
-env VITE_REAL_RESOURCES=khach-hang npm run build:prod
+env VITE_REAL_RESOURCES=khach-hang,nha-san-xuat,san-pham,model,ngan-hang,dia-ly npm run build:prod
 npm run test:api:with-db
 ```
 
@@ -112,7 +112,7 @@ curl -i https://<api-service>.onrender.com/api/v1/khach-hang
 Frontend:
 
 ```bash
-VITE_REAL_RESOURCES=khach-hang \
+VITE_REAL_RESOURCES=khach-hang,nha-san-xuat,san-pham,model,ngan-hang,dia-ly \
 VITE_API_URL=https://phongthanh-admin-api-minihale.onrender.com \
 VITE_ROUTER_MODE=hash \
 VITE_BASE_PATH=/phongthanh-admin/ \
@@ -130,6 +130,35 @@ Render free web services do not support Blueprint `preDeployCommand`. The
 Blueprint therefore runs the idempotent database migration and seed during
 `buildCommand`; paid Render services can move that logic back to a pre-deploy
 hook later if desired.
+
+## Database Release 0001
+
+Migration `api/src/db/migrations/0001_cool_sunspot.sql` adds:
+
+- `nha_san_xuat`, `san_pham`, `model`, `ngan_hang`;
+- `tinh_thanh`, `phuong_xa` with the official 2025-07-01 snapshot;
+- normalized customer address, tax, bank, and account columns.
+
+The migration is additive. It keeps `dia_chi`, `tinh_id`, `quan_id`, and
+`phuong_xa_id`, does not infer post-merger codes, and does not copy legacy
+`dia_chi` into `ten_duong`. Seed validates exact 34/3,321 counts and fixture
+checksums. See
+[`vietnam-administrative-data-provenance.md`](./vietnam-administrative-data-provenance.md).
+
+Before deploying this release to a database containing real customer data:
+
+```bash
+pg_dump "$DATABASE_URL" --format=custom --file=phongthanh-before-0001.dump
+npm --prefix api run build
+npm --prefix api run db:migrate
+npm --prefix api run seed
+npm run test:api:with-db
+env VITE_REAL_RESOURCES=khach-hang,nha-san-xuat,san-pham,model,ngan-hang,dia-ly npm run build:prod
+```
+
+`test:api:with-db` uses the isolated `phongthanh_test` database, not the
+production database. After deploy, authenticate and verify all six protected
+resources; repair-ticket persistence is still mock.
 
 ## GitHub Pages Frontend
 
@@ -228,9 +257,10 @@ gh workflow run "Deploy GitHub Pages" \
 ```bash
 curl -i https://example.ngrok-free.app/health
 curl -i https://example.ngrok-free.app/api/v1/khach-hang
+curl -i https://example.ngrok-free.app/api/v1/dia-ly
 ```
 
-`/health` should return `200`; `/api/v1/khach-hang` should return `401`
+`/health` should return `200`; protected API endpoints should return `401`
 without login. Customers can then open:
 
 ```text
@@ -242,7 +272,24 @@ Seeded users such as `admin`, `giamdoc`, and `tiepnhan1` use
 
 ## Rollback
 
-Use Render Dashboard -> service -> Events -> previous deploy -> Manual Deploy.
+Use Render Dashboard -> service -> Events -> previous deploy -> Manual Deploy
+for an application-only rollback that keeps the additive schema.
+
+If the database schema must also be removed, stop writes and back up first, then
+run the explicit down script before deploying the previous compatible API/web
+artifact:
+
+```bash
+pg_dump "$DATABASE_URL" --format=custom --file=phongthanh-before-0001-down.dump
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 \
+  -f api/src/db/migrations/0001_cool_sunspot.down.sql
+```
+
+The down script drops the new catalog/geography tables and normalized customer
+columns. It intentionally retains every legacy customer row and legacy address
+column/value. It also removes the exact `0001` row from Drizzle's migration
+ledger, so `npm --prefix api run db:migrate` can reapply the schema later. Do not
+run it while the six-resource frontend/API release is still serving traffic.
 
 ## Notes
 
