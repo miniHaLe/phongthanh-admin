@@ -296,15 +296,7 @@ describe('security gate 3/4 — branch scope from JWT, forgery cannot widen', ()
     expect(after.body.tenKH).not.toBe('HACKED')
   })
 
-  it('a cn-1 user cannot CREATE a row in cn-2 (write-side branch scope, gate 4)', async () => {
-    const before = await http
-      .get('/api/v1/khach-hang?pageSize=100')
-      .set('Authorization', `Bearer ${superToken}`)
-    const cn2CountBefore = before.body.data.filter(
-      (r: { branchId: string }) => r.branchId === 'cn-2',
-    ).length
-
-    // tinh-dak-nong derives branchId=cn-2, which the cn-1 user may not write.
+  it('address cannot forge ownership: create always uses JWT primary branch', async () => {
     const res = await http
       .post('/api/v1/khach-hang')
       .set('Authorization', `Bearer ${cn1Token}`)
@@ -314,15 +306,11 @@ describe('security gate 3/4 — branch scope from JWT, forgery cannot widen', ()
         tinhId: 'tinh-dak-nong',
         loaiKhachHangId: 1,
       })
-    expect(res.status).toBe(403)
-
-    const after = await http
-      .get('/api/v1/khach-hang?pageSize=100')
-      .set('Authorization', `Bearer ${superToken}`)
-    const cn2CountAfter = after.body.data.filter(
-      (r: { branchId: string }) => r.branchId === 'cn-2',
-    ).length
-    expect(cn2CountAfter).toBe(cn2CountBefore) // nothing planted
+    expect(res.status).toBe(201)
+    expect(res.body.branchId).toBe('cn-1')
+    await http
+      .delete(`/api/v1/khach-hang/${res.body.id}`)
+      .set('Authorization', `Bearer ${cn1Token}`)
   })
 
   it('a cn-1 user CAN create in their own branch', async () => {
@@ -363,7 +351,7 @@ describe('khach-hang create / update / delete (server owns id/branch/audit)', ()
     expect(res.body.id).toBeTruthy()
     expect(res.body.active).toBe(true)
     expect(res.body.createdAt).toBeTruthy()
-    expect(res.body.branchId).toBe('cn-1') // derived from tinh-dak-lak
+    expect(res.body.branchId).toBe('cn-1') // JWT primary branch, not address
     expect(res.body.nguoiTao).toBe('admin') // from the JWT, not the client
     expect('password' in res.body).toBe(false)
   })
@@ -393,7 +381,7 @@ describe('khach-hang create / update / delete (server owns id/branch/audit)', ()
         loaiKhachHangId: 1,
       })
     const id = created.body.id
-    expect(created.body.branchId).toBe('cn-2')
+    expect(created.body.branchId).toBe('cn-1')
 
     const upd = await http
       .patch(`/api/v1/khach-hang/${id}`)

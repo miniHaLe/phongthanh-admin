@@ -20,11 +20,18 @@ describe('modelConfig', () => {
     expect(modelConfig.export).toBe(true)
   })
 
-  it('requires Sản phẩm, Nhà sản xuất, Tên model but leaves Model Code optional', () => {
+  it('exposes exactly the four approved editable fields', () => {
+    expect(modelConfig.fields.map((field) => field.label)).toEqual([
+      'Tên Sản Phẩm',
+      'Nhà sản xuất',
+      'Tên model',
+      'Ghi chú',
+    ])
+
     const byKey = Object.fromEntries(modelConfig.fields.map((f) => [f.key, f]))
     expect(byKey.sanPhamId?.required).toBe(true)
     expect(byKey.nhaSanXuatId?.required).toBe(true)
     expect(byKey.tenModel?.required).toBe(true)
-    expect(byKey.maModel?.required).toBeFalsy()
+    expect(byKey.maModel).toBeUndefined()
   })
 })
