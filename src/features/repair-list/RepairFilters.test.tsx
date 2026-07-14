@@ -26,10 +26,17 @@ describe('RepairFilters', () => {
     expect(document.querySelector('[data-filter-panel]')).toBeInTheDocument()
     expect(screen.getByLabelText('Số phiếu')).toHaveFocus()
     expect(screen.getByLabelText('Số phiếu')).toHaveValue('PSC-001')
-    expect(document.querySelector('[data-repair-date-range]')).toHaveClass(
+    const dateRange = document.querySelector('[data-repair-date-range]')
+    expect(dateRange).toHaveClass(
       'grid-cols-1',
       'md:grid-cols-[1fr_auto_1fr]',
+      'lg:flex-none',
     )
+    const dateInputs = dateRange?.querySelectorAll('input[type="date"]')
+    expect(dateInputs).toHaveLength(2)
+    for (const input of dateInputs ?? []) {
+      expect(input).toHaveClass('lg:w-40', 'lg:shrink-0')
+    }
     expect(screen.getByText('–')).toHaveClass('hidden', 'md:block')
     expect(
       screen.getByRole('button', { name: 'Lưu / Xem bộ lọc' }),

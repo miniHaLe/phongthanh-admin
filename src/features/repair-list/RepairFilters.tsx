@@ -123,11 +123,11 @@ export function RepairFilters({
           {/* Date range */}
           <div
             data-repair-date-range
-            className="grid grid-cols-1 items-center gap-1.5 sm:col-span-2 md:grid-cols-[1fr_auto_1fr] lg:flex"
+            className="grid grid-cols-1 items-center gap-1.5 sm:col-span-2 md:grid-cols-[1fr_auto_1fr] lg:flex lg:flex-none"
           >
             <Input
               type="date"
-              className="h-11 w-full text-base md:h-8 md:text-sm lg:w-36"
+              className="h-11 w-full text-base md:h-8 md:text-sm lg:w-40 lg:shrink-0"
               value={filters.dateFrom ?? ''}
               onChange={(e) =>
                 onChange({ dateFrom: e.target.value || undefined })
@@ -142,7 +142,7 @@ export function RepairFilters({
             </span>
             <Input
               type="date"
-              className="h-11 w-full text-base md:h-8 md:text-sm lg:w-36"
+              className="h-11 w-full text-base md:h-8 md:text-sm lg:w-40 lg:shrink-0"
               value={filters.dateTo ?? ''}
               onChange={(e) =>
                 onChange({ dateTo: e.target.value || undefined })
