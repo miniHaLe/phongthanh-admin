@@ -55,8 +55,12 @@ describe('ThuChiPage', () => {
 
   it('renders the Lập Phiếu Thu and Lập Phiếu Chi header buttons', () => {
     renderWithProviders(<ThuChiPage />)
-    expect(screen.getByRole('button', { name: 'Lập Phiếu Thu' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Lập Phiếu Chi' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Lập Phiếu Thu' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Lập Phiếu Chi' }),
+    ).toBeInTheDocument()
   })
 
   it('per-row action is print only (in phiếu) — no edit/delete icon', async () => {
@@ -73,5 +77,15 @@ describe('ThuChiPage', () => {
     expect(screen.getByText('Phải thu')).toBeInTheDocument()
     expect(screen.getByText('Chi phí')).toBeInTheDocument()
     expect(screen.getByText('Phải trả')).toBeInTheDocument()
+  })
+
+  it('uses the standard list label while preserving the Thu SC suffix', () => {
+    renderWithProviders(<ThuChiPage />)
+    expect(
+      screen.getByRole('button', { name: 'Xuất Excel' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Xuất Excel Thu SC' }),
+    ).toBeInTheDocument()
   })
 })

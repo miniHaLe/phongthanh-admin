@@ -20,17 +20,20 @@ import { Button } from '@/components/ui/button'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
 import { fetchSellingList } from '@/domains/warehouse/list-fetchers'
-import { exportToXlsx } from '@/lib/export-xlsx'
+import { exportListXlsx } from '@/lib/export-list-xlsx'
 import type { SellingOrder } from '@/domains/warehouse/types'
 import {
   BAN_HANG_TABLE_ID,
   useBanHangColumns,
 } from '@/features/stockout/ban-hang-table-columns'
-import { BanHangFilters, type BanHangFilterValues } from '@/features/stockout/ban-hang-filters'
+import {
+  BanHangFilters,
+  type BanHangFilterValues,
+} from '@/features/stockout/ban-hang-filters'
 import { BanHangBatchToolbar } from '@/features/stockout/ban-hang-batch-toolbar'
 import { deleteSellingOrders } from '@/features/stockout/delete-selling'
 
-const PAGE_SIZE_OPTIONS = [20, 50, 100]
+import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 const EXPORT_COLUMNS = [
@@ -43,7 +46,10 @@ const EXPORT_COLUMNS = [
   { header: 'Ghi chú', accessor: (r: SellingOrder) => r.ghiChu },
 ]
 
-function applyClientFilters(rows: SellingOrder[], f: BanHangFilterValues): SellingOrder[] {
+function applyClientFilters(
+  rows: SellingOrder[],
+  f: BanHangFilterValues,
+): SellingOrder[] {
   let out = rows
   if (f.tenKhachHang) {
     const q = f.tenKhachHang.toLowerCase()
@@ -117,10 +123,12 @@ export default function BanHangPage() {
     setPage(1)
   }
 
-  const activeFilterCount = Object.values(filters).filter((v) => v != null && v !== '').length
+  const activeFilterCount = Object.values(filters).filter(
+    (v) => v != null && v !== '',
+  ).length
 
   async function handleExport() {
-    await exportToXlsx({
+    await exportListXlsx({
       filename: 'ban-hang',
       sheetName: 'Bán Hàng',
       columns: EXPORT_COLUMNS,
@@ -137,7 +145,11 @@ export default function BanHangPage() {
           { label: 'Bán Hàng' },
         ]}
       >
-        <Button size="sm" className="h-8" onClick={() => navigate(ROUTES.stockOutSalesCreate)}>
+        <Button
+          size="sm"
+          className="h-8"
+          onClick={() => navigate(ROUTES.stockOutSalesCreate)}
+        >
           Thêm phiếu bán hàng
         </Button>
       </PageHeader>
@@ -152,16 +164,36 @@ export default function BanHangPage() {
         </FilterPanel>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="outline" className="h-8" onClick={() => refetch()}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => refetch()}
+          >
             Tìm kiếm
           </Button>
-          <Button size="sm" variant="outline" className="h-8" onClick={() => refetch()}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => refetch()}
+          >
             Tìm chi tiết
           </Button>
-          <Button size="sm" variant="outline" className="h-8" onClick={() => void handleExport()}>
-            Xuất ra Excel
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => void handleExport()}
+          >
+            Xuất Excel
           </Button>
-          <Button size="sm" variant="outline" className="h-8" onClick={() => void handleExport()}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => void handleExport()}
+          >
             Báo cáo lợi nhuận
           </Button>
         </div>

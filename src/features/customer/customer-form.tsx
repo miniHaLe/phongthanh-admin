@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
@@ -30,12 +30,16 @@ import {
 interface CustomerFormProps {
   idPrefix: string
   initialCustomer?: KhachHang
+  initialCustomerTypeId?: number
+  customerTypeOptions?: Array<{ id: number; ten: string }>
+  nameLabel?: string
   provinces: VietnamProvince[]
   communes: VietnamCommune[]
   banks: NganHang[]
   isPending?: boolean
   submitLabel?: string
   onCancel: () => void
+  onDirtyChange?: (isDirty: boolean) => void
   onSubmit: (
     data: ReturnType<typeof toCustomerMutationPayload>,
   ) => Promise<void> | void
@@ -44,19 +48,30 @@ interface CustomerFormProps {
 export function CustomerForm({
   idPrefix,
   initialCustomer,
+  initialCustomerTypeId,
+  customerTypeOptions,
+  nameLabel = 'Tên khách hàng',
   provinces,
   communes,
   banks,
   isPending,
   submitLabel = 'Lưu',
   onCancel,
+  onDirtyChange,
   onSubmit,
 }: CustomerFormProps) {
-  const [values, setValues] = useState<CustomerFormValues>(() =>
-    customerToFormValues(initialCustomer),
-  )
+  const initialValues = () => ({
+    ...customerToFormValues(initialCustomer),
+    ...(!initialCustomer && initialCustomerTypeId
+      ? { loaiKhachHangId: initialCustomerTypeId }
+      : {}),
+  })
+  const [values, setValues] = useState<CustomerFormValues>(initialValues)
+  const [baselineValues, setBaselineValues] =
+    useState<CustomerFormValues>(initialValues)
   const [errors, setErrors] = useState<CustomerFormErrors>({})
   const [addressTouched, setAddressTouched] = useState(false)
+  const [clearAddress, setClearAddress] = useState(false)
   const inactiveInitialBank =
     initialCustomer?.nganHangId &&
     !banks.some((bank) => bank.id === initialCustomer.nganHangId)
@@ -69,10 +84,29 @@ export function CustomerForm({
       : undefined
 
   useEffect(() => {
-    setValues(customerToFormValues(initialCustomer))
+    const nextValues = initialValues()
+    setValues(nextValues)
+    setBaselineValues(nextValues)
     setErrors({})
     setAddressTouched(false)
-  }, [initialCustomer])
+    setClearAddress(false)
+  }, [initialCustomer, initialCustomerTypeId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isDirty =
+    addressTouched ||
+    clearAddress ||
+    JSON.stringify(values) !== JSON.stringify(baselineValues)
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty)
+  }, [isDirty, onDirtyChange])
+
+  useEffect(
+    () => () => {
+      onDirtyChange?.(false)
+    },
+    [onDirtyChange],
+  )
 
   function patch(next: Partial<CustomerFormValues>) {
     if (
@@ -81,12 +115,31 @@ export function CustomerForm({
       )
     ) {
       setAddressTouched(true)
+      setClearAddress(false)
     }
     setValues((current) => ({ ...current, ...next }))
     setErrors((current) => {
       const copy = { ...current }
       for (const key of Object.keys(next) as Array<keyof CustomerFormValues>)
         delete copy[key]
+      return copy
+    })
+  }
+
+  function handleClearAddress() {
+    setAddressTouched(true)
+    setClearAddress(true)
+    setValues((current) => ({
+      ...current,
+      tenDuong: '',
+      tinhThanhCode: '',
+      phuongXaCode: '',
+    }))
+    setErrors((current) => {
+      const copy = { ...current }
+      delete copy.tenDuong
+      delete copy.tinhThanhCode
+      delete copy.phuongXaCode
       return copy
     })
   }
@@ -107,7 +160,9 @@ export function CustomerForm({
     ) : null
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (isPending) return
     const nextErrors = validateCustomerForm(values)
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
@@ -115,16 +170,17 @@ export function CustomerForm({
       toCustomerMutationPayload(values, provinces, communes, {
         forUpdate: Boolean(initialCustomer),
         addressTouched,
+        clearAddress,
       }),
     )
   }
 
   return (
-    <div className="space-y-5">
+    <form className="space-y-5" onSubmit={(event) => void handleSubmit(event)}>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5 sm:col-span-2">
           <Label htmlFor={`${idPrefix}-name`}>
-            Tên khách hàng <span className="text-destructive">*</span>
+            {nameLabel} <span className="text-destructive">*</span>
           </Label>
           <Input
             id={`${idPrefix}-name`}
@@ -164,8 +220,10 @@ export function CustomerForm({
             disabled={isPending}
             inputMode="tel"
             autoComplete="tel"
+            {...errorProps('dienThoai2')}
             onChange={(event) => patch({ dienThoai2: event.target.value })}
           />
+          <ErrorMessage field="dienThoai2" />
         </div>
 
         <div className="space-y-1.5 sm:col-span-2">
@@ -181,6 +239,58 @@ export function CustomerForm({
           />
           <ErrorMessage field="email" />
         </div>
+
+        {customerTypeOptions && customerTypeOptions.length > 0 && (
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor={`${idPrefix}-customer-type`}>
+              Loại đại lý <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={String(values.loaiKhachHangId)}
+              disabled={isPending}
+              onValueChange={(value) =>
+                patch({ loaiKhachHangId: Number(value) })
+              }
+            >
+              <SelectTrigger id={`${idPrefix}-customer-type`}>
+                <SelectValue placeholder="Chọn loại đại lý" />
+              </SelectTrigger>
+              <SelectContent>
+                {customerTypeOptions.map((option) => (
+                  <SelectItem key={option.id} value={String(option.id)}>
+                    {option.ten}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {initialCustomer?.diaChi && (
+          <div className="space-y-2 rounded-md border bg-muted/30 p-3 sm:col-span-2">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Địa chỉ đang lưu
+                </p>
+                <p className="text-sm" aria-live="polite">
+                  {clearAddress
+                    ? 'Địa chỉ sẽ được xóa khi lưu.'
+                    : initialCustomer.diaChi}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isPending || clearAddress}
+                onClick={handleClearAddress}
+              >
+                Xóa địa chỉ
+              </Button>
+            </div>
+          </div>
+        )}
 
         <CustomerAddressFields
           idPrefix={idPrefix}
@@ -266,15 +376,11 @@ export function CustomerForm({
         >
           Hủy
         </Button>
-        <Button
-          type="button"
-          disabled={isPending}
-          onClick={() => void handleSubmit()}
-        >
+        <Button type="submit" disabled={isPending}>
           {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
           {submitLabel}
         </Button>
       </DialogFooter>
-    </div>
+    </form>
   )
 }

@@ -1,31 +1,27 @@
 /**
  * NhapKhoPage — goods receipt / stock entry list. Verified reference columns
  * (no Trạng thái — receiving vouchers carry no approval state machine), Tổng
- * tiền info-box, Thêm mới → full-page create editor, Xuất ra Excel.
+ * tiền info-box, Thêm mới → full-page create editor, Xuất Excel.
  */
 import { useMemo, useState } from 'react'
 import { PackagePlus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import type { PaginationState, RowSelectionState } from '@tanstack/react-table'
-import {
-  DataTable,
-  DataTablePagination,
-  PageHeader,
-} from '@/components/shared'
+import { DataTable, DataTablePagination, PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
 import { fetchReceivingList } from '@/domains/warehouse/list-fetchers'
 import { formatVND } from '@/lib/format'
-import { exportToXlsx } from '@/lib/export-xlsx'
+import { exportListXlsx } from '@/lib/export-list-xlsx'
 import type { ReceivingVoucher } from '@/domains/warehouse/types'
 import {
   NHAP_KHO_TABLE_ID,
   useNhapKhoColumns,
 } from '@/features/warehouse/nhap-kho-table-columns'
 
-const PAGE_SIZE_OPTIONS = [20, 50, 100]
+import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 const EXPORT_COLUMNS = [
@@ -81,7 +77,7 @@ export default function NhapKhoPage() {
 
   async function handleExport() {
     const res = await fetchReceivingList({ page: 1, pageSize: total || 1 })
-    await exportToXlsx({
+    await exportListXlsx({
       filename: 'nhap-kho',
       sheetName: 'Nhập Kho',
       columns: EXPORT_COLUMNS,
@@ -123,7 +119,7 @@ export default function NhapKhoPage() {
             className="h-8"
             onClick={() => void handleExport()}
           >
-            Xuất ra Excel
+            Xuất Excel
           </Button>
 
           <div className="flex-1" />

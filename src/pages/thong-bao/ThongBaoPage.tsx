@@ -6,28 +6,30 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ColumnDef } from '@tanstack/react-table'
-import { PageHeader, DataTable } from '@/components/shared'
+import { PageHeader, DataTable, StatusBadge } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/constants/routes'
 import { useNotificationStore } from '@/store/notification-store'
-import { labelOf, hexOf } from '@/domains/repair/status'
 import { formatDateTime } from '@/lib/format'
 import type { NotificationItem } from '@/mock/notifications-mock'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
 export default function ThongBaoPage() {
   const navigate = useNavigate()
   const notifications = useNotificationStore((s) => s.notifications)
   const seenIds = useNotificationStore((s) => s.seenIds)
   const markAllSeen = useNotificationStore((s) => s.markAllSeen)
-  const seen = new Set(seenIds)
+  const seen = useMemo(() => new Set(seenIds), [seenIds])
 
   const columns = useMemo<ColumnDef<NotificationItem, unknown>[]>(
     () => [
       {
         id: 'stt',
         header: 'STT',
-        cell: ({ row }) => (
-          <span className="text-muted-foreground">{row.index + 1}</span>
+        cell: ({ row, table }) => (
+          <span className="text-muted-foreground">
+            {getVisibleRowNumber(table, row)}
+          </span>
         ),
       },
       {
@@ -44,12 +46,7 @@ export default function ThongBaoPage() {
         id: 'tinhTrang',
         header: 'Tình trạng',
         cell: ({ row }) => (
-          <span
-            className="inline-block rounded px-2 py-0.5 text-xs font-bold uppercase text-white"
-            style={{ backgroundColor: hexOf(row.original.statusId) }}
-          >
-            {labelOf(row.original.statusId)}
-          </span>
+          <StatusBadge status={row.original.statusId} variant="solid" />
         ),
       },
       { id: 'nguoiDoi', accessorKey: 'changedBy', header: 'Người đổi' },

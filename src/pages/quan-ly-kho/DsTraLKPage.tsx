@@ -24,7 +24,7 @@ import {
   type PartReturnFilterValues,
 } from '@/features/warehouse/part-return-filters'
 
-const PAGE_SIZE_OPTIONS = [20, 50, 100]
+import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 function applyClientFilters(rows: PartReturn[], f: PartReturnFilterValues): PartReturn[] {

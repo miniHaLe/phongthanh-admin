@@ -4,8 +4,8 @@
  */
 import { useState, useMemo, useCallback } from 'react'
 import { useMatch } from 'react-router-dom'
-import { Plus, RefreshCw, Pencil, Trash2, FileSpreadsheet } from 'lucide-react'
-import type { ColumnDef, RowSelectionState } from '@tanstack/react-table'
+import { Plus, RefreshCw, Trash2, FileSpreadsheet } from 'lucide-react'
+import type { RowSelectionState } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import {
   DataTable,
@@ -13,18 +13,26 @@ import {
   DataTablePagination,
   DataTableColumnConfig,
   BulkActionsBar,
-  buildSelectionColumn,
-  notify,
+  FilterPanel,
+  API_PAGE_SIZE_OPTIONS,
 } from '@/components/shared'
-import { useCrud } from '@/hooks/use-crud'
-import { exportToXlsx } from '@/lib/export-xlsx'
+import {
+  failedBulkDeleteSelection,
+  notifyBulkDeleteResult,
+  selectedRowIds,
+  useCrud,
+} from '@/hooks/use-crud'
 import { CrudSheet } from './CrudSheet'
 import { CrudDeleteDialog } from './CrudDeleteDialog'
-import { CrudFilterBar } from './CrudFilterBar'
-import type { CrudConfig, ColumnConfig } from '@/types/crud-types'
+import type { CrudConfig } from '@/types/crud-types'
 import { cn } from '@/lib/utils'
-
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
+import {
+  buildCrudColumnDescriptors,
+  buildCrudColumns,
+} from './build-crud-columns'
+import { CrudFilterFields } from './crud-filter-fields'
+import { countActiveFilterValues } from './crud-filter-values'
+import { exportCurrentCrudPage } from './export-crud-rows'
 
 interface CrudTablePageProps<T extends { id: string }> {
   config: CrudConfig<T>
@@ -60,7 +68,6 @@ function getEntityLabel<T extends { id: string }>(
     'maNV',
     'tenPhongBan',
     'tenChucVu',
-    'tenNhom',
     'tenMenu',
     'tenChucNang',
   ] as const
@@ -96,6 +103,8 @@ export function CrudTablePage<T extends { id: string }>({
     createMutation,
     updateMutation,
     deleteMutation,
+    bulkDelete,
+    isBulkDeleting,
   } = crud
 
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -106,109 +115,43 @@ export function CrudTablePage<T extends { id: string }>({
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
 
   const result = listQuery.data
-  const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id])
+  const selectedIds = selectedRowIds(rowSelection)
+  const activeFilterCount = useMemo(
+    () => countActiveFilterValues(params.filters),
+    [params.filters],
+  )
+  const hasActiveQuery = params.search.trim() !== '' || activeFilterCount > 0
 
-  /** Build TanStack ColumnDef[] from ColumnConfig[]. */
-  const columns = useMemo<ColumnDef<T, unknown>[]>(() => {
-    const cols: ColumnDef<T, unknown>[] = [
-      ...(config.bulkDelete ? [buildSelectionColumn<T>()] : []),
-      {
-        id: 'stt',
-        header: 'STT',
-        cell: ({ row }) => (params.page - 1) * params.pageSize + row.index + 1,
-        enableSorting: false,
-        size: 56,
-        meta: { sticky: true },
-      },
-      ...config.columns.map((col: ColumnConfig<T>): ColumnDef<T, unknown> => ({
-        id: String(col.key),
-        accessorKey: col.key as string,
-        header: col.header,
-        enableSorting: col.sortable ?? false,
-        size: col.width,
-        cell: col.renderCell
-          ? ({ row }) =>
-              col.renderCell!(
-                (row.original as Record<string, unknown>)[
-                  String(col.key)
-                ] as T[keyof T],
-                row.original,
-              )
-          : undefined,
-      })),
-      {
-        id: '_actions',
-        header: '',
-        enableSorting: false,
-        size: 88,
-        cell: ({ row }) => (
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-11 w-11 md:h-7 md:w-7"
-              aria-label="Chỉnh sửa"
-              title="Chỉnh sửa"
-              onClick={(e) => {
-                e.stopPropagation()
-                setEditRow(row.original)
-                setSheetMode('edit')
-                setSheetOpen(true)
-              }}
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-11 w-11 text-destructive hover:text-destructive md:h-7 md:w-7"
-              aria-label="Xóa"
-              title="Xóa"
-              onClick={(e) => {
-                e.stopPropagation()
-                setDeleteRow(row.original)
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        ),
-      },
-    ]
-    return cols
-  }, [config.columns, config.bulkDelete, params.page, params.pageSize])
+  const columns = useMemo(
+    () =>
+      buildCrudColumns(config, params, {
+        onEdit: (row) => {
+          setEditRow(row)
+          setSheetMode('edit')
+          setSheetOpen(true)
+        },
+        onDelete: setDeleteRow,
+      }),
+    [config, params],
+  )
 
   const columnDescriptors = useMemo(
-    () =>
-      config.columns.map((c) => ({
-        id: String(c.key),
-        label: c.header,
-      })),
-    [config.columns],
+    () => buildCrudColumnDescriptors(config),
+    [config],
   )
 
   const handleSheetSubmit = useCallback(
-    (data: Partial<T>, saveAndNew?: boolean) => {
+    async (data: Partial<T>, saveAndNew?: boolean) => {
       if (sheetMode === 'create') {
-        createMutation.mutate(data as Omit<T, 'id' | 'createdAt'>, {
-          onSuccess: () => {
-            // "Lưu & Thêm mới" keeps the sheet open (CrudSheet resets the form).
-            if (!saveAndNew) {
-              setSheetOpen(false)
-              setEditRow(undefined)
-            }
-          },
-        })
+        await createMutation.mutateAsync(data as Omit<T, 'id' | 'createdAt'>)
+        if (!saveAndNew) {
+          setSheetOpen(false)
+          setEditRow(undefined)
+        }
       } else if (editRow) {
-        updateMutation.mutate(
-          { id: editRow.id, data },
-          {
-            onSuccess: () => {
-              setSheetOpen(false)
-              setEditRow(undefined)
-            },
-          },
-        )
+        await updateMutation.mutateAsync({ id: editRow.id, data })
+        setSheetOpen(false)
+        setEditRow(undefined)
       }
     },
     [sheetMode, editRow, createMutation, updateMutation],
@@ -221,26 +164,21 @@ export function CrudTablePage<T extends { id: string }>({
     })
   }, [deleteRow, deleteMutation])
 
-  const handleBulkDeleteConfirm = useCallback(() => {
-    for (const id of selectedIds) deleteMutation.mutate(id)
+  const handleBulkDeleteConfirm = useCallback(async () => {
+    const result = await bulkDelete(selectedIds)
     setBulkDeleteOpen(false)
-    setRowSelection({})
-    notify.success(`Đã xóa ${selectedIds.length} dòng`)
-  }, [selectedIds, deleteMutation])
+    setRowSelection(failedBulkDeleteSelection(result))
+    notifyBulkDeleteResult(result)
+  }, [selectedIds, bulkDelete])
 
   const handleExport = useCallback(() => {
-    const rows = result?.data ?? []
-    void exportToXlsx({
-      filename: config.resourceKey,
-      sheetName: config.title,
-      columns: config.columns.map((c) => ({
-        header: c.header,
-        accessor: (row: T) =>
-          String((row as Record<string, unknown>)[String(c.key)] ?? ''),
-      })),
-      rows,
-    })
+    void exportCurrentCrudPage(config, result?.data ?? [])
   }, [result, config])
+
+  const handleClearQuery = useCallback(() => {
+    setSearch('')
+    setFilters({})
+  }, [setFilters, setSearch])
 
   const toolbar = (
     <DataTableToolbar
@@ -272,10 +210,10 @@ export function CrudTablePage<T extends { id: string }>({
               size="sm"
               className="h-11 gap-1 md:h-8"
               onClick={handleExport}
-              title="Xuất ra Excel"
+              title="Xuất Excel (trang hiện tại)"
             >
               <FileSpreadsheet className="h-4 w-4" />
-              <span className="hidden sm:inline">Xuất ra Excel</span>
+              <span className="hidden sm:inline">Xuất Excel</span>
             </Button>
           )}
           {config.addLabel !== false && (
@@ -305,12 +243,16 @@ export function CrudTablePage<T extends { id: string }>({
 
       {/* Filter bar */}
       {config.filters && config.filters.length > 0 && (
-        <CrudFilterBar
-          filters={config.filters}
-          value={params.filters}
-          onChange={setFilters}
+        <FilterPanel
+          filterCount={activeFilterCount}
           onClear={() => setFilters({})}
-        />
+        >
+          <CrudFilterFields
+            filters={config.filters}
+            value={params.filters}
+            onChange={setFilters}
+          />
+        </FilterPanel>
       )}
 
       {/* Bulk-actions bar (opt-in) */}
@@ -321,6 +263,7 @@ export function CrudTablePage<T extends { id: string }>({
             size="sm"
             className="h-11 gap-1 md:h-8"
             onClick={() => setBulkDeleteOpen(true)}
+            disabled={isBulkDeleting}
           >
             <Trash2 className="h-4 w-4" />
             Xóa
@@ -334,6 +277,7 @@ export function CrudTablePage<T extends { id: string }>({
         columns={columns}
         data={result?.data ?? []}
         isLoading={listQuery.isLoading}
+        isFetching={listQuery.isFetching}
         isError={listQuery.isError}
         onRetry={() => listQuery.refetch()}
         {...(config.bulkDelete
@@ -344,20 +288,28 @@ export function CrudTablePage<T extends { id: string }>({
               getRowId: (row: T) => row.id,
             }
           : {})}
-        emptyMessage={`Chưa có ${config.title}`}
+        emptyMessage={
+          hasActiveQuery ? 'Không tìm thấy kết quả' : `Chưa có ${config.title}`
+        }
         emptyAction={
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setEditRow(undefined)
-              setSheetMode('create')
-              setSheetOpen(true)
-            }}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            Thêm {config.title}
-          </Button>
+          hasActiveQuery ? (
+            <Button size="sm" variant="outline" onClick={handleClearQuery}>
+              Xóa tìm kiếm và bộ lọc
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setEditRow(undefined)
+                setSheetMode('create')
+                setSheetOpen(true)
+              }}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              Thêm {config.title}
+            </Button>
+          )
         }
         sorting={
           params.sort ? [{ id: params.sort, desc: params.dir === 'desc' }] : []
@@ -375,6 +327,7 @@ export function CrudTablePage<T extends { id: string }>({
             setSort(next[0].id, next[0].desc ? 'desc' : 'asc')
           }
         }}
+        manualSorting
         manualPagination
         pagination={{ pageIndex: params.page - 1, pageSize: params.pageSize }}
         pageCount={
@@ -391,7 +344,7 @@ export function CrudTablePage<T extends { id: string }>({
           total={result.total}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
-          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          pageSizeOptions={API_PAGE_SIZE_OPTIONS}
         />
       )}
 
@@ -424,7 +377,7 @@ export function CrudTablePage<T extends { id: string }>({
         onClose={() => setBulkDeleteOpen(false)}
         onConfirm={handleBulkDeleteConfirm}
         entityLabel={`${selectedIds.length} dòng đã chọn`}
-        isPending={deleteMutation.isPending}
+        isPending={isBulkDeleting}
       />
     </div>
   )

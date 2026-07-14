@@ -28,20 +28,30 @@ describe('BanHangPage', () => {
   it('does not render a Trạng thái column', async () => {
     renderWithProviders(<BanHangPage />)
     await screen.findAllByRole('columnheader')
-    expect(screen.queryByRole('columnheader', { name: 'Trạng thái' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('columnheader', { name: 'Trạng thái' }),
+    ).not.toBeInTheDocument()
   })
 
-  it('renders Tìm kiếm/Tìm chi tiết/Xuất ra Excel/Báo cáo lợi nhuận', () => {
+  it('renders Tìm kiếm/Tìm chi tiết/Xuất Excel/Báo cáo lợi nhuận', () => {
     renderWithProviders(<BanHangPage />)
     expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Tìm chi tiết' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Xuất ra Excel' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Báo cáo lợi nhuận' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Tìm chi tiết' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Xuất Excel' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Báo cáo lợi nhuận' }),
+    ).toBeInTheDocument()
   })
 
   it('renders per-row Thêm hình/Chỉnh sửa/Xuất kho/Chi tiết actions', async () => {
     renderWithProviders(<BanHangPage />)
-    expect((await screen.findAllByLabelText('Thêm hình'))[0]).toBeInTheDocument()
+    expect(
+      (await screen.findAllByLabelText('Thêm hình'))[0],
+    ).toBeInTheDocument()
     expect(screen.getAllByLabelText('Chỉnh sửa')[0]).toBeInTheDocument()
     expect(screen.getAllByLabelText('Xuất kho')[0]).toBeInTheDocument()
     expect(screen.getAllByLabelText('Chi tiết')[0]).toBeInTheDocument()

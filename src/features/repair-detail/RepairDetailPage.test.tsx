@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, vi } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Routes, Route } from 'react-router-dom'
 import { renderWithProviders } from '@/test/render-with-providers'
 import { MOCK_TICKETS } from '@/domains/repair/mock-data'
@@ -58,9 +59,7 @@ describe('RepairDetailPage', () => {
 
     // Verify DOM order matches the expected order.
     for (let i = 0; i < headingEls.length - 1; i++) {
-      const relation = headingEls[i].compareDocumentPosition(
-        headingEls[i + 1],
-      )
+      const relation = headingEls[i].compareDocumentPosition(headingEls[i + 1])
       // Node.DOCUMENT_POSITION_FOLLOWING === 4
       expect(relation & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     }
@@ -107,8 +106,12 @@ describe('RepairDetailPage', () => {
       expect(screen.getByText('Tạo mới')).toBeInTheDocument()
     })
     expect(
-      screen.getByRole('link', { name: 'Tạo mới' }),
-    ).toHaveAttribute('href', ROUTES.repairCreate)
+      screen.getByRole('button', { name: 'Đổi tình trạng' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Tạo mới' })).toHaveAttribute(
+      'href',
+      ROUTES.repairCreate,
+    )
     expect(
       screen.getByRole('button', { name: 'In Tem Sửa Chữa' }),
     ).toBeInTheDocument()
@@ -118,6 +121,42 @@ describe('RepairDetailPage', () => {
     expect(
       screen.getByRole('link', { name: 'Danh sách phiếu' }),
     ).toHaveAttribute('href', ROUTES.repairList)
+  })
+
+  it('opens the shared status dialog and reflects the new history entry', async () => {
+    const user = userEvent.setup()
+    const original = {
+      status: ticket.tinhTrang,
+      updatedAt: ticket.updatedAt,
+      ngaySuaXong: ticket.ngaySuaXong,
+      history: [...ticket.statusHistory],
+    }
+
+    try {
+      renderDetail(ticket.id)
+      const statusHeading = await screen.findByText('Nhật ký tình trạng máy')
+      const statusCard = statusHeading.closest('div')?.parentElement
+        ?.parentElement as HTMLElement
+      const initialRowCount = within(statusCard).getAllByRole('row').length
+
+      await user.click(screen.getByRole('button', { name: 'Đổi tình trạng' }))
+      const dialog = screen.getByRole('dialog')
+      expect(
+        within(dialog).getByRole('heading', { name: 'Đổi tình trạng' }),
+      ).toBeInTheDocument()
+      await user.click(within(dialog).getByRole('button', { name: 'Lưu' }))
+
+      await waitFor(() => {
+        expect(within(statusCard).getAllByRole('row')).toHaveLength(
+          initialRowCount + 1,
+        )
+      })
+    } finally {
+      ticket.tinhTrang = original.status
+      ticket.updatedAt = original.updatedAt
+      ticket.ngaySuaXong = original.ngaySuaXong
+      ticket.statusHistory = original.history
+    }
   })
 
   it('does not render the invented Chi phí card or Linh kiện sử dụng heading', async () => {

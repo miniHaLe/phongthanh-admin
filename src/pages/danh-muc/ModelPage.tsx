@@ -12,7 +12,7 @@ export default function ModelPage() {
   const catalogQuery = useQuery({
     queryKey: MODEL_CATALOG_QUERY_KEY,
     queryFn: loadModelCatalog,
-    staleTime: 0,
+    staleTime: 5 * 60_000,
   })
   const config = useMemo(
     () => modelConfigForCatalog(catalogQuery.data),

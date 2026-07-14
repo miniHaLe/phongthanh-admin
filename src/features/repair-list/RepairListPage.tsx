@@ -23,8 +23,9 @@ import {
   StatusLegend,
   StatusBadge,
   PageHeader,
-  BulkActionsBar,
 } from '@/components/shared'
+import { PlusCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Link, useNavigate } from 'react-router-dom'
 import { useRegisterCommands } from '@/components/shell/command-registry'
@@ -43,7 +44,7 @@ import { RepairBatchToolbar } from './components/repair-batch-toolbar'
 import { RowActionsCell } from './components/row-actions-cell'
 import { cn } from '@/lib/utils'
 
-const PAGE_SIZE_OPTIONS = [20, 50, 100]
+import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 const REPAIR_SORT_FIELD_MAP: Record<string, keyof RepairTicket> = {
@@ -207,7 +208,16 @@ export default function RepairListPage() {
           { label: 'Trang chủ', href: ROUTES.home },
           { label: 'Sửa Chữa - Bảo Hành' },
         ]}
-      />
+      >
+        <Button
+          size="sm"
+          className="h-11 gap-1.5 bg-emerald-600 hover:bg-emerald-700 md:h-8"
+          onClick={() => navigate(ROUTES.repairCreate)}
+        >
+          <PlusCircle className="size-4" />
+          Lập phiếu
+        </Button>
+      </PageHeader>
 
       <div className="flex flex-col gap-3 p-4 sm:p-6">
         <RepairFilters
@@ -228,15 +238,10 @@ export default function RepairListPage() {
           selected={selectedTickets}
           filters={filters}
           total={total}
-          onReload={() => {
-            handleClear()
-            refetch()
-          }}
         />
 
-        {/* Selection bar + count + column config */}
+        {/* Count + column config */}
         <div className="flex flex-wrap items-center gap-2">
-          <BulkActionsBar count={selectedTickets.length} />
           <div className="flex-1" />
           <span className="text-sm text-muted-foreground" aria-live="polite">
             Tổng: <strong>{total}</strong> dòng, Trang {page} / {totalPages}

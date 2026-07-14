@@ -109,9 +109,7 @@ test.describe('UIUX composite table hard gates', () => {
     await gotoProtectedRoute(page, '/tai-chinh/thu-chi', DESKTOP_1920)
 
     const downloadPromise = page.waitForEvent('download')
-    await page
-      .getByRole('button', { name: 'Xuất ra Excel', exact: true })
-      .click()
+    await page.getByRole('button', { name: 'Xuất Excel', exact: true }).click()
     const download = await downloadPromise
     expect(download.suggestedFilename()).toBe('thu-chi.xlsx')
 

@@ -1,5 +1,6 @@
 import { SeededRandom } from '@/lib/seeded-random'
 import type { Menu } from '@/types/masterdata-types'
+import { ROUTES } from '@/constants/routes'
 import { makeMockApi } from './make-mock-api'
 
 const rng = new SeededRandom(1022)
@@ -11,7 +12,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-1',
     tenMenu: 'Trang chủ',
-    duongDan: '/trang-chu',
+    duongDan: ROUTES.home,
     thuTu: 1,
     icon: 'fa fa-home',
     active: true,
@@ -19,7 +20,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-2',
     tenMenu: 'Sửa chữa - Bảo hành',
-    duongDan: '/sua-chua-bao-hanh',
+    duongDan: ROUTES.repairList,
     thuTu: 2,
     icon: 'fa fa-wrench',
     active: true,
@@ -27,7 +28,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-3',
     tenMenu: 'Khách hàng',
-    duongDan: '/khach-hang',
+    duongDan: ROUTES.customers,
     thuTu: 3,
     icon: 'fa fa-users',
     active: true,
@@ -35,7 +36,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-4',
     tenMenu: 'Quản lý kho',
-    duongDan: '/quan-ly-kho',
+    duongDan: ROUTES.inventory,
     thuTu: 4,
     icon: 'fa fa-archive',
     active: true,
@@ -43,7 +44,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-5',
     tenMenu: 'Xuất kho',
-    duongDan: '/xuat-kho',
+    duongDan: ROUTES.stockOut,
     thuTu: 5,
     icon: 'fa fa-sign-out',
     active: true,
@@ -51,7 +52,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-6',
     tenMenu: 'Tài chính',
-    duongDan: '/tai-chinh',
+    duongDan: ROUTES.finance,
     thuTu: 6,
     icon: 'fa fa-money',
     active: true,
@@ -59,7 +60,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-7',
     tenMenu: 'Báo cáo',
-    duongDan: '/bao-cao',
+    duongDan: ROUTES.reports,
     thuTu: 7,
     icon: 'fa fa-bar-chart',
     active: true,
@@ -67,7 +68,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-8',
     tenMenu: 'Danh mục',
-    duongDan: '/danh-muc',
+    duongDan: ROUTES.catalog,
     thuTu: 8,
     icon: 'fa fa-book',
     active: true,
@@ -75,7 +76,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-9',
     tenMenu: 'Nhân sự',
-    duongDan: '/nhan-su',
+    duongDan: ROUTES.hr,
     thuTu: 9,
     icon: 'fa fa-id-card',
     active: true,
@@ -83,7 +84,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-10',
     tenMenu: 'Quản lý',
-    duongDan: '/quan-ly',
+    duongDan: ROUTES.manage,
     thuTu: 10,
     icon: 'fa fa-cogs',
     active: true,
@@ -91,7 +92,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-11',
     tenMenu: 'Phân quyền',
-    duongDan: '/phan-quyen',
+    duongDan: ROUTES.permissions,
     thuTu: 11,
     icon: 'fa fa-lock',
     active: true,
@@ -100,7 +101,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-12',
     tenMenu: 'Nhập kho',
-    duongDan: '/quan-ly-kho/nhap-kho',
+    duongDan: ROUTES.inventoryStockEntry,
     thuTu: 1,
     parentId: 'menu-4',
     icon: 'fa fa-download',
@@ -109,7 +110,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-13',
     tenMenu: 'Tồn kho',
-    duongDan: '/quan-ly-kho/ton-kho',
+    duongDan: ROUTES.inventoryStockView,
     thuTu: 2,
     parentId: 'menu-4',
     icon: 'fa fa-cubes',
@@ -118,7 +119,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-14',
     tenMenu: 'Thu chi',
-    duongDan: '/tai-chinh/thu-chi',
+    duongDan: ROUTES.financeTransactions,
     thuTu: 1,
     parentId: 'menu-6',
     icon: 'fa fa-exchange',
@@ -127,7 +128,7 @@ const MENU_ITEMS: Array<Omit<Menu, 'createdAt' | 'updatedAt'>> = [
   {
     id: 'menu-15',
     tenMenu: 'Hóa đơn',
-    duongDan: '/tai-chinh/hoa-don',
+    duongDan: ROUTES.financeInvoices,
     thuTu: 2,
     parentId: 'menu-6',
     icon: 'fa fa-file-text',

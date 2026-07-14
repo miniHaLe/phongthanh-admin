@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z, type ZodTypeAny } from 'zod'
 import { Loader2 } from 'lucide-react'
 import { SheetModal } from '@/components/shared'
+import { DirtyCloseConfirmDialog } from '@/components/shared/dirty-close-confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -30,6 +31,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import type { CrudConfig, FieldConfig } from '@/types/crud-types'
+import { useDirtyCloseConfirm } from '@/hooks/use-dirty-close-confirm'
 
 interface CrudSheetProps<T extends { id: string }> {
   config: CrudConfig<T>
@@ -37,21 +39,17 @@ interface CrudSheetProps<T extends { id: string }> {
   initialData?: T
   open: boolean
   onClose: () => void
-  onSubmit: (data: Partial<T>, saveAndNew?: boolean) => void
+  onSubmit: (data: Partial<T>, saveAndNew?: boolean) => Promise<void> | void
   isPending?: boolean
 }
 
 /** Build a Zod schema from field configs. */
 function buildSchema<T>(
   fields: FieldConfig<T>[],
-  mode: 'create' | 'edit',
 ): z.ZodObject<Record<string, ZodTypeAny>> {
   const shape: Record<string, ZodTypeAny> = {}
 
   for (const f of fields) {
-    // Skip createOnly fields in edit mode
-    if (f.createOnly && mode === 'edit') continue
-
     const key = String(f.key)
 
     if (f.zodSchema) {
@@ -64,8 +62,15 @@ function buildSchema<T>(
     switch (f.type) {
       case 'number':
       case 'money':
-        schema = z.coerce.number({ invalid_type_error: 'Phải là số' })
-        if (!f.required) schema = (schema as z.ZodNumber).optional()
+        schema = z.preprocess(
+          (value) =>
+            value === null || (typeof value === 'string' && value.trim() === '')
+              ? undefined
+              : value,
+          f.required
+            ? z.coerce.number({ invalid_type_error: 'Phải là số' })
+            : z.coerce.number({ invalid_type_error: 'Phải là số' }).optional(),
+        )
         break
       case 'switch':
         schema = z.boolean().optional()
@@ -97,17 +102,14 @@ function buildSchema<T>(
 function buildDefaults<T>(
   fields: FieldConfig<T>[],
   initialData?: T,
-  mode?: 'create' | 'edit',
 ): Record<string, unknown> {
   const defaults: Record<string, unknown> = {}
   for (const f of fields) {
-    if (f.createOnly && mode === 'edit') continue
     const key = String(f.key)
     if (initialData && key in (initialData as Record<string, unknown>)) {
       defaults[key] = (initialData as Record<string, unknown>)[key] ?? ''
     } else {
-      defaults[key] =
-        f.type === 'switch' ? false : f.type === 'number' ? '' : ''
+      defaults[key] = f.type === 'switch' ? false : ''
     }
   }
   return defaults
@@ -127,43 +129,45 @@ export function CrudSheet<T extends { id: string }>({
     [config.fields, mode],
   )
 
-  const schema = useMemo(
-    () => buildSchema(visibleFields, mode),
-    [visibleFields, mode],
-  )
+  const schema = useMemo(() => buildSchema(visibleFields), [visibleFields])
 
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: buildDefaults(visibleFields, initialData, mode) as Record<
-      string,
-      unknown
-    >,
+    defaultValues: buildDefaults(visibleFields, initialData),
   })
 
   // Reset form when sheet opens / initialData changes
   useEffect(() => {
     if (open) {
-      form.reset(buildDefaults(visibleFields, initialData, mode))
+      form.reset(buildDefaults(visibleFields, initialData))
     }
   }, [open, initialData, mode]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleClose() {
-    if (form.formState.isDirty) {
-      if (!window.confirm('Bạn có thay đổi chưa lưu. Đóng không?')) return
-    }
+  function closeForm() {
     form.reset()
     onClose()
   }
 
+  const closeGuard = useDirtyCloseConfirm({
+    isDirty: form.formState.isDirty,
+    isPending,
+    onClose: closeForm,
+  })
+
   const saveAndNewRef = useRef(false)
 
-  function handleSubmit(values: Record<string, unknown>) {
-    onSubmit(values as Partial<T>, saveAndNewRef.current)
-    if (saveAndNewRef.current) {
-      // Keep the sheet open and reset for the next entry.
-      form.reset(buildDefaults(visibleFields, undefined, 'create'))
+  async function handleSubmit(values: Record<string, unknown>) {
+    const saveAndNew = saveAndNewRef.current
+    try {
+      await onSubmit(values as Partial<T>, saveAndNew)
+      if (saveAndNew) {
+        form.reset(buildDefaults(visibleFields))
+      }
+    } catch {
+      // Mutation callbacks own user feedback; keep the current input intact.
+    } finally {
+      saveAndNewRef.current = false
     }
-    saveAndNewRef.current = false
   }
 
   const footer = (
@@ -171,7 +175,7 @@ export function CrudSheet<T extends { id: string }>({
       <Button
         type="button"
         variant="outline"
-        onClick={handleClose}
+        onClick={closeGuard.requestClose}
         disabled={isPending}
       >
         Hủy
@@ -204,124 +208,135 @@ export function CrudSheet<T extends { id: string }>({
   )
 
   return (
-    <SheetModal
-      open={open}
-      onClose={handleClose}
-      title={
-        mode === 'create' ? `Thêm ${config.title}` : `Chỉnh sửa ${config.title}`
-      }
-      size="lg"
-      footer={footer}
-    >
-      <Form {...form}>
-        <form
-          id="crud-sheet-form"
-          onSubmit={form.handleSubmit(handleSubmit)}
-          className="grid grid-cols-2 gap-x-4 gap-y-4"
-        >
-          {visibleFields.map((f) => {
-            const key = String(f.key)
-            const span =
-              f.span === 2 ? 'col-span-2' : 'col-span-2 sm:col-span-1'
+    <>
+      <SheetModal
+        open={open}
+        onClose={closeGuard.requestClose}
+        title={
+          mode === 'create'
+            ? `Thêm ${config.title}`
+            : `Chỉnh sửa ${config.title}`
+        }
+        size="lg"
+        footer={footer}
+      >
+        <Form {...form}>
+          <form
+            id="crud-sheet-form"
+            onSubmit={form.handleSubmit(handleSubmit, () => {
+              saveAndNewRef.current = false
+            })}
+            className="grid grid-cols-2 gap-x-4 gap-y-4"
+          >
+            {visibleFields.map((f) => {
+              const key = String(f.key)
+              const span =
+                f.span === 2 ? 'col-span-2' : 'col-span-2 sm:col-span-1'
 
-            return (
-              <FormField
-                key={key}
-                control={form.control}
-                name={key}
-                render={({ field }) => (
-                  <FormItem className={span}>
-                    <FormLabel>
-                      {f.label}
-                      {f.required && (
-                        <span className="ml-0.5 text-destructive">*</span>
-                      )}
-                    </FormLabel>
+              return (
+                <FormField
+                  key={key}
+                  control={form.control}
+                  name={key}
+                  render={({ field }) => (
+                    <FormItem className={span}>
+                      <FormLabel>
+                        {f.label}
+                        {f.required && (
+                          <span className="ml-0.5 text-destructive">*</span>
+                        )}
+                      </FormLabel>
 
-                    {f.type === 'switch' ? (
-                      <div className="flex items-center gap-2 pt-1">
+                      {f.type === 'switch' ? (
+                        <div className="flex items-center gap-2 pt-1">
+                          <FormControl>
+                            <Switch
+                              checked={Boolean(field.value)}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <Label className="text-sm text-muted-foreground">
+                            {field.value ? 'Hoạt động' : 'Tạm ngưng'}
+                          </Label>
+                        </div>
+                      ) : f.type === 'select' || f.type === 'combobox' ? (
+                        <Select
+                          value={String(field.value ?? '')}
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={`Chọn ${f.label}`} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {f.options?.map((o) => (
+                              <SelectItem key={o.value} value={o.value}>
+                                {o.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : f.type === 'textarea' ? (
                         <FormControl>
-                          <Switch
-                            checked={Boolean(field.value)}
-                            onCheckedChange={field.onChange}
+                          <Textarea
+                            {...field}
+                            value={String(field.value ?? '')}
+                            placeholder={f.label}
+                            rows={3}
                           />
                         </FormControl>
-                        <Label className="text-sm text-muted-foreground">
-                          {field.value ? 'Hoạt động' : 'Tạm ngưng'}
-                        </Label>
-                      </div>
-                    ) : f.type === 'select' || f.type === 'combobox' ? (
-                      <Select
-                        value={String(field.value ?? '')}
-                        onValueChange={field.onChange}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={`Chọn ${f.label}`} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
+                      ) : f.type === 'radio' ? (
+                        <div className="flex flex-wrap gap-4 pt-1">
                           {f.options?.map((o) => (
-                            <SelectItem key={o.value} value={o.value}>
+                            <label
+                              key={o.value}
+                              className="flex cursor-pointer items-center gap-1.5 text-sm"
+                            >
+                              <input
+                                type="radio"
+                                name={key}
+                                value={o.value}
+                                checked={String(field.value ?? '') === o.value}
+                                onChange={() => field.onChange(o.value)}
+                              />
                               {o.label}
-                            </SelectItem>
+                            </label>
                           ))}
-                        </SelectContent>
-                      </Select>
-                    ) : f.type === 'textarea' ? (
-                      <FormControl>
-                        <Textarea
-                          {...field}
-                          value={String(field.value ?? '')}
-                          placeholder={f.label}
-                          rows={3}
-                        />
-                      </FormControl>
-                    ) : f.type === 'radio' ? (
-                      <div className="flex flex-wrap gap-4 pt-1">
-                        {f.options?.map((o) => (
-                          <label
-                            key={o.value}
-                            className="flex cursor-pointer items-center gap-1.5 text-sm"
-                          >
-                            <input
-                              type="radio"
-                              name={key}
-                              value={o.value}
-                              checked={String(field.value ?? '') === o.value}
-                              onChange={() => field.onChange(o.value)}
-                            />
-                            {o.label}
-                          </label>
-                        ))}
-                      </div>
-                    ) : (
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={String(field.value ?? '')}
-                          type={
-                            f.type === 'number' || f.type === 'money'
-                              ? 'number'
-                              : f.type === 'email'
-                                ? 'email'
-                                : f.type === 'date'
-                                  ? 'date'
-                                  : 'text'
-                          }
-                          placeholder={f.label}
-                        />
-                      </FormControl>
-                    )}
+                        </div>
+                      ) : (
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={String(field.value ?? '')}
+                            type={
+                              f.type === 'number' || f.type === 'money'
+                                ? 'number'
+                                : f.type === 'email'
+                                  ? 'email'
+                                  : f.type === 'date'
+                                    ? 'date'
+                                    : 'text'
+                            }
+                            placeholder={f.label}
+                          />
+                        </FormControl>
+                      )}
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )
-          })}
-        </form>
-      </Form>
-    </SheetModal>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )
+            })}
+          </form>
+        </Form>
+      </SheetModal>
+      <DirtyCloseConfirmDialog
+        open={closeGuard.confirmOpen}
+        onOpenChange={closeGuard.handleConfirmOpenChange}
+        onConfirm={closeGuard.confirmDiscard}
+      />
+    </>
   )
 }

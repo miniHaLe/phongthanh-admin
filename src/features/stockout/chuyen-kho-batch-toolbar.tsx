@@ -3,7 +3,7 @@
  * Tiết over the filtered row set.
  */
 import { Button } from '@/components/ui/button'
-import { exportToXlsx } from '@/lib/export-xlsx'
+import { exportListXlsx } from '@/lib/export-list-xlsx'
 import type { MovingSlip } from '@/domains/warehouse/types'
 
 interface ChuyenKhoBatchToolbarProps {
@@ -23,7 +23,10 @@ const EXPORT_COLUMNS = [
   { header: 'Người chuyển', accessor: (r: MovingSlip) => r.nguoiChuyen },
 ]
 
-export function ChuyenKhoBatchToolbar({ allRows, onSearch }: ChuyenKhoBatchToolbarProps) {
+export function ChuyenKhoBatchToolbar({
+  allRows,
+  onSearch,
+}: ChuyenKhoBatchToolbarProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button size="sm" variant="outline" className="h-8" onClick={onSearch}>
@@ -34,7 +37,7 @@ export function ChuyenKhoBatchToolbar({ allRows, onSearch }: ChuyenKhoBatchToolb
         variant="outline"
         className="h-8"
         onClick={() =>
-          void exportToXlsx({
+          void exportListXlsx({
             filename: 'chuyen-kho',
             sheetName: 'Chuyển Kho',
             columns: EXPORT_COLUMNS,
@@ -49,7 +52,7 @@ export function ChuyenKhoBatchToolbar({ allRows, onSearch }: ChuyenKhoBatchToolb
         variant="outline"
         className="h-8"
         onClick={() =>
-          void exportToXlsx({
+          void exportListXlsx({
             filename: 'chuyen-kho-chi-tiet',
             sheetName: 'Chuyển Kho Chi Tiết',
             columns: EXPORT_COLUMNS,

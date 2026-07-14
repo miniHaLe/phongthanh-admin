@@ -2,22 +2,38 @@
  * Spec: Bán Hàng create/edit editor — toolbar labels, line grid headers,
  * validation, and edit mode prefilling from useParams id.
  */
-import { describe, it, expect } from 'vitest'
-import { screen } from '@testing-library/react'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Routes, Route } from 'react-router-dom'
 import { renderWithProviders } from '@/test/render-with-providers'
 import { SELLING_ROWS } from '@/domains/warehouse/list-data'
+import { useAppStore } from '@/store/app-store'
 import BanHangEditorPage from './BanHangEditorPage'
+
+const originalSellingRows = [...SELLING_ROWS]
+
+afterEach(() => {
+  SELLING_ROWS.splice(0, SELLING_ROWS.length, ...originalSellingRows)
+  useAppStore.setState({ activeBranch: 'all' })
+})
 
 describe('BanHangEditorPage — create mode', () => {
   it('renders Lưu / Lưu & Thêm mới / In Phiếu BH / In Phiếu Thu / Danh sách đơn hàng', () => {
     renderWithProviders(<BanHangEditorPage />)
     expect(screen.getByRole('button', { name: 'Lưu' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Lưu & Thêm mới' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'In Phiếu BH' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'In Phiếu Thu' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Danh sách đơn hàng' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Lưu & Thêm mới' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'In Phiếu BH' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'In Phiếu Thu' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Danh sách đơn hàng' }),
+    ).toBeInTheDocument()
   })
 
   it('renders the verified line-grid column headers', () => {
@@ -31,7 +47,9 @@ describe('BanHangEditorPage — create mode', () => {
       'Số lượng',
       'Thành tiền',
     ]) {
-      expect(screen.getByRole('columnheader', { name: label })).toBeInTheDocument()
+      expect(
+        screen.getByRole('columnheader', { name: label }),
+      ).toBeInTheDocument()
     }
   })
 
@@ -43,6 +61,45 @@ describe('BanHangEditorPage — create mode', () => {
       await screen.findByText('Vui lòng chọn hình thức thanh toán!'),
     ).toBeInTheDocument()
   })
+
+  it('saves under the active branch and invalidates the sales list', async () => {
+    const user = userEvent.setup()
+    useAppStore.setState({ activeBranch: 'dak-nong' })
+    const { queryClient } = renderWithProviders(<BanHangEditorPage />)
+    const invalidate = vi
+      .spyOn(queryClient, 'invalidateQueries')
+      .mockResolvedValue(undefined)
+
+    await user.click(
+      screen.getByRole('combobox', { name: 'Hình thức thanh toán' }),
+    )
+    await user.click(screen.getByRole('option', { name: 'Tiền mặt' }))
+
+    await user.click(screen.getByRole('button', { name: 'Thêm khách hàng' }))
+    const customerDialog = screen.getByRole('dialog')
+    await user.type(
+      within(customerDialog).getByLabelText('Tên khách hàng'),
+      'Khách Đắk Nông',
+    )
+    await user.type(
+      within(customerDialog).getByLabelText('Điện thoại'),
+      '0905000000',
+    )
+    await user.click(
+      within(customerDialog).getByRole('button', { name: 'Lưu' }),
+    )
+
+    await user.click(screen.getByRole('combobox', { name: 'Nhập vào mã hàng' }))
+    const stockOptions = await screen.findAllByRole('option')
+    await user.click(stockOptions[0])
+    await user.click(screen.getByRole('button', { name: 'Thêm hàng' }))
+    await user.click(screen.getByRole('button', { name: 'Lưu' }))
+
+    await waitFor(() => {
+      expect(SELLING_ROWS[0].branchId).toBe('dak-nong')
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: ['ban-hang-list'] })
+    })
+  })
 })
 
 describe('BanHangEditorPage — edit mode', () => {
@@ -50,10 +107,15 @@ describe('BanHangEditorPage — edit mode', () => {
     const existing = SELLING_ROWS[0]
     renderWithProviders(
       <Routes>
-        <Route path="/xuat-kho/ban-hang/:id/sua" element={<BanHangEditorPage />} />
+        <Route
+          path="/xuat-kho/ban-hang/:id/sua"
+          element={<BanHangEditorPage />}
+        />
       </Routes>,
       { route: `/xuat-kho/ban-hang/${existing.id}/sua` },
     )
-    expect(await screen.findByText('Chỉnh sửa phiếu bán hàng')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Chỉnh sửa phiếu bán hàng'),
+    ).toBeInTheDocument()
   })
 })

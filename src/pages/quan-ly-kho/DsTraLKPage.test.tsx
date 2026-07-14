@@ -90,15 +90,19 @@ describe('DsTraLKPage', () => {
     expect(within(listbox).getByText('Trả từ kỹ thuật')).toBeInTheDocument()
   })
 
-  it('renders the Tổng số LK KPI box and Xuất ra Excel button', () => {
+  it('renders the Tổng số LK KPI box and Xuất Excel button', () => {
     renderWithProviders(<DsTraLKPage />)
     expect(screen.getByText('Tổng số LK')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Xuất ra Excel' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Xuất Excel' }),
+    ).toBeInTheDocument()
   })
 
   it('does not render an invented Lý do column', async () => {
     renderWithProviders(<DsTraLKPage />)
     await screen.findAllByRole('columnheader')
-    expect(screen.queryByRole('columnheader', { name: 'Lý do' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('columnheader', { name: 'Lý do' }),
+    ).not.toBeInTheDocument()
   })
 })

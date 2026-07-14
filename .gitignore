@@ -35,3 +35,6 @@ api/.env.*
 *.njsproj
 *.sln
 *.sw?
+
+plans
+docs/journals

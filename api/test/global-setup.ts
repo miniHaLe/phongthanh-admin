@@ -9,6 +9,7 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import * as schema from '../src/db/schema'
 import { seedDatabase } from '../src/seed/seed-database'
+import { seedApiTestUsers } from './api-test-users'
 
 const ADMIN_URL =
   process.env.TEST_ADMIN_DATABASE_URL ??
@@ -51,5 +52,6 @@ export default async function globalSetup() {
   const db = drizzle(pool, { schema })
   await migrate(db, { migrationsFolder: './src/db/migrations' })
   await seedDatabase(db, INITIAL_ADMIN_PASSWORD)
+  await seedApiTestUsers(db)
   await pool.end()
 }

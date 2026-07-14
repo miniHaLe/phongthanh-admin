@@ -1,6 +1,11 @@
 import { z } from 'zod'
 
 const optionalTrimmedText = z.string().trim().nullable().optional()
+const phone = z
+  .string()
+  .trim()
+  .regex(/^0\d{9}$/, 'Số điện thoại phải gồm 10 số và bắt đầu bằng 0')
+const optionalPhone = phone.or(z.literal('')).nullable().optional()
 const optionalEmptyText = z
   .string()
   .nullable()
@@ -24,8 +29,8 @@ const taxCode = z
  * optional as a pair so legacy customers remain editable without guessed data. */
 const khachHangFields = {
   tenKH: z.string().trim().min(1, 'Tên khách hàng không được để trống'),
-  dienThoai: z.string().trim().min(1, 'Số điện thoại không được để trống'),
-  dienThoai2: optionalTrimmedText,
+  dienThoai: phone,
+  dienThoai2: optionalPhone,
   diaChi: optionalTrimmedText,
   tenDuong: optionalTrimmedText,
   tinhThanhCode: officialCode,
@@ -61,7 +66,13 @@ export const createKhachHangSchema = z
     }
   })
 
-export const updateKhachHangSchema = z.object(khachHangFields).partial()
+export const updateKhachHangSchema = z
+  .object({
+    ...khachHangFields,
+    /** Command field only; KhachHangService removes it before the DB write. */
+    clearDiaChi: z.literal(true).optional(),
+  })
+  .partial()
 
 export type CreateKhachHangDto = z.infer<typeof createKhachHangSchema>
 export type UpdateKhachHangDto = z.infer<typeof updateKhachHangSchema>

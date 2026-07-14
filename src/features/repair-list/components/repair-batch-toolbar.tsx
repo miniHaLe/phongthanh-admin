@@ -1,20 +1,12 @@
 /**
- * Repair batch toolbar — bulk operations over checked rows plus export/reload.
- * Every selection-required action alerts "Vui lòng chọn phiếu để …" when nothing
- * is checked. In Biên nhận gates on status ≥ Sửa Xong; In Lệnh Sửa Tại Nhà opens
- * "Điều phối in" when checked rows span >1 technician.
+ * Repair list actions — grouped print/export commands plus selection-gated
+ * bulk operations. In Biên nhận gates on status ≥ Sửa Xong; In Lệnh Sửa Tại
+ * Nhà opens "Điều phối in" when checked rows span multiple technicians.
  */
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { PlusCircle, ChevronDown, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,9 +17,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { notify } from '@/components/shared'
+import { BulkActionsBar, PrintMenu, notify } from '@/components/shared'
 import { exportToXlsx } from '@/lib/export-xlsx'
-import { ROUTES } from '@/constants/routes'
 import { STATUS_LABEL, type RepairStatusId } from '@/domains/repair/status'
 import { HINH_THUC_LABEL, type RepairTicket } from '@/domains/repair/types'
 import { deleteTickets } from '@/domains/repair/mock-mutations'
@@ -49,7 +40,6 @@ interface RepairBatchToolbarProps {
   selected: RepairTicket[]
   filters: RepairListFilters
   total: number
-  onReload: () => void
 }
 
 const EXPORT_COLUMNS = [
@@ -58,8 +48,14 @@ const EXPORT_COLUMNS = [
   { header: 'Điện thoại', accessor: (t: RepairTicket) => t.khachHang.sdt },
   { header: 'Sản phẩm', accessor: (t: RepairTicket) => t.tenSanPham },
   { header: 'Kỹ thuật', accessor: (t: RepairTicket) => t.kyThuat },
-  { header: 'Tình trạng', accessor: (t: RepairTicket) => STATUS_LABEL[t.tinhTrang] },
-  { header: 'Hình thức', accessor: (t: RepairTicket) => HINH_THUC_LABEL[t.hinhThuc] },
+  {
+    header: 'Tình trạng',
+    accessor: (t: RepairTicket) => STATUS_LABEL[t.tinhTrang],
+  },
+  {
+    header: 'Hình thức',
+    accessor: (t: RepairTicket) => HINH_THUC_LABEL[t.hinhThuc],
+  },
   { header: 'Chi phí dự kiến', accessor: (t: RepairTicket) => t.chiPhiDuKien },
 ]
 
@@ -67,9 +63,7 @@ export function RepairBatchToolbar({
   selected,
   filters,
   total,
-  onReload,
 }: RepairBatchToolbarProps) {
-  const navigate = useNavigate()
   const qc = useQueryClient()
   const [transferOpen, setTransferOpen] = useState(false)
   const [dispatchPrintOpen, setDispatchPrintOpen] = useState(false)
@@ -108,7 +102,11 @@ export function RepairBatchToolbar({
 
   async function handleExport(suffix = '') {
     // Re-fetch the full filtered set (ignore pagination) for the export.
-    const res = await fetchRepairList({ ...filters, page: 1, pageSize: total || 1 })
+    const res = await fetchRepairList({
+      ...filters,
+      page: 1,
+      pageSize: total || 1,
+    })
     await exportToXlsx({
       filename: `sua-chua${suffix}`,
       sheetName: 'Sửa chữa',
@@ -118,109 +116,78 @@ export function RepairBatchToolbar({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Button
-        size="sm"
-        className="h-11 gap-1.5 bg-emerald-600 hover:bg-emerald-700 md:h-8"
-        onClick={() => navigate(ROUTES.repairCreate)}
-      >
-        <PlusCircle className="size-4" />
-        Lập phiếu
-      </Button>
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <PrintMenu
+          disabled={ids.length === 0}
+          items={[
+            { label: 'In Biên nhận', onSelect: handleBienNhan },
+            {
+              label: 'In Giấy Đi Đường',
+              onSelect: () => {
+                if (!requireSelection('in giấy đi đường')) return
+                void printGiayDiDuong(selected)
+              },
+            },
+            {
+              label: 'In Lệnh Sửa Tại Nhà',
+              onSelect: handleLenhSuaTaiNha,
+            },
+            {
+              label: 'In Phiếu SC',
+              onSelect: () => {
+                if (!requireSelection('in phiếu SC')) return
+                void printPhieuSc(selected[0])
+              },
+            },
+            {
+              label: 'In Tem Dán Máy',
+              onSelect: () => {
+                if (!requireSelection('in tem')) return
+                void printTemDanMay(selected[selected.length - 1])
+              },
+            },
+          ]}
+        />
 
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-11 md:h-8"
-        onClick={() => requireSelection('chuyển chi nhánh') && setTransferOpen(true)}
-      >
-        Chuyển chi nhánh
-      </Button>
+        <div className="flex-1" />
 
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-11 md:h-8"
-        onClick={handleBienNhan}
-      >
-        In Biên nhận
-      </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-11 md:h-8"
+          onClick={() => handleExport()}
+        >
+          Xuất Excel
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-11 md:h-8"
+          onClick={() => handleExport('-in')}
+        >
+          Xuất Excel In
+        </Button>
+      </div>
 
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-11 md:h-8"
-        onClick={() =>
-          requireSelection('in giấy đi đường') && printGiayDiDuong(selected)
-        }
-      >
-        In Giấy Đi Đường
-      </Button>
-
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-11 md:h-8"
-        onClick={handleLenhSuaTaiNha}
-      >
-        In Lệnh Sửa Tại Nhà
-      </Button>
-
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-11 md:h-8"
-        onClick={() =>
-          requireSelection('in phiếu SC') && printPhieuSc(selected[0])
-        }
-      >
-        In Phiếu SC
-      </Button>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="outline" className="h-11 gap-1 text-red-600 md:h-8">
-            In tem
-            <ChevronDown className="size-3.5" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem
-            onSelect={() => {
-              if (!requireSelection('in tem')) return
-              void printTemDanMay(selected[selected.length - 1])
-            }}
-          >
-            Dán máy
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <Button
-        size="sm"
-        variant="destructive"
-        className="h-11 gap-1 md:h-8"
-        onClick={() => requireSelection('xóa') && setConfirmDelete(true)}
-      >
-        <Trash2 className="size-4" /> Xóa
-      </Button>
-
-      <div className="flex-1" />
-
-      <Button size="sm" variant="outline" className="h-11 md:h-8" onClick={() => handleExport()}>
-        Xuất Excel File
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-11 md:h-8"
-        onClick={() => handleExport('-in')}
-      >
-        Xuất Excel In
-      </Button>
-      <Button size="sm" variant="ghost" className="h-11 md:h-8" onClick={onReload}>
-        Tải lại trang
-      </Button>
+      <BulkActionsBar count={ids.length}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-11 md:h-8"
+          onClick={() => setTransferOpen(true)}
+        >
+          Chuyển chi nhánh
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          className="h-11 gap-1 md:h-8"
+          onClick={() => setConfirmDelete(true)}
+        >
+          <Trash2 className="size-4" /> Xóa
+        </Button>
+      </BulkActionsBar>
 
       {transferOpen && (
         <TransferBranchModal

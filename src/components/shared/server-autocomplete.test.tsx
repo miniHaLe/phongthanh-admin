@@ -4,6 +4,28 @@ import userEvent from '@testing-library/user-event'
 import { ServerAutocomplete } from './server-autocomplete'
 
 describe('ServerAutocomplete', () => {
+  it('supports an explicit label, input id, and required contract', () => {
+    render(
+      <>
+        <label htmlFor="customer-picker">Khách hàng</label>
+        <ServerAutocomplete
+          inputId="customer-picker"
+          ariaLabel="Khách hàng"
+          required
+          value={null}
+          onChange={vi.fn()}
+          fetchOptions={async () => []}
+        />
+      </>,
+    )
+
+    const input = screen.getByRole('combobox', { name: 'Khách hàng' })
+    expect(input).toHaveAttribute('id', 'customer-picker')
+    expect(input).toBeRequired()
+    expect(input).toHaveAttribute('aria-required', 'true')
+    expect(screen.getByLabelText('Khách hàng')).toBe(input)
+  })
+
   it('supports keyboard selection and contextual quick-create labels', async () => {
     const user = userEvent.setup()
     const onChange = vi.fn()

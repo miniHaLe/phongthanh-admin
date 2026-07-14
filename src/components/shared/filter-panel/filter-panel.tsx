@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,8 @@ export interface FilterPanelProps {
   filterCount: number
   defaultExpanded?: boolean
   savedViewsSlot?: React.ReactNode
+  triggerLabel?: string
+  contentClassName?: string
 }
 
 /**
@@ -23,23 +25,31 @@ export function FilterPanel({
   filterCount,
   defaultExpanded = false,
   savedViewsSlot,
+  triggerLabel = 'Bộ lọc',
+  contentClassName,
 }: FilterPanelProps) {
   const [expanded, setExpanded] = useState(defaultExpanded)
+  const contentId = useId()
 
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div
+      className="rounded-lg border border-border bg-card"
+      data-filter-panel=""
+    >
       {/* Header row */}
       <div className="flex flex-wrap items-center gap-2 px-4 py-2.5">
         {/* Toggle button */}
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           className="h-11 gap-1.5 px-2 font-medium md:h-8"
           onClick={() => setExpanded((prev) => !prev)}
           aria-expanded={expanded}
+          aria-controls={contentId}
         >
           <SlidersHorizontal className="h-4 w-4" />
-          <span>Bộ lọc</span>
+          <span>{triggerLabel}</span>
           {/* Badge only when collapsed and there are active filters */}
           {!expanded && filterCount > 0 && (
             <Badge
@@ -65,6 +75,7 @@ export function FilterPanel({
 
         {/* Clear button */}
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           className="h-11 gap-1 px-2 text-muted-foreground md:h-8"
@@ -78,8 +89,13 @@ export function FilterPanel({
 
       {/* Collapsible body */}
       {expanded && (
-        <div className="border-t border-border px-4 py-3">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div id={contentId} className="border-t border-border px-4 py-3">
+          <div
+            className={cn(
+              'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3',
+              contentClassName,
+            )}
+          >
             {children}
           </div>
         </div>

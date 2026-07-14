@@ -27,7 +27,7 @@ import {
   type IssuedUsageFilterValues,
 } from '@/features/warehouse/issued-usage-filters'
 
-const PAGE_SIZE_OPTIONS = [20, 50, 100]
+import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 /** Apply the client-side-only filters (the fetcher supports branchId/tinhTrang/mucDich). */

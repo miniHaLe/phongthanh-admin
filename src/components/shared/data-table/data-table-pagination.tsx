@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DEFAULT_PAGE_SIZE_OPTIONS } from './page-size-options'
 
 export interface DataTablePaginationProps {
   page: number
@@ -14,10 +15,8 @@ export interface DataTablePaginationProps {
   total: number
   onPageChange: (p: number) => void
   onPageSizeChange: (s: number) => void
-  pageSizeOptions?: number[]
+  pageSizeOptions?: readonly number[]
 }
-
-const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 
 /**
  * Renders pagination controls: range summary (left), page-size selector +

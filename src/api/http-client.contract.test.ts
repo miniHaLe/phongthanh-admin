@@ -10,14 +10,7 @@
  */
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
-import {
-  describe,
-  it,
-  expect,
-  beforeAll,
-  afterAll,
-  afterEach,
-} from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest'
 import type { BaseEntity, PagedResult } from '@/mock/seed'
 import { makeHttpApi } from './http-client'
 import { setAccessToken } from './auth-token'
@@ -67,6 +60,7 @@ describe('makeHttpApi — request contract', () => {
     await api.list({
       page: 2,
       pageSize: 20,
+      branchId: 'cn-2',
       sort: 'tenKH',
       dir: 'asc',
       search: 'Nguyễn',
@@ -76,20 +70,41 @@ describe('makeHttpApi — request contract', () => {
     const q = seenUrl!.searchParams
     expect(q.get('page')).toBe('2')
     expect(q.get('pageSize')).toBe('20')
+    expect(q.get('branchId')).toBe('cn-2')
     expect(q.get('sort')).toBe('tenKH')
     expect(q.get('dir')).toBe('asc')
     expect(q.get('search')).toBe('Nguyễn')
     expect(q.get('filters[loaiKhachHangId]')).toBe('1')
+    expect(q.has('filters[branchId]')).toBe(false)
     // Empty filter values are omitted, not sent as blank.
     expect(q.has('filters[active]')).toBe(false)
     expect(seenAuth).toBe('Bearer test-access-token')
     expect(seenNgrokSkip).toBe('true')
   })
 
+  it('omits the aggregate all value from the wire', async () => {
+    let seenUrl: URL | undefined
+    server.use(
+      http.get(BASE, ({ request }) => {
+        seenUrl = new URL(request.url)
+        return HttpResponse.json({ data: [], total: 0, page: 1, pageSize: 20 })
+      }),
+    )
+
+    await api.list({ page: 1, pageSize: 20, branchId: 'all' })
+
+    expect(seenUrl!.searchParams.has('branchId')).toBe(false)
+  })
+
   it('returns the exact PagedResult shape unchanged', async () => {
     const payload: PagedResult<Row> = {
       data: [
-        { id: 'kh-1', tenKH: 'An', active: true, createdAt: '2026-01-01T00:00:00.000Z' },
+        {
+          id: 'kh-1',
+          tenKH: 'An',
+          active: true,
+          createdAt: '2026-01-01T00:00:00.000Z',
+        },
       ],
       total: 1,
       page: 1,
@@ -105,11 +120,21 @@ describe('makeHttpApi — request contract', () => {
     server.use(
       http.post(BASE, async () => {
         seen.push('POST')
-        return HttpResponse.json({ id: 'kh-new', tenKH: 'X', active: true, createdAt: 'now' })
+        return HttpResponse.json({
+          id: 'kh-new',
+          tenKH: 'X',
+          active: true,
+          createdAt: 'now',
+        })
       }),
       http.patch(`${BASE}/kh-1`, () => {
         seen.push('PATCH')
-        return HttpResponse.json({ id: 'kh-1', tenKH: 'Y', active: true, createdAt: 'now' })
+        return HttpResponse.json({
+          id: 'kh-1',
+          tenKH: 'Y',
+          active: true,
+          createdAt: 'now',
+        })
       }),
       http.delete(`${BASE}/kh-1`, () => {
         seen.push('DELETE')
@@ -127,27 +152,36 @@ describe('makeHttpApi — error contract (paths the mock never exercised)', () =
   it('surfaces the server Vietnamese message on 400 (sort/filter allowlist)', async () => {
     server.use(
       http.get(BASE, () =>
-        HttpResponse.json({ message: 'Cột sắp xếp không hợp lệ' }, { status: 400 }),
+        HttpResponse.json(
+          { message: 'Cột sắp xếp không hợp lệ' },
+          { status: 400 },
+        ),
       ),
     )
-    await expect(api.list({ page: 1, pageSize: 20, sort: 'password' })).rejects.toThrow(
-      'Cột sắp xếp không hợp lệ',
-    )
+    await expect(
+      api.list({ page: 1, pageSize: 20, sort: 'password' }),
+    ).rejects.toThrow('Cột sắp xếp không hợp lệ')
   })
 
   it('maps 403 to a Vietnamese permission message', async () => {
     server.use(http.get(BASE, () => new HttpResponse(null, { status: 403 })))
-    await expect(api.list({ page: 1, pageSize: 20 })).rejects.toThrow(/không có quyền/i)
+    await expect(api.list({ page: 1, pageSize: 20 })).rejects.toThrow(
+      /không có quyền/i,
+    )
   })
 
   it('maps 409 to a Vietnamese conflict message', async () => {
-    server.use(http.patch(`${BASE}/kh-1`, () => new HttpResponse(null, { status: 409 })))
+    server.use(
+      http.patch(`${BASE}/kh-1`, () => new HttpResponse(null, { status: 409 })),
+    )
     await expect(api.update('kh-1', { tenKH: 'Z' })).rejects.toThrow(/tải lại/i)
   })
 
   it('maps a network failure to a Vietnamese connection message', async () => {
     server.use(http.get(BASE, () => HttpResponse.error()))
-    await expect(api.list({ page: 1, pageSize: 20 })).rejects.toThrow(/không thể kết nối/i)
+    await expect(api.list({ page: 1, pageSize: 20 })).rejects.toThrow(
+      /không thể kết nối/i,
+    )
   })
 })
 
@@ -162,14 +196,21 @@ describe('makeHttpApi — 401 refresh-and-retry', () => {
       http.post(`${API}/auth/refresh`, ({ request }) => {
         refreshCalls += 1
         refreshCsrfHeader = request.headers.get('X-Requested-With')
-        refreshNgrokSkipHeader = request.headers.get('ngrok-skip-browser-warning')
+        refreshNgrokSkipHeader = request.headers.get(
+          'ngrok-skip-browser-warning',
+        )
         return HttpResponse.json({ accessToken: 'fresh-token' })
       }),
       http.get(BASE, ({ request }) => {
         listCalls += 1
         const auth = request.headers.get('Authorization')
         if (auth === 'Bearer fresh-token') {
-          return HttpResponse.json({ data: [], total: 0, page: 1, pageSize: 20 })
+          return HttpResponse.json({
+            data: [],
+            total: 0,
+            page: 1,
+            pageSize: 20,
+          })
         }
         return new HttpResponse(null, { status: 401 })
       }),

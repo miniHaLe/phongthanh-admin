@@ -81,6 +81,24 @@ describe('customer form contract', () => {
     ).toBeTruthy()
   })
 
+  it('rejects malformed primary and secondary phone numbers', () => {
+    expect(
+      validateCustomerForm({
+        ...EMPTY_CUSTOMER_FORM,
+        tenKH: 'Nguyễn Văn A',
+        dienThoai: 'abc',
+      }).dienThoai,
+    ).toBeTruthy()
+    expect(
+      validateCustomerForm({
+        ...EMPTY_CUSTOMER_FORM,
+        tenKH: 'Nguyễn Văn A',
+        dienThoai: '0905000000',
+        dienThoai2: '123',
+      }).dienThoai2,
+    ).toBeTruthy()
+  })
+
   it('keeps official address codes, composed compatibility address, and leading zeroes', () => {
     const payload = toCustomerMutationPayload(
       {
@@ -186,7 +204,7 @@ describe('customer form contract', () => {
     expect(payload).not.toHaveProperty('diaChi')
   })
 
-  it('sends explicit nulls when an existing modern address is cleared', () => {
+  it('preserves a legacy compatibility address when normalized fields are only touched', () => {
     const payload = toCustomerMutationPayload(
       {
         ...EMPTY_CUSTOMER_FORM,
@@ -201,7 +219,28 @@ describe('customer form contract', () => {
       tenDuong: null,
       tinhThanhCode: null,
       phuongXaCode: null,
+    })
+    expect(payload).not.toHaveProperty('diaChi')
+    expect(payload).not.toHaveProperty('clearDiaChi')
+  })
+
+  it('sends the explicit clear marker only from the clear-address action', () => {
+    const payload = toCustomerMutationPayload(
+      {
+        ...EMPTY_CUSTOMER_FORM,
+        tenKH: 'Nguyễn Văn A',
+        dienThoai: '0905000000',
+      },
+      geography.provinces,
+      geography.communes,
+      { forUpdate: true, addressTouched: true, clearAddress: true },
+    )
+    expect(payload).toMatchObject({
+      tenDuong: null,
+      tinhThanhCode: null,
+      phuongXaCode: null,
       diaChi: null,
+      clearDiaChi: true,
     })
   })
 })

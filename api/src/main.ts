@@ -2,11 +2,15 @@ import 'reflect-metadata'
 import { NestFactory } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { ConfigService } from '@nestjs/config'
+import compression from 'compression'
 import cookieParser from 'cookie-parser'
 import { rateLimit } from 'express-rate-limit'
 import helmet from 'helmet'
 import { AppModule } from './app.module'
-import { CORS_ALLOWED_HEADERS, CORS_ALLOWED_METHODS } from './config/cors-policy'
+import {
+  CORS_ALLOWED_HEADERS,
+  CORS_ALLOWED_METHODS,
+} from './config/cors-policy'
 import { corsOrigins } from './config/cors-origins'
 import type { Env } from './config/env'
 
@@ -26,6 +30,7 @@ async function bootstrap() {
   // service sees `filters` as the Record it validates against the allowlist.
   app.set('query parser', 'extended')
 
+  app.use(compression())
   app.use(cookieParser())
   app.use(
     helmet({

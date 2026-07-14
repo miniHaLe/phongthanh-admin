@@ -23,6 +23,10 @@ export type CustomerFormErrors = Partial<
   Record<keyof CustomerFormValues, string>
 >
 
+export const CUSTOMER_PHONE_PATTERN = /^0\d{9}$/
+export const CUSTOMER_PHONE_ERROR =
+  'Số điện thoại phải gồm 10 số và bắt đầu bằng 0'
+
 export const EMPTY_CUSTOMER_FORM: CustomerFormValues = {
   tenKH: '',
   dienThoai: '',
@@ -65,7 +69,15 @@ export function validateCustomerForm(
 ): CustomerFormErrors {
   const errors: CustomerFormErrors = {}
   if (!values.tenKH.trim()) errors.tenKH = 'Tên khách hàng là bắt buộc'
-  if (!values.dienThoai.trim()) errors.dienThoai = 'Điện thoại là bắt buộc'
+  const primaryPhone = values.dienThoai.trim()
+  const secondaryPhone = values.dienThoai2.trim()
+  if (!primaryPhone) errors.dienThoai = 'Điện thoại là bắt buộc'
+  else if (!CUSTOMER_PHONE_PATTERN.test(primaryPhone)) {
+    errors.dienThoai = CUSTOMER_PHONE_ERROR
+  }
+  if (secondaryPhone && !CUSTOMER_PHONE_PATTERN.test(secondaryPhone)) {
+    errors.dienThoai2 = CUSTOMER_PHONE_ERROR
+  }
   if (values.email.trim() && !/^\S+@\S+\.\S+$/.test(values.email.trim())) {
     errors.email = 'Email không hợp lệ'
   }
@@ -114,13 +126,18 @@ export function toCustomerMutationPayload(
   values: CustomerFormValues,
   provinces: VietnamProvince[],
   communes: VietnamCommune[],
-  options: { forUpdate?: boolean; addressTouched?: boolean } = {},
+  options: {
+    forUpdate?: boolean
+    addressTouched?: boolean
+    clearAddress?: boolean
+  } = {},
 ) {
   const province = provinces.find((item) => item.code === values.tinhThanhCode)
   const commune = communes.find((item) => item.code === values.phuongXaCode)
   const optional = (value: string) =>
     value.trim() || (options.forUpdate ? null : undefined)
-  const writeAddress = !options.forUpdate || options.addressTouched
+  const writeAddress =
+    !options.forUpdate || options.addressTouched || options.clearAddress
   const composedAddress = composeCustomerAddress(
     values.tenDuong,
     commune,
@@ -139,7 +156,11 @@ export function toCustomerMutationPayload(
             values.tinhThanhCode || (options.forUpdate ? null : undefined),
           phuongXaCode:
             values.phuongXaCode || (options.forUpdate ? null : undefined),
-          diaChi: composedAddress || (options.forUpdate ? null : undefined),
+          ...(options.clearAddress
+            ? { diaChi: null, clearDiaChi: true as const }
+            : composedAddress
+              ? { diaChi: composedAddress }
+              : {}),
         }
       : {}),
     maSoThue: optional(values.maSoThue),

@@ -13,9 +13,11 @@ import {
 import { ROUTES } from '@/constants/routes'
 import { CURRENT_USER } from '@/mock/current-user-mock'
 import { logout } from '@/api/auth-client'
+import { useAppStore } from '@/store/app-store'
 
 export function UserMenu() {
   const navigate = useNavigate()
+  const resetActiveBranch = useAppStore((state) => state.resetActiveBranch)
 
   async function handleLogout() {
     try {
@@ -23,6 +25,7 @@ export function UserMenu() {
     } catch {
       toast.error('Không thể đăng xuất phiên hiện tại')
     } finally {
+      resetActiveBranch()
       navigate(ROUTES.login, { replace: true })
     }
   }

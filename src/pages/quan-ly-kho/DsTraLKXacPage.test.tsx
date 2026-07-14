@@ -12,7 +12,10 @@ import DsTraLKXacPage from './DsTraLKXacPage'
 const notifyError = vi.fn()
 vi.mock('@/components/shared', async (orig) => {
   const actual = await orig<typeof import('@/components/shared')>()
-  return { ...actual, notify: { ...actual.notify, error: (m?: string) => notifyError(m) } }
+  return {
+    ...actual,
+    notify: { ...actual.notify, error: (m?: string) => notifyError(m) },
+  }
 })
 
 beforeEach(() => notifyError.mockClear())
@@ -30,7 +33,9 @@ const HEADERS_IN_ORDER = [
 
 describe('DsTraLKXacPage', () => {
   it('mounts at the route with title + breadcrumb', () => {
-    renderWithProviders(<DsTraLKXacPage />, { route: '/quan-ly-kho/ds-tra-lk-xac' })
+    renderWithProviders(<DsTraLKXacPage />, {
+      route: '/quan-ly-kho/ds-tra-lk-xac',
+    })
     expect(
       screen.getByRole('heading', { name: 'Danh Sách Trả Linh Kiện Xác' }),
     ).toBeInTheDocument()
@@ -80,9 +85,11 @@ describe('DsTraLKXacPage', () => {
     expect(within(listbox).getByText('Đã trả hãng')).toBeInTheDocument()
   })
 
-  it('renders the Tổng số LK KPI box and Xuất ra Excel button', () => {
+  it('renders the Tổng số LK KPI box and Xuất Excel button', () => {
     renderWithProviders(<DsTraLKXacPage />)
     expect(screen.getByText('Tổng số LK')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Xuất ra Excel' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Xuất Excel' }),
+    ).toBeInTheDocument()
   })
 })

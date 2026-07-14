@@ -18,7 +18,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { changePassword } from '@/api/auth-client'
+import { changePassword, refreshAccessToken } from '@/api/auth-client'
+import { coalescedRefresh } from '@/api/auth-token'
 import { ROUTES } from '@/constants/routes'
 
 const schema = z
@@ -45,6 +46,10 @@ export default function ChangePasswordPage() {
   async function onSubmit(data: ChangePasswordInput) {
     try {
       await changePassword(data.oldPassword, data.newPassword)
+      const freshToken = await coalescedRefresh(refreshAccessToken)
+      if (!freshToken) {
+        throw new Error('Không thể làm mới phiên đăng nhập')
+      }
       toast.success('Đổi mật khẩu thành công')
       navigate(ROUTES.home, { replace: true })
     } catch (err) {

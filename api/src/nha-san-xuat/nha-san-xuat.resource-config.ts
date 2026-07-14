@@ -14,10 +14,10 @@ export const nhaSanXuatResourceConfig: CrudResourceConfig = {
     createdAt: nhaSanXuat.createdAt,
   },
   filterableColumns: {
-    tenNSX: { column: nhaSanXuat.tenNSX },
+    tenNSX: { column: nhaSanXuat.tenNSX, valueType: 'string' },
     active: {
       column: nhaSanXuat.active,
-      parse: (raw) => raw === 'true' || raw === true,
+      valueType: 'boolean',
     },
   },
   searchColumns: [nhaSanXuat.tenNSX, nhaSanXuat.maNSX, nhaSanXuat.ghiChu],

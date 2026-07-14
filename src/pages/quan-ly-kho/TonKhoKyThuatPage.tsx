@@ -37,6 +37,7 @@ import { BRANCHES } from '@/mock/seed/branches'
 import { MANUFACTURERS, MODELS } from '@/domains/repair/reference-data'
 import { TraLinhKienTechModal } from '@/features/inventory/tra-linh-kien-tech-modal'
 import type { InventoryRow } from '@/domains/warehouse/types'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
 const NHOM_HANG_OPTIONS = [
   'Điện lạnh',
@@ -49,7 +50,7 @@ const NHOM_HANG_OPTIONS = [
   'Nhà vệ sinh',
 ]
 
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const UNSET = '__all__'
 
 interface TonKhoKyThuatFilters {
@@ -134,7 +135,8 @@ export default function TonKhoKyThuatPage() {
         header: 'STT',
         enableSorting: false,
         size: 56,
-        cell: ({ row }) => (page - 1) * pageSize + row.index + 1,
+        cell: ({ row, table }) =>
+          getVisibleRowNumber(table, row, (page - 1) * pageSize),
       },
       {
         id: 'actions',

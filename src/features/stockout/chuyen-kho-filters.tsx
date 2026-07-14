@@ -4,8 +4,11 @@
  */
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
+import {
+  FilterField,
+  filterFieldsGridClassName,
+} from '@/components/shared/filter-panel/filter-field'
 import {
   Select,
   SelectContent,
@@ -38,34 +41,17 @@ interface ChuyenKhoFiltersProps {
 
 const UNSET = '__all__'
 
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string
-  htmlFor?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
-        {label}
-      </Label>
-      {children}
-    </div>
-  )
-}
-
 export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
   const uid = useId()
 
   return (
-    <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Field label="Từ chi nhánh" htmlFor={`${uid}-tucn`}>
+    <div className={filterFieldsGridClassName}>
+      <FilterField label="Từ chi nhánh" htmlFor={`${uid}-tucn`}>
         <Select
           value={filters.tuChiNhanh ?? UNSET}
-          onValueChange={(v) => onChange({ tuChiNhanh: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ tuChiNhanh: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-tucn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả" />
@@ -79,12 +65,14 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
             ))}
           </SelectContent>
         </Select>
-      </Field>
+      </FilterField>
 
-      <Field label="Đến chi nhánh" htmlFor={`${uid}-dencn`}>
+      <FilterField label="Đến chi nhánh" htmlFor={`${uid}-dencn`}>
         <Select
           value={filters.denChiNhanh ?? UNSET}
-          onValueChange={(v) => onChange({ denChiNhanh: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ denChiNhanh: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-dencn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả" />
@@ -98,25 +86,31 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
             ))}
           </SelectContent>
         </Select>
-      </Field>
+      </FilterField>
 
-      <Field label="Số phiếu" htmlFor={`${uid}-sp`}>
+      <FilterField label="Số phiếu" htmlFor={`${uid}-sp`}>
         <Input
           id={`${uid}-sp`}
           className={filterControlClassName}
           value={filters.soPhieu ?? ''}
           onChange={(e) => onChange({ soPhieu: e.target.value || undefined })}
         />
-      </Field>
+      </FilterField>
 
-      <Field label="Trạng thái" htmlFor={`${uid}-tt`}>
+      <FilterField label="Trạng thái" htmlFor={`${uid}-tt`}>
         <Select
           value={filters.trangThai ?? UNSET}
           onValueChange={(v) =>
-            onChange({ trangThai: v === UNSET ? undefined : (v as ChuyenKhoTrangThai) })
+            onChange({
+              trangThai: v === UNSET ? undefined : (v as ChuyenKhoTrangThai),
+            })
           }
         >
-          <SelectTrigger id={`${uid}-tt`} className={filterControlClassName} aria-label="Trạng thái">
+          <SelectTrigger
+            id={`${uid}-tt`}
+            className={filterControlClassName}
+            aria-label="Trạng thái"
+          >
             <SelectValue placeholder="Tất cả trạng thái" />
           </SelectTrigger>
           <SelectContent>
@@ -128,9 +122,9 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
             ))}
           </SelectContent>
         </Select>
-      </Field>
+      </FilterField>
 
-      <Field label="Từ ngày" htmlFor={`${uid}-df`}>
+      <FilterField label="Từ ngày" htmlFor={`${uid}-df`}>
         <Input
           id={`${uid}-df`}
           type="date"
@@ -138,8 +132,8 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
-      </Field>
-      <Field label="Đến ngày" htmlFor={`${uid}-dt`}>
+      </FilterField>
+      <FilterField label="Đến ngày" htmlFor={`${uid}-dt`}>
         <Input
           id={`${uid}-dt`}
           type="date"
@@ -147,7 +141,7 @@ export function ChuyenKhoFilters({ filters, onChange }: ChuyenKhoFiltersProps) {
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />
-      </Field>
+      </FilterField>
     </div>
   )
 }

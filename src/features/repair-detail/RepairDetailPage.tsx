@@ -2,9 +2,10 @@
  * Repair detail page — thin orchestrator composing the legacy fieldset/log
  * sections. Route: /sua-chua-bao-hanh/:id   Phase 4 owns this file.
  */
+import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -15,6 +16,7 @@ import { PrintLayout } from '@/components/print/print-layout'
 import { formatDate } from '@/lib/format'
 import { ROUTES } from '@/constants/routes'
 import type { RepairTicket } from '@/domains/repair/types'
+import { UpdateStatusModal } from '@/features/repair-shared/update-status-modal'
 import { ProductInfoSection } from './sections/ProductInfoSection'
 import { TicketInfoSection } from './sections/TicketInfoSection'
 import { CustomerInfoSection } from './sections/CustomerInfoSection'
@@ -94,6 +96,7 @@ function DetailSkeleton() {
 export default function RepairDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [statusOpen, setStatusOpen] = useState(false)
 
   const {
     data: ticket,
@@ -131,6 +134,15 @@ export default function RepairDetailPage() {
           { label: ticket.soPhieu },
         ]}
       >
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8"
+          onClick={() => setStatusOpen(true)}
+        >
+          <RefreshCw className="mr-1.5 size-4" />
+          Đổi tình trạng
+        </Button>
         <Button asChild variant="secondary" size="sm" className="h-8">
           <Link to={ROUTES.repairCreate}>Tạo mới</Link>
         </Button>
@@ -178,6 +190,15 @@ export default function RepairDetailPage() {
           excludeId={ticket.id}
         />
       </div>
+
+      {statusOpen && (
+        <UpdateStatusModal
+          open={statusOpen}
+          onOpenChange={setStatusOpen}
+          ids={[ticket.id]}
+          initialStatus={ticket.tinhTrang}
+        />
+      )}
     </div>
   )
 }

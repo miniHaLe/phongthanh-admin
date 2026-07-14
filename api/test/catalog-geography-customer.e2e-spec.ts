@@ -5,8 +5,7 @@ import cookieParser from 'cookie-parser'
 import { Client } from 'pg'
 import request from 'supertest'
 import { AppModule } from '../src/app.module'
-
-const ADMIN = { tenDangNhap: 'admin', password: 'Test!Admin2026' }
+import { API_TEST_USERS } from './api-test-users'
 
 let app: INestApplication
 let http: ReturnType<typeof request>
@@ -21,7 +20,9 @@ beforeAll(async () => {
   app.use(cookieParser())
   await app.init()
   http = request(app.getHttpServer())
-  const login = await http.post('/auth/login').send(ADMIN)
+  const login = await http.post('/auth/login').send(API_TEST_USERS.super)
+  expect(login.status).toBe(200)
+  expect(login.body.mustChangePassword).toBe(false)
   token = login.body.accessToken as string
 })
 
@@ -201,6 +202,16 @@ describe('global relational catalogs', () => {
 })
 
 describe('customer normalized address and finance fields', () => {
+  it('rejects malformed phone numbers at the API boundary', async () => {
+    const res = await http.post('/api/v1/khach-hang').set(auth()).send({
+      tenKH: 'Bad phone',
+      dienThoai: 'abc',
+      loaiKhachHangId: 1,
+    })
+    expect(res.status).toBe(400)
+    expect(res.body.message).toMatch(/Số điện thoại phải gồm 10 số/)
+  })
+
   it('composes address, stamps JWT branch, validates tax, and preserves account zeroes', async () => {
     const created = await http.post('/api/v1/khach-hang').set(auth()).send({
       tenKH: 'Khách địa chỉ mới',
@@ -287,6 +298,7 @@ describe('customer normalized address and finance fields', () => {
         tenDuong: null,
         tinhThanhCode: null,
         phuongXaCode: null,
+        clearDiaChi: true,
         maSoThue: null,
         nganHangId: null,
         soTaiKhoan: null,
@@ -306,6 +318,50 @@ describe('customer normalized address and finance fields', () => {
         loaiKhachHangId: 4,
       }),
     )
+
+    await http.delete(`/api/v1/khach-hang/${created.body.id}`).set(auth())
+  })
+
+  it('preserves a legacy address on normalized-field touches and requires the clear marker', async () => {
+    const created = await http.post('/api/v1/khach-hang').set(auth()).send({
+      tenKH: 'Khách địa chỉ legacy',
+      dienThoai: '0900000910',
+      diaChi: '12 Trần Phú, địa chỉ cũ',
+      loaiKhachHangId: 1,
+    })
+    expect(created.status).toBe(201)
+
+    const touched = await http
+      .patch(`/api/v1/khach-hang/${created.body.id}`)
+      .set(auth())
+      .send({
+        tenDuong: null,
+        tinhThanhCode: null,
+        phuongXaCode: null,
+      })
+    expect(touched.status).toBe(200)
+    expect(touched.body.diaChi).toBe('12 Trần Phú, địa chỉ cũ')
+
+    const unmarkedClear = await http
+      .patch(`/api/v1/khach-hang/${created.body.id}`)
+      .set(auth())
+      .send({ diaChi: null })
+    expect(unmarkedClear.status).toBe(400)
+    expect(unmarkedClear.body.message).toMatch(/Xóa địa chỉ/)
+
+    const cleared = await http
+      .patch(`/api/v1/khach-hang/${created.body.id}`)
+      .set(auth())
+      .send({
+        tenDuong: null,
+        tinhThanhCode: null,
+        phuongXaCode: null,
+        diaChi: null,
+        clearDiaChi: true,
+      })
+    expect(cleared.status).toBe(200)
+    expect(cleared.body.diaChi).toBeNull()
+    expect(cleared.body).not.toHaveProperty('clearDiaChi')
 
     await http.delete(`/api/v1/khach-hang/${created.body.id}`).set(auth())
   })
