@@ -10,6 +10,9 @@ export function toQuery(params: ListParams): string {
   const q = new URLSearchParams()
   q.set('page', String(params.page))
   q.set('pageSize', String(params.pageSize))
+  if (params.branchId && params.branchId !== 'all') {
+    q.set('branchId', params.branchId)
+  }
   if (params.sort) q.set('sort', params.sort)
   if (params.dir) q.set('dir', params.dir)
   if (params.search) q.set('search', params.search)

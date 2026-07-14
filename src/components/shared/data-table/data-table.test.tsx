@@ -45,6 +45,43 @@ describe('DataTable (characterization)', () => {
     expect(screen.getByText('Không có dữ liệu')).toBeInTheDocument()
   })
 
+  it('keeps rows visible and announces a background refresh', () => {
+    render(
+      <DataTable
+        tableId="background-refresh"
+        columns={columns}
+        data={data}
+        isFetching
+        scrollLabel="Bảng đang cập nhật"
+      />,
+    )
+
+    expect(screen.getByText('Alpha')).toBeInTheDocument()
+    expect(screen.getByText('Beta')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Đang cập nhật…')
+    expect(screen.getByLabelText('Bảng đang cập nhật')).toHaveAttribute(
+      'aria-busy',
+      'true',
+    )
+    expect(screen.getByRole('table')).toHaveClass('opacity-60')
+  })
+
+  it('keeps initial loading on skeleton rows instead of stale data', () => {
+    render(
+      <DataTable
+        tableId="initial-loading"
+        columns={columns}
+        data={data}
+        isLoading
+        isFetching
+      />,
+    )
+
+    expect(screen.queryByText('Alpha')).not.toBeInTheDocument()
+    expect(screen.queryByText('Đang cập nhật…')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('cell')).toHaveLength(8)
+  })
+
   it('fires onRowClick with the row original', async () => {
     const user = userEvent.setup()
     let clicked: Row | null = null
@@ -171,6 +208,34 @@ describe('DataTable (characterization)', () => {
     expect(target).toHaveClass('min-h-11', 'min-w-11')
   })
 
+  it('preserves server-provided order when sorting is manual', () => {
+    const serverOrderedData: Row[] = [
+      { id: '1', name: 'Bùi' },
+      { id: '2', name: 'Đặng' },
+      { id: '3', name: 'Vũ' },
+    ]
+    render(
+      <DataTable
+        tableId="manual-sort"
+        columns={[
+          {
+            id: 'name',
+            accessorKey: 'name',
+            header: 'Tên',
+            enableSorting: true,
+          },
+        ]}
+        data={serverOrderedData}
+        sorting={[{ id: 'name', desc: false }]}
+        manualSorting
+      />,
+    )
+
+    expect(screen.getAllByRole('cell').map((cell) => cell.textContent)).toEqual(
+      ['Bùi', 'Đặng', 'Vũ'],
+    )
+  })
+
   it('keeps sort-only columns in TanStack sorting without rendering or counting them', () => {
     const compositeColumns: ColumnDef<Row, unknown>[] = [
       {
@@ -240,6 +305,36 @@ describe('DataTable (characterization)', () => {
     )
   })
 
+  it('starts configured hidden columns hidden while allowing persisted overrides', () => {
+    const hiddenColumns: ColumnDef<Row, unknown>[] = [
+      { id: 'name', accessorKey: 'name', header: 'Tên' },
+      {
+        id: 'id',
+        accessorKey: 'id',
+        header: 'Mã',
+        meta: { initiallyHidden: true },
+      },
+    ]
+    const { rerender } = render(
+      <DataTable
+        tableId="initial-hidden"
+        columns={hiddenColumns}
+        data={data}
+      />,
+    )
+
+    expect(screen.queryByText('Mã')).not.toBeInTheDocument()
+    useTableState.getState().setColumnVisibility('initial-hidden', { id: true })
+    rerender(
+      <DataTable
+        tableId="initial-hidden"
+        columns={hiddenColumns}
+        data={data}
+      />,
+    )
+    expect(screen.getByText('Mã')).toBeInTheDocument()
+  })
+
   it('omits sort-only descriptors from config and resets group visibility', async () => {
     const user = userEvent.setup()
     useTableState.getState().setColumnVisibility('config-groups', {
@@ -279,6 +374,23 @@ describe('DataTable (characterization)', () => {
       columnOrder: [],
       density: 'comfortable',
     })
+  })
+
+  it('shows configured hidden columns unchecked until the user enables them', async () => {
+    const user = userEvent.setup()
+    render(
+      <DataTableColumnConfig
+        tableId="hidden-config"
+        columns={[{ id: 'notes', label: 'Ghi chú', initiallyHidden: true }]}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Cấu hình cột' }))
+    expect(screen.getByLabelText('Ghi chú')).not.toBeChecked()
+    await user.click(screen.getByLabelText('Ghi chú'))
+    expect(
+      useTableState.getState().getTable('hidden-config').columnVisibility,
+    ).toEqual({ notes: true })
   })
 
   it('migrates repair visibility to groups while preserving density', () => {

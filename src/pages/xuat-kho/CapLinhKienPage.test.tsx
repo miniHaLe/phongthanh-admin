@@ -30,13 +30,21 @@ describe('CapLinhKienPage', () => {
     expect(screen.queryByLabelText('Chọn tất cả')).not.toBeInTheDocument()
   })
 
-  it('renders Thêm phiếu cấp + Tìm kiếm/Tìm chi tiết/Xuất ra Excel/Báo cáo lợi nhuận', () => {
+  it('renders Thêm phiếu cấp + Tìm kiếm/Tìm chi tiết/Xuất Excel/Báo cáo lợi nhuận', () => {
     renderWithProviders(<CapLinhKienPage />)
-    expect(screen.getByRole('button', { name: 'Thêm phiếu cấp' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Thêm phiếu cấp' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Tìm chi tiết' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Xuất ra Excel' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Báo cáo lợi nhuận' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Tìm chi tiết' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Xuất Excel' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Báo cáo lợi nhuận' }),
+    ).toBeInTheDocument()
   })
 
   it('renders the Tổng tiền info box', async () => {

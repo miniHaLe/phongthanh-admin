@@ -14,10 +14,10 @@ export const nganHangResourceConfig: CrudResourceConfig = {
     createdAt: nganHang.createdAt,
   },
   filterableColumns: {
-    tenNganHang: { column: nganHang.tenNganHang },
+    tenNganHang: { column: nganHang.tenNganHang, valueType: 'string' },
     active: {
       column: nganHang.active,
-      parse: (raw) => raw === 'true' || raw === true,
+      valueType: 'boolean',
     },
   },
   searchColumns: [nganHang.tenNganHang, nganHang.maNganHang, nganHang.diaChi],

@@ -1,5 +1,6 @@
-import { Controller, Get, Inject } from '@nestjs/common'
+import { Controller, Get, Inject, Query, Res } from '@nestjs/common'
 import { asc } from 'drizzle-orm'
+import type { Response } from 'express'
 import type { DbClient } from '../db/client'
 import { DB_CLIENT } from '../db/db.module'
 import { phuongXa, tinhThanh } from '../db/schema'
@@ -14,12 +15,19 @@ function communeDisplayName(type: string, name: string): string {
   return `${prefix} ${name}`
 }
 
+const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable'
+const REVALIDATED_CACHE_CONTROL =
+  'public, max-age=300, stale-while-revalidate=86400'
+
 @Controller('api/v1/dia-ly')
 export class DiaLyController {
   constructor(@Inject(DB_CLIENT) private readonly db: DbClient) {}
 
   @Get()
-  async getSnapshot() {
+  async getSnapshot(
+    @Res({ passthrough: true }) response: Response,
+    @Query('v') requestedVersion?: string,
+  ) {
     const [provinceRows, communeRows] = await Promise.all([
       this.db.select().from(tinhThanh).orderBy(asc(tinhThanh.code)),
       this.db.select().from(phuongXa).orderBy(asc(phuongXa.code)),
@@ -31,8 +39,24 @@ export class DiaLyController {
       ]),
     )
     const metadata = provinceRows[0]
+    const snapshotVersion = metadata?.snapshotVersion ?? null
+    const isPinnedVersion = Boolean(
+      snapshotVersion && requestedVersion === snapshotVersion,
+    )
+    response.setHeader(
+      'Cache-Control',
+      isPinnedVersion ? IMMUTABLE_CACHE_CONTROL : REVALIDATED_CACHE_CONTROL,
+    )
+    if (snapshotVersion) {
+      response.setHeader('X-Snapshot-Version', snapshotVersion)
+      response.setHeader(
+        'Content-Location',
+        `/api/v1/dia-ly?v=${encodeURIComponent(snapshotVersion)}`,
+      )
+    }
+
     return {
-      version: metadata?.snapshotVersion ?? null,
+      version: snapshotVersion,
       effectiveFrom: metadata?.effectiveFrom ?? null,
       sourceDocument: metadata?.sourceDocument ?? null,
       provinces: provinceRows.map((row) => ({

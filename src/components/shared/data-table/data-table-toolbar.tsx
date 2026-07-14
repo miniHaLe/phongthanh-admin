@@ -1,5 +1,9 @@
-import { Search } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Search, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+
+const SEARCH_DEBOUNCE_MS = 300
 
 export interface DataTableToolbarProps {
   searchValue?: string
@@ -22,6 +26,37 @@ export function DataTableToolbar({
   right,
   children,
 }: DataTableToolbarProps) {
+  const [localSearchValue, setLocalSearchValue] = useState(searchValue ?? '')
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setLocalSearchValue(searchValue ?? '')
+    clearTimeout(searchTimeoutRef.current)
+  }, [searchValue])
+
+  useEffect(
+    () => () => {
+      clearTimeout(searchTimeoutRef.current)
+    },
+    [],
+  )
+
+  function handleSearchChange(nextValue: string) {
+    setLocalSearchValue(nextValue)
+    clearTimeout(searchTimeoutRef.current)
+
+    if (nextValue === '') {
+      onSearchChange?.('')
+      return
+    }
+
+    searchTimeoutRef.current = setTimeout(
+      () => onSearchChange?.(nextValue),
+      SEARCH_DEBOUNCE_MS,
+    )
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Search input — rendered only when caller supplies onSearchChange */}
@@ -29,11 +64,27 @@ export function DataTableToolbar({
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            value={searchValue ?? ''}
-            onChange={(e) => onSearchChange(e.target.value)}
+            ref={searchInputRef}
+            value={localSearchValue}
+            onChange={(event) => handleSearchChange(event.target.value)}
             placeholder={searchPlaceholder}
-            className="h-11 w-full pl-8 text-base md:h-8 md:w-56 md:text-sm"
+            className="h-11 w-full px-8 text-base md:h-8 md:w-56 md:text-sm"
           />
+          {localSearchValue !== '' && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-0.5 top-1/2 h-10 w-10 -translate-y-1/2 text-muted-foreground hover:text-foreground md:h-7 md:w-7"
+              aria-label="Xóa tìm kiếm"
+              onClick={() => {
+                handleSearchChange('')
+                searchInputRef.current?.focus()
+              }}
+            >
+              <X className="size-3.5" aria-hidden="true" />
+            </Button>
+          )}
         </div>
       )}
 

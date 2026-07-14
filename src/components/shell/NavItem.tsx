@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import {
   Tooltip,
   TooltipContent,
@@ -6,8 +6,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { ROUTES } from '@/constants/routes'
 import type { NavItem as NavItemType } from '@/config/nav-config'
+import { isNavItemActive } from './navigation-command-utils'
 
 interface NavItemProps {
   item: NavItemType
@@ -17,6 +17,8 @@ interface NavItemProps {
 
 export function NavItem({ item, collapsed, onClick }: NavItemProps) {
   const Icon = item.icon
+  const { pathname } = useLocation()
+  const isActive = isNavItemActive(pathname, item.path)
 
   const linkContent = (isActive: boolean) => (
     <span
@@ -36,15 +38,14 @@ export function NavItem({ item, collapsed, onClick }: NavItemProps) {
   )
 
   const navLink = (
-    <NavLink
+    <Link
       to={item.path}
-      end={item.path === ROUTES.home}
       aria-label={collapsed ? item.label : undefined}
       onClick={onClick}
       className="block"
     >
-      {({ isActive }) => linkContent(isActive)}
-    </NavLink>
+      {linkContent(isActive)}
+    </Link>
   )
 
   if (collapsed) {

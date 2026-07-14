@@ -32,8 +32,9 @@ import { nhomQuyenConfig } from '@/config/crud-configs/nhom-quyen.config'
 import type { NhomQuyen } from '@/types/masterdata-types'
 import { usePermissionStore } from '@/store/permission-store'
 import { MenuPermissionTree } from '@/features/permissions/menu-permission-tree'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 
 /** Fresh per-mount draft id so an unsaved create-mode tree selection doesn't
  * collide with any other draft still open elsewhere. */
@@ -144,7 +145,8 @@ export default function NhomQuyenPage() {
       {
         id: 'stt',
         header: '##',
-        cell: ({ row }) => (params.page - 1) * params.pageSize + row.index + 1,
+        cell: ({ row, table }) =>
+          getVisibleRowNumber(table, row, (params.page - 1) * params.pageSize),
         enableSorting: false,
         size: 48,
       },
@@ -243,7 +245,10 @@ export default function NhomQuyenPage() {
             getRowId={(row) => row.id}
             emptyMessage="Chưa có Nhóm Quyền"
             manualPagination
-            pagination={{ pageIndex: params.page - 1, pageSize: params.pageSize }}
+            pagination={{
+              pageIndex: params.page - 1,
+              pageSize: params.pageSize,
+            }}
             pageCount={
               result ? Math.ceil(result.total / result.pageSize) : undefined
             }
@@ -341,9 +346,7 @@ export default function NhomQuyenPage() {
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              Quyền menu — {viewRow?.tenNhom ?? ''}
-            </DialogTitle>
+            <DialogTitle>Quyền menu — {viewRow?.tenNhom ?? ''}</DialogTitle>
           </DialogHeader>
           {viewRow && <MenuPermissionTree roleId={viewRow.id} readOnly />}
         </DialogContent>

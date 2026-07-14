@@ -18,9 +18,10 @@ services:
       POSTGRES_PASSWORD: phongthanh_dev
       POSTGRES_DB: phongthanh
     # Host 5433 is commonly taken by other local stacks; 5434 keeps this
-    # project's DB conflict-free. api/.env DATABASE_URL (host-run) points here.
+    # project's DB conflict-free. Bind to loopback so the dev credential is
+    # never exposed to the MacBook's LAN interfaces.
     ports:
-      - '5434:5432'
+      - '127.0.0.1:5434:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

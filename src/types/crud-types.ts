@@ -8,6 +8,8 @@ import type { ListParams, PagedResult } from '@/mock/seed'
 
 export type { ListParams, PagedResult }
 
+export type CrudLookups = Readonly<Record<string, unknown>>
+
 export type FieldType =
   | 'text'
   | 'textarea'
@@ -26,7 +28,7 @@ export interface ColumnConfig<T> {
   header: string
   sortable?: boolean
   width?: number
-  renderCell?: (val: T[keyof T], row: T) => ReactNode
+  renderCell?: (val: T[keyof T], row: T, lookups?: CrudLookups) => ReactNode
   hidden?: boolean
 }
 
@@ -70,7 +72,7 @@ export interface CrudConfig<T extends { id: string }> {
   bulkDelete?: boolean
   /** Opt-in "Lưu & Thêm mới" footer button on the create/edit sheet. */
   saveAndNew?: boolean
-  /** Opt-in "Xuất ra Excel" toolbar button (exports the current filtered list). */
+  /** Opt-in "Xuất Excel" toolbar button for the current page's display values. */
   export?: boolean
   /** Override the "Thêm" toolbar button label, or hide it with false. */
   addLabel?: string | false

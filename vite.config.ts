@@ -18,6 +18,7 @@ export default defineConfig({
       '**/node_modules/**',
       '**/dist/**',
       '**/.{idea,git,cache,output,temp}/**',
+      'api/src/**/*.spec.ts',
       'tests/e2e/**',
     ],
     // Don't fetch iframe/img subresources in tests (e.g. the OSM map embed).

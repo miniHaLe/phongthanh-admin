@@ -1,5 +1,6 @@
 /** Spec (F7): print window renders element markup + escapes an untrusted title. */
 import { describe, it, expect, vi, afterEach } from 'vitest'
+import { notify } from '@/components/shared/toast'
 import { openPrintWindow } from './print-window'
 
 function makeFakeWindow() {
@@ -62,9 +63,13 @@ describe('openPrintWindow', () => {
     expect(fake.document.title).toBe(evil)
   })
 
-  it('returns null when the browser blocks the popup', async () => {
+  it('shows feedback and returns null when the browser blocks the popup', async () => {
+    const errorToast = vi.spyOn(notify, 'error')
     vi.spyOn(window, 'open').mockReturnValue(null)
     const result = await openPrintWindow('x', <div />)
     expect(result).toBeNull()
+    expect(errorToast).toHaveBeenCalledWith(
+      'Trình duyệt đã chặn cửa sổ in. Vui lòng cho phép cửa sổ bật lên và thử lại.',
+    )
   })
 })

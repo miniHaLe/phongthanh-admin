@@ -12,7 +12,9 @@
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
     "createdAt": "2026-02-09T10:06:18.647Z",
-    "updatedAt": "2026-06-26T10:19:34.727Z"
+    "updatedAt": "2026-06-26T10:19:34.727Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24640"
   },
   {
     "id": "kh-49",
@@ -27,7 +29,9 @@
     "nguoiTao": "Trần Thị Bình",
     "active": true,
     "createdAt": "2026-02-11T23:18:46.925Z",
-    "updatedAt": "2026-06-20T12:01:45.368Z"
+    "updatedAt": "2026-06-20T12:01:45.368Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24733"
   },
   {
     "id": "kh-48",
@@ -41,7 +45,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Nguyễn Văn An",
     "active": true,
-    "createdAt": "2026-02-13T23:14:09.033Z"
+    "createdAt": "2026-02-13T23:14:09.033Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-47",
@@ -55,7 +61,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Trần Thị Bình",
     "active": true,
-    "createdAt": "2026-02-17T21:47:37.827Z"
+    "createdAt": "2026-02-17T21:47:37.827Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24181"
   },
   {
     "id": "kh-46",
@@ -68,7 +76,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Trần Thị Bình",
     "active": true,
-    "createdAt": "2026-02-22T07:49:24.928Z"
+    "createdAt": "2026-02-22T07:49:24.928Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24733"
   },
   {
     "id": "kh-45",
@@ -83,7 +93,9 @@
     "nguoiTao": "Nguyễn Văn An",
     "active": true,
     "createdAt": "2026-02-24T14:42:49.877Z",
-    "updatedAt": "2026-06-11T11:41:19.344Z"
+    "updatedAt": "2026-06-11T11:41:19.344Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24611"
   },
   {
     "id": "kh-44",
@@ -98,7 +110,9 @@
     "daiLyId": "kh-17",
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
-    "createdAt": "2026-02-26T08:07:18.807Z"
+    "createdAt": "2026-02-26T08:07:18.807Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-43",
@@ -137,7 +151,9 @@
     "loaiKhachHangId": 6,
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
-    "createdAt": "2026-03-06T18:07:44.956Z"
+    "createdAt": "2026-03-06T18:07:44.956Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24133"
   },
   {
     "id": "kh-40",
@@ -151,7 +167,9 @@
     "loaiKhachHangId": 7,
     "nguoiTao": "Nguyễn Văn An",
     "active": true,
-    "createdAt": "2026-03-11T02:38:38.782Z"
+    "createdAt": "2026-03-11T02:38:38.782Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24133"
   },
   {
     "id": "kh-39",
@@ -164,7 +182,9 @@
     "loaiKhachHangId": 9,
     "nguoiTao": "Nguyễn Văn An",
     "active": true,
-    "createdAt": "2026-03-14T15:13:04.892Z"
+    "createdAt": "2026-03-14T15:13:04.892Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24611"
   },
   {
     "id": "kh-38",
@@ -179,7 +199,9 @@
     "nguoiTao": "Nguyễn Văn An",
     "ghiChu": "Khách VIP",
     "active": true,
-    "createdAt": "2026-03-15T20:11:20.621Z"
+    "createdAt": "2026-03-15T20:11:20.621Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24133"
   },
   {
     "id": "kh-37",
@@ -194,7 +216,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Trần Thị Bình",
     "active": true,
-    "createdAt": "2026-03-20T11:55:08.848Z"
+    "createdAt": "2026-03-20T11:55:08.848Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24611"
   },
   {
     "id": "kh-36",
@@ -209,7 +233,9 @@
     "nguoiTao": "Trần Thị Bình",
     "active": true,
     "createdAt": "2026-03-21T22:05:05.676Z",
-    "updatedAt": "2026-06-21T17:59:44.157Z"
+    "updatedAt": "2026-06-21T17:59:44.157Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24733"
   },
   {
     "id": "kh-35",
@@ -224,7 +250,9 @@
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
     "createdAt": "2026-03-27T06:18:14.477Z",
-    "updatedAt": "2026-06-22T05:35:51.045Z"
+    "updatedAt": "2026-06-22T05:35:51.045Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24615"
   },
   {
     "id": "kh-34",
@@ -237,7 +265,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
-    "createdAt": "2026-03-27T17:04:39.771Z"
+    "createdAt": "2026-03-27T17:04:39.771Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24640"
   },
   {
     "id": "kh-33",
@@ -251,7 +281,9 @@
     "loaiKhachHangId": 4,
     "nguoiTao": "Trần Thị Bình",
     "active": true,
-    "createdAt": "2026-03-31T09:06:36.099Z"
+    "createdAt": "2026-03-31T09:06:36.099Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24611"
   },
   {
     "id": "kh-32",
@@ -264,7 +296,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
-    "createdAt": "2026-04-03T19:52:42.716Z"
+    "createdAt": "2026-04-03T19:52:42.716Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24611"
   },
   {
     "id": "kh-31",
@@ -279,7 +313,9 @@
     "daiLyId": "kh-11",
     "nguoiTao": "Trần Thị Bình",
     "active": true,
-    "createdAt": "2026-04-07T02:18:50.565Z"
+    "createdAt": "2026-04-07T02:18:50.565Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-30",
@@ -309,7 +345,9 @@
     "loaiKhachHangId": 3,
     "nguoiTao": "Trần Thị Bình",
     "active": true,
-    "createdAt": "2026-04-14T08:00:55.610Z"
+    "createdAt": "2026-04-14T08:00:55.610Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24640"
   },
   {
     "id": "kh-28",
@@ -323,7 +361,9 @@
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
     "createdAt": "2026-04-14T17:27:43.402Z",
-    "updatedAt": "2026-06-16T16:18:21.850Z"
+    "updatedAt": "2026-06-16T16:18:21.850Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-27",
@@ -337,7 +377,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Nguyễn Văn An",
     "active": true,
-    "createdAt": "2026-04-20T11:27:54.528Z"
+    "createdAt": "2026-04-20T11:27:54.528Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24640"
   },
   {
     "id": "kh-26",
@@ -364,7 +406,9 @@
     "loaiKhachHangId": 4,
     "nguoiTao": "Trần Thị Bình",
     "active": true,
-    "createdAt": "2026-04-25T08:21:29.888Z"
+    "createdAt": "2026-04-25T08:21:29.888Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24133"
   },
   {
     "id": "kh-24",
@@ -379,7 +423,9 @@
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
     "createdAt": "2026-04-27T07:56:32.036Z",
-    "updatedAt": "2026-06-19T09:18:37.840Z"
+    "updatedAt": "2026-06-19T09:18:37.840Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24184"
   },
   {
     "id": "kh-23",
@@ -394,7 +440,9 @@
     "nguoiTao": "Nguyễn Văn An",
     "active": true,
     "createdAt": "2026-05-02T12:22:50.248Z",
-    "updatedAt": "2026-06-18T21:18:23.424Z"
+    "updatedAt": "2026-06-18T21:18:23.424Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24640"
   },
   {
     "id": "kh-22",
@@ -409,7 +457,9 @@
     "daiLyId": "kh-6",
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
-    "createdAt": "2026-05-03T10:55:05.074Z"
+    "createdAt": "2026-05-03T10:55:05.074Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-21",
@@ -423,7 +473,9 @@
     "nguoiTao": "Trần Thị Bình",
     "active": true,
     "createdAt": "2026-05-07T21:04:47.723Z",
-    "updatedAt": "2026-06-08T14:50:17.295Z"
+    "updatedAt": "2026-06-08T14:50:17.295Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24611"
   },
   {
     "id": "kh-20",
@@ -454,7 +506,9 @@
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
     "createdAt": "2026-05-12T03:31:52.501Z",
-    "updatedAt": "2026-06-18T06:13:53.601Z"
+    "updatedAt": "2026-06-18T06:13:53.601Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-18",
@@ -469,7 +523,9 @@
     "nguoiTao": "Trần Thị Bình",
     "active": true,
     "createdAt": "2026-05-15T16:27:23.623Z",
-    "updatedAt": "2026-06-22T18:11:04.313Z"
+    "updatedAt": "2026-06-22T18:11:04.313Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24611"
   },
   {
     "id": "kh-17",
@@ -483,7 +539,9 @@
     "loaiKhachHangId": 5,
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
-    "createdAt": "2026-05-20T13:31:23.981Z"
+    "createdAt": "2026-05-20T13:31:23.981Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24184"
   },
   {
     "id": "kh-16",
@@ -497,7 +555,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Trần Thị Bình",
     "active": true,
-    "createdAt": "2026-05-21T20:10:32.517Z"
+    "createdAt": "2026-05-21T20:10:32.517Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-15",
@@ -510,7 +570,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Nguyễn Văn An",
     "active": true,
-    "createdAt": "2026-05-25T15:07:52.803Z"
+    "createdAt": "2026-05-25T15:07:52.803Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-14",
@@ -524,7 +586,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Trần Thị Bình",
     "active": true,
-    "createdAt": "2026-05-26T17:54:24.932Z"
+    "createdAt": "2026-05-26T17:54:24.932Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24640"
   },
   {
     "id": "kh-13",
@@ -538,7 +602,9 @@
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
     "createdAt": "2026-06-01T10:39:41.079Z",
-    "updatedAt": "2026-06-28T14:38:47.344Z"
+    "updatedAt": "2026-06-28T14:38:47.344Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-12",
@@ -553,7 +619,9 @@
     "nguoiTao": "Nguyễn Văn An",
     "active": true,
     "createdAt": "2026-06-03T01:06:28.191Z",
-    "updatedAt": "2026-06-27T16:52:16.588Z"
+    "updatedAt": "2026-06-27T16:52:16.588Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24615"
   },
   {
     "id": "kh-11",
@@ -568,7 +636,9 @@
     "nguoiTao": "Nguyễn Văn An",
     "active": true,
     "createdAt": "2026-06-04T16:18:48.636Z",
-    "updatedAt": "2026-06-28T03:57:20.097Z"
+    "updatedAt": "2026-06-28T03:57:20.097Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24611"
   },
   {
     "id": "kh-10",
@@ -583,7 +653,9 @@
     "ghiChu": "Khách VIP",
     "active": true,
     "createdAt": "2026-06-08T07:36:13.091Z",
-    "updatedAt": "2026-06-27T16:16:45.458Z"
+    "updatedAt": "2026-06-27T16:16:45.458Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-9",
@@ -599,7 +671,9 @@
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
     "createdAt": "2026-06-12T04:19:10.426Z",
-    "updatedAt": "2026-06-23T18:43:04.804Z"
+    "updatedAt": "2026-06-23T18:43:04.804Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24733"
   },
   {
     "id": "kh-8",
@@ -613,7 +687,9 @@
     "nguoiTao": "Nguyễn Văn An",
     "ghiChu": "Khách VIP",
     "active": true,
-    "createdAt": "2026-06-13T19:15:25.572Z"
+    "createdAt": "2026-06-13T19:15:25.572Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24184"
   },
   {
     "id": "kh-7",
@@ -630,7 +706,9 @@
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
     "createdAt": "2026-06-17T14:11:21.581Z",
-    "updatedAt": "2026-06-16T08:41:19.171Z"
+    "updatedAt": "2026-06-16T08:41:19.171Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24184"
   },
   {
     "id": "kh-6",
@@ -660,7 +738,9 @@
     "loaiKhachHangId": 1,
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
-    "createdAt": "2026-06-23T19:43:03.752Z"
+    "createdAt": "2026-06-23T19:43:03.752Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24181"
   },
   {
     "id": "kh-4",
@@ -675,7 +755,9 @@
     "daiLyId": "kh-2",
     "nguoiTao": "Nguyễn Văn An",
     "active": true,
-    "createdAt": "2026-06-28T04:53:22.688Z"
+    "createdAt": "2026-06-28T04:53:22.688Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24640"
   },
   {
     "id": "kh-3",
@@ -690,7 +772,9 @@
     "nguoiTao": "Trần Thị Bình",
     "active": true,
     "createdAt": "2026-06-28T14:51:01.094Z",
-    "updatedAt": "2026-06-22T03:58:21.993Z"
+    "updatedAt": "2026-06-22T03:58:21.993Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24184"
   },
   {
     "id": "kh-2",
@@ -704,7 +788,9 @@
     "loaiKhachHangId": 3,
     "nguoiTao": "Lê Hữu Cường",
     "active": true,
-    "createdAt": "2026-07-02T18:37:57.583Z"
+    "createdAt": "2026-07-02T18:37:57.583Z",
+    "tinhThanhCode": "66",
+    "phuongXaCode": "24259"
   },
   {
     "id": "kh-1",
@@ -719,6 +805,8 @@
     "nguoiTao": "Nguyễn Văn An",
     "ghiChu": "Khách VIP",
     "active": true,
-    "createdAt": "2026-07-05T17:32:00.531Z"
+    "createdAt": "2026-07-05T17:32:00.531Z",
+    "tinhThanhCode": "68",
+    "phuongXaCode": "24611"
   }
 ]

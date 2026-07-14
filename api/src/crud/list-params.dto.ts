@@ -1,5 +1,17 @@
 import { z } from 'zod'
 
+export type ListFilterValue = string | number | boolean
+
+const listFilterValueSchema = z
+  .unknown()
+  .refine(
+    (value): value is ListFilterValue =>
+      typeof value === 'string' ||
+      (typeof value === 'number' && Number.isFinite(value)) ||
+      typeof value === 'boolean',
+    'Giá trị lọc phải là chuỗi, số hoặc boolean',
+  )
+
 /** Query-string shape for `GET /api/v1/:resource`. `filters` arrives as
  * `filters[key]=value` (Express's default qs parser nests it into an
  * object already) — validated as a loose string-keyed record here; each key
@@ -11,7 +23,10 @@ export const listParamsQuerySchema = z.object({
   sort: z.string().min(1).optional(),
   dir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),
-  filters: z.record(z.string(), z.unknown()).optional(),
+  /** Dedicated server-owned branch scope. `all` means keep the JWT-authorized
+   * union; branch ownership remains forbidden inside the generic filters bag. */
+  branchId: z.string().trim().min(1).max(100).optional(),
+  filters: z.record(z.string(), listFilterValueSchema).optional(),
 })
 
 export type ListParamsQuery = z.infer<typeof listParamsQuerySchema>

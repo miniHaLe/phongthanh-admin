@@ -18,6 +18,12 @@ export type {
   DataTableProps,
 } from './data-table/data-table'
 export { DataTablePagination } from './data-table/data-table-pagination'
+export {
+  API_PAGE_SIZE_OPTIONS,
+  COMPACT_PAGE_SIZE_OPTIONS,
+  DEFAULT_PAGE_SIZE_OPTIONS,
+  STANDARD_PAGE_SIZE_OPTIONS,
+} from './data-table/page-size-options'
 export { DataTableToolbar } from './data-table/data-table-toolbar'
 export { DataTableColumnConfig } from './data-table/data-table-column-config'
 export type { ColumnDescriptor } from './data-table/data-table-column-config'

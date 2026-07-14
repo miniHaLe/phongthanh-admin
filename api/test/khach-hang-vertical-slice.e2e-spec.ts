@@ -16,9 +16,9 @@ import {
   CORS_ALLOWED_METHODS,
 } from '../src/config/cors-policy'
 import { setRefreshCookie } from '../src/auth/refresh-cookie.util'
+import { API_TEST_USERS } from './api-test-users'
 
 const ADMIN = { tenDangNhap: 'admin', password: 'Test!Admin2026' }
-const CN1_USER = { tenDangNhap: 'tiepnhan1', password: 'Test!Admin2026' } // cn-1 only
 const LOCKED_USER = { tenDangNhap: 'ketoan1', password: 'Test!Admin2026' } // locked in fixture
 
 let app: INestApplication
@@ -30,6 +30,7 @@ async function login(creds: { tenDangNhap: string; password: string }) {
 }
 async function tokenFor(creds: { tenDangNhap: string; password: string }) {
   const res = await login(creds)
+  expect(res.status).toBe(200)
   return res.body.accessToken as string
 }
 
@@ -106,6 +107,16 @@ describe('auth', () => {
     expect(res.status).toBe(401)
   })
 
+  it('blocks forced-password users from business routes with 403', async () => {
+    const token = await tokenFor(ADMIN)
+    const res = await http
+      .get('/api/v1/khach-hang')
+      .set('Authorization', `Bearer ${token}`)
+
+    expect(res.status).toBe(403)
+    expect(res.body.message).toBe('Bạn phải đổi mật khẩu trước khi tiếp tục')
+  })
+
   it('allows browser preflight for API requests with Authorization', async () => {
     const res = await http
       .options('/api/v1/khach-hang')
@@ -133,7 +144,7 @@ describe('auth', () => {
 describe('khach-hang list / get', () => {
   let token: string
   beforeAll(async () => {
-    token = await tokenFor(ADMIN)
+    token = await tokenFor(API_TEST_USERS.super)
   })
 
   it('returns the exact PagedResult shape', async () => {
@@ -202,7 +213,7 @@ describe('khach-hang list / get', () => {
 describe('security gate 1 — sort-column allowlist', () => {
   let token: string
   beforeAll(async () => {
-    token = await tokenFor(ADMIN)
+    token = await tokenFor(API_TEST_USERS.super)
   })
 
   it('rejects an unknown sort column with 400 VI (no SQL injection)', async () => {
@@ -217,7 +228,7 @@ describe('security gate 1 — sort-column allowlist', () => {
 describe('security gate 2 — filter-column allowlist + branch never filterable', () => {
   let token: string
   beforeAll(async () => {
-    token = await tokenFor(ADMIN)
+    token = await tokenFor(API_TEST_USERS.super)
   })
 
   it('rejects an unknown filter key with 400 (fail loud)', async () => {
@@ -242,8 +253,8 @@ describe('security gate 3/4 — branch scope from JWT, forgery cannot widen', ()
   let superToken: string
   let cn1Token: string
   beforeAll(async () => {
-    superToken = await tokenFor(ADMIN)
-    cn1Token = await tokenFor(CN1_USER)
+    superToken = await tokenFor(API_TEST_USERS.super)
+    cn1Token = await tokenFor(API_TEST_USERS.branchCn1)
   })
 
   it('super-admin sees all branches', async () => {
@@ -334,7 +345,7 @@ describe('security gate 3/4 — branch scope from JWT, forgery cannot widen', ()
 describe('khach-hang create / update / delete (server owns id/branch/audit)', () => {
   let token: string
   beforeAll(async () => {
-    token = await tokenFor(ADMIN)
+    token = await tokenFor(API_TEST_USERS.super)
   })
 
   it('creates a row, stamping id/createdAt/active/branchId/nguoiTao server-side', async () => {
@@ -352,7 +363,7 @@ describe('khach-hang create / update / delete (server owns id/branch/audit)', ()
     expect(res.body.active).toBe(true)
     expect(res.body.createdAt).toBeTruthy()
     expect(res.body.branchId).toBe('cn-1') // JWT primary branch, not address
-    expect(res.body.nguoiTao).toBe('admin') // from the JWT, not the client
+    expect(res.body.nguoiTao).toBe(API_TEST_USERS.super.tenDangNhap)
     expect('password' in res.body).toBe(false)
   })
 
@@ -459,8 +470,8 @@ describe('auth refresh — rotation + reuse detection', () => {
 })
 
 describe('auth change-password', () => {
-  const USER = { tenDangNhap: 'giamdoc', password: 'Test!Admin2026' }
-  const NEW_PASSWORD = 'Changed!Admin2026'
+  const USER = API_TEST_USERS.forcedPassword
+  const NEW_PASSWORD = 'Changed!ApiUser2026'
 
   it('requires a valid access token and old password, then clears mustChangePassword', async () => {
     const token = await tokenFor(USER)
@@ -486,5 +497,10 @@ describe('auth change-password', () => {
     })
     expect(newLogin.status).toBe(200)
     expect(newLogin.body.mustChangePassword).toBe(false)
+
+    const allowed = await http
+      .get('/api/v1/ngan-hang?pageSize=1')
+      .set('Authorization', `Bearer ${newLogin.body.accessToken as string}`)
+    expect(allowed.status).toBe(200)
   })
 })

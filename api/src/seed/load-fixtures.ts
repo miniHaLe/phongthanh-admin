@@ -93,6 +93,8 @@ export interface KhachHangFixture {
   dienThoai: string
   dienThoai2?: string
   diaChi?: string
+  tinhThanhCode?: string
+  phuongXaCode?: string
   phuongXaId?: string
   quanId?: string
   tinhId?: string

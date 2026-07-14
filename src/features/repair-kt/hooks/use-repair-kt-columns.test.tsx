@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { renderHook, screen } from '@testing-library/react'
+import { renderHook, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DataTable } from '@/components/shared'
 import { MOCK_TICKETS } from '@/domains/repair/mock-data'
+import { STATUS_HEX, STATUS_LABEL } from '@/domains/repair/status'
 import type { RepairTicket } from '@/domains/repair/types'
+import { REPAIR_COLUMN_LABELS as SHARED_REPAIR_COLUMN_LABELS } from '@/features/repair-shared/repair-table-constants'
 import { formatDate, formatDateTime, formatVND } from '@/lib/format'
 import { renderWithProviders } from '@/test/render-with-providers'
 import {
@@ -51,6 +53,7 @@ function Harness() {
 
 describe('useRepairKtColumns', () => {
   it('uses the shared repair composite group IDs', () => {
+    expect(REPAIR_KT_COLUMN_LABELS).toBe(SHARED_REPAIR_COLUMN_LABELS)
     expect(REPAIR_KT_COLUMN_LABELS.map(({ id }) => id)).toEqual([
       'status',
       'actions',
@@ -63,6 +66,13 @@ describe('useRepairKtColumns', () => {
       'notes',
       'receiver',
     ])
+
+    const { result } = renderHook(() => useRepairKtColumns())
+    expect(
+      result.current.columns
+        .filter((column) => column.meta?.presentation !== 'sort-only')
+        .map((column) => column.id),
+    ).toEqual(REPAIR_KT_COLUMN_LABELS.map(({ id }) => id))
   })
 
   it('retains legacy field IDs as sort-only columns with multi-target groups', () => {
@@ -82,7 +92,8 @@ describe('useRepairKtColumns', () => {
     expect(byId.get('assignment')?.meta?.compositeSortOptions).toHaveLength(3)
   })
 
-  it('renders all previous KT values and actions in the composite table', () => {
+  it('renders all previous KT values and opens the shared status action', async () => {
+    const user = userEvent.setup()
     renderWithProviders(<Harness />)
 
     for (const value of [
@@ -105,11 +116,28 @@ describe('useRepairKtColumns', () => {
       expect(screen.getAllByText(value).length).toBeGreaterThan(0)
     }
 
+    const statusBadge = document.querySelector('[data-status-variant="table"]')
+    expect(statusBadge).toHaveStyle({
+      backgroundColor: STATUS_HEX[ticket.tinhTrang],
+    })
+    expect(screen.getByText(STATUS_LABEL[ticket.tinhTrang])).toBeInTheDocument()
+
+    const statusAction = screen.getByRole('button', {
+      name: 'Đổi tình trạng',
+    })
+    expect(statusAction).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Xem chi tiết' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Cập nhật hình ảnh' }),
+    ).toBeInTheDocument()
+
+    await user.click(statusAction)
+    expect(
+      within(screen.getByRole('dialog')).getByRole('heading', {
+        name: 'Đổi tình trạng',
+      }),
     ).toBeInTheDocument()
   })
 

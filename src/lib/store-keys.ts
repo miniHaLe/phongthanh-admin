@@ -11,7 +11,7 @@ export const STORE_KEYS = {
   financeUi: 'pt-finance-ui', // finance period selection (Phase 6)
   inventoryUi: 'pt-inventory-ui', // inventory period selection (Phase 6)
   cmdRecent: 'pt-cmd-recent', // command palette recent routes (Phase 2)
-  notifications: 'pt-notifications', // notification/news seen-ids (Phase 2)
+  notifications: 'pt-notifications', // notification seen-ids
   permissions: 'pt-permissions', // permission-matrix checkbox state (Phase 7)
 } as const
 

@@ -10,6 +10,7 @@ import {
 import type { InventoryRow } from '@/domains/warehouse/types'
 import { formatNumber, formatVND } from '@/lib/format'
 import { BRANCHES } from '@/mock/seed/branches'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
 interface InventoryCompositeColumnOptions {
   page: number
@@ -51,13 +52,13 @@ export function useInventoryCompositeColumns({
         header: 'STT / Thao tác',
         size: 104,
         enableSorting: false,
-        cell: ({ row }) => (
+        cell: ({ row, table }) => (
           <div className="flex items-center gap-1">
             <TableProtectedValue
               className="w-7 text-center text-xs text-muted-foreground"
               tabular
             >
-              {(page - 1) * pageSize + row.index + 1}
+              {getVisibleRowNumber(table, row, (page - 1) * pageSize)}
             </TableProtectedValue>
             <Button
               variant="ghost"

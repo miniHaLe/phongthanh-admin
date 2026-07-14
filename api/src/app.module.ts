@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
 import { AuthModule } from './auth/auth.module'
 import { JwtAuthGuard } from './auth/jwt-auth.guard'
+import { MustChangePasswordGuard } from './auth/must-change-password.guard'
 import { loadEnv } from './config/env'
 import { DbModule } from './db/db.module'
 import { HealthModule } from './health/health.module'
@@ -33,6 +34,10 @@ import { SanPhamModule } from './san-pham/san-pham.module'
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: MustChangePasswordGuard,
     },
   ],
 })

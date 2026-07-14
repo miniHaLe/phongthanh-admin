@@ -13,7 +13,9 @@ import { StatusBadge } from '@/components/shared'
 import { ROUTES } from '@/constants/routes'
 import { formatDate } from '@/lib/format'
 import { BRANCH_NAME } from '@/mock/seed/branches'
+import { MOCK_TICKETS } from '@/domains/repair/mock-data'
 import type { RecentTicket } from '@/types/dashboard-types'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
 interface RecentTicketsTableProps {
   tickets: RecentTicket[]
@@ -27,9 +29,9 @@ const columns: ColumnDef<RecentTicket, unknown>[] = [
     id: 'index',
     header: '#',
     // Row index rendered via cell context
-    cell: ({ row }) => (
+    cell: ({ row, table }) => (
       <span className="tabular-nums text-muted-foreground">
-        {row.index + 1}
+        {getVisibleRowNumber(table, row)}
       </span>
     ),
     enableSorting: false,
@@ -102,7 +104,12 @@ export function RecentTicketsTable({
   const stableColumns = useMemo(() => columns, [])
 
   function handleRowClick(ticket: RecentTicket) {
-    navigate(ROUTES.repairDetail(ticket.id))
+    const ticketStillExists = MOCK_TICKETS.some((row) => row.id === ticket.id)
+    navigate(
+      ticketStillExists
+        ? ROUTES.repairDetail(ticket.id)
+        : `${ROUTES.repairList}?soPhieu=${encodeURIComponent(ticket.ticketCode)}`,
+    )
   }
 
   return (

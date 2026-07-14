@@ -2,7 +2,7 @@
  * Generic CRUD hook — wraps TanStack Query list + mutations for any CrudConfig<T>.
  * Invalidates the list cache and fires Vietnamese toasts on every mutation.
  */
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   useQuery,
   useMutation,
@@ -22,11 +22,44 @@ export interface CrudParams {
   filters: Record<string, unknown>
 }
 
+export type CrudListScope = Pick<ListParams, 'branchId'>
+
+export interface CrudQueryBehavior {
+  refetchOnMount?: boolean | 'always'
+}
+
 const DEFAULT_PARAMS: CrudParams = {
   page: 1,
   pageSize: 20,
   search: '',
   filters: {},
+}
+
+const BULK_DELETE_CONCURRENCY = 10
+
+export interface BulkDeleteResult {
+  successfulIds: string[]
+  failedIds: string[]
+  successCount: number
+  failureCount: number
+}
+
+export function selectedRowIds(
+  rowSelection: Record<string, boolean>,
+): string[] {
+  return Object.keys(rowSelection).filter((id) => rowSelection[id])
+}
+
+export function failedBulkDeleteSelection(
+  result: BulkDeleteResult,
+): Record<string, boolean> {
+  return Object.fromEntries(result.failedIds.map((id) => [id, true]))
+}
+
+export function notifyBulkDeleteResult(result: BulkDeleteResult): void {
+  const message = `Đã xóa: ${result.successCount} thành công / ${result.failureCount} lỗi`
+  if (result.failureCount > 0) notify.error(message)
+  else notify.success(message)
 }
 
 export interface UseCrudReturn<T extends { id: string }> {
@@ -45,14 +78,19 @@ export interface UseCrudReturn<T extends { id: string }> {
     typeof useMutation<T, Error, { id: string; data: Partial<T> }>
   >
   deleteMutation: ReturnType<typeof useMutation<void, Error, string>>
+  bulkDelete: (ids: string[]) => Promise<BulkDeleteResult>
+  isBulkDeleting: boolean
 }
 
 export function useCrud<T extends { id: string }>(
   config: CrudConfig<T>,
   enabled = true,
+  listScope: CrudListScope = {},
+  queryBehavior: CrudQueryBehavior = {},
 ): UseCrudReturn<T> {
   const qc = useQueryClient()
   const key = config.resourceKey
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
 
   const [params, setParams] = useState<CrudParams>(() => ({
     ...DEFAULT_PARAMS,
@@ -65,6 +103,7 @@ export function useCrud<T extends { id: string }>(
   const listParams: ListParams = {
     page: params.page,
     pageSize: params.pageSize,
+    ...(listScope.branchId ? { branchId: listScope.branchId } : {}),
     search: params.search || undefined,
     sort: params.sort,
     dir: params.dir,
@@ -76,6 +115,7 @@ export function useCrud<T extends { id: string }>(
     queryFn: () => config.mockApi.list(listParams),
     enabled,
     staleTime: 30_000,
+    refetchOnMount: queryBehavior.refetchOnMount,
   })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: [key] })
@@ -111,6 +151,47 @@ export function useCrud<T extends { id: string }>(
     onError: (err) => notify.error(err.message),
   })
 
+  const bulkDelete = useCallback(
+    async (ids: string[]): Promise<BulkDeleteResult> => {
+      setIsBulkDeleting(true)
+      const successfulIds: string[] = []
+      const failedIds: string[] = []
+
+      try {
+        for (
+          let start = 0;
+          start < ids.length;
+          start += BULK_DELETE_CONCURRENCY
+        ) {
+          const chunk = ids.slice(start, start + BULK_DELETE_CONCURRENCY)
+          const results = await Promise.allSettled(
+            chunk.map((id) => config.mockApi.remove(id)),
+          )
+
+          results.forEach((result, index) => {
+            const id = chunk[index]
+            if (result.status === 'fulfilled') successfulIds.push(id)
+            else failedIds.push(id)
+          })
+        }
+
+        if (ids.length > 0) {
+          await qc.invalidateQueries({ queryKey: [key] })
+        }
+
+        return {
+          successfulIds,
+          failedIds,
+          successCount: successfulIds.length,
+          failureCount: failedIds.length,
+        }
+      } finally {
+        setIsBulkDeleting(false)
+      }
+    },
+    [config.mockApi, key, qc],
+  )
+
   const setSearch = (v: string) =>
     setParams((p) => ({ ...p, search: v, page: 1 }))
 
@@ -137,5 +218,7 @@ export function useCrud<T extends { id: string }>(
     createMutation,
     updateMutation,
     deleteMutation,
+    bulkDelete,
+    isBulkDeleting,
   }
 }

@@ -1,12 +1,12 @@
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core'
 import type { AuthenticatedUser } from '../auth/jwt-payload'
 
-/** A single allowlisted filter column + optional raw-value caster (query
- * params arrive as strings; numeric/boolean columns need parsing before the
- * equality comparison hits Postgres). */
+export type FilterValueType = 'string' | 'number' | 'boolean'
+
+/** A single allowlisted filter column and its shared scalar contract. */
 export interface FilterableColumn {
   column: AnyPgColumn
-  parse?: (raw: unknown) => unknown
+  valueType: FilterValueType
 }
 
 export interface CrudContext {
@@ -34,7 +34,7 @@ export interface CrudResourceConfig {
   activeColumn: AnyPgColumn
   /** Client-facing sort key -> actual column. Unknown key => 400. */
   sortableColumns: Record<string, AnyPgColumn>
-  /** Client-facing filter key -> column + caster. Unknown key => 400. */
+  /** Client-facing filter key -> column + scalar type. Unknown key => 400. */
   filterableColumns: Record<string, FilterableColumn>
   /** Columns the free-text `search` param matches against (case-insensitive
    * substring), mirroring the mock's "any string field contains" behavior. */

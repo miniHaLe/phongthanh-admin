@@ -1,6 +1,6 @@
 /**
  * DSTraLK batch toolbar — bulk Duyệt (Chờ duyệt → Đã duyệt) with the exact
- * reference confirm text, In Phiếu Trả (empty-selection alert), Xuất ra Excel.
+ * reference confirm text, In Phiếu Trả (empty-selection alert), Xuất Excel.
  */
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -16,14 +16,14 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { notify } from '@/components/shared'
-import { exportToXlsx } from '@/lib/export-xlsx'
+import { exportListXlsx } from '@/lib/export-list-xlsx'
 import { duyetTraLK } from '@/domains/warehouse/mock-mutations'
 import type { PartReturn } from '@/domains/warehouse/types'
 import { printPhieuTraKT } from './prints/warehouse-prints'
 
 interface PartReturnBatchToolbarProps {
   selected: PartReturn[]
-  /** Full filtered row set (ignoring pagination/selection) for Xuất ra Excel. */
+  /** Full filtered row set (ignoring pagination/selection) for Xuất Excel. */
   allRows: PartReturn[]
   onReload: () => void
 }
@@ -103,7 +103,7 @@ export function PartReturnBatchToolbar({
         variant="outline"
         className="h-8"
         onClick={() =>
-          void exportToXlsx({
+          void exportListXlsx({
             filename: 'ds-tra-lk',
             sheetName: 'Trả linh kiện',
             columns: EXPORT_COLUMNS,
@@ -111,7 +111,7 @@ export function PartReturnBatchToolbar({
           })
         }
       >
-        Xuất ra Excel
+        Xuất Excel
       </Button>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
@@ -124,7 +124,9 @@ export function PartReturnBatchToolbar({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={() => mutation.mutate()}>Đã nhận</AlertDialogAction>
+            <AlertDialogAction onClick={() => mutation.mutate()}>
+              Đã nhận
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

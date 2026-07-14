@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/tooltip'
 import { ROUTES } from '@/constants/routes'
 import type { RepairTicket } from '@/domains/repair/types'
-import { UpdateStatusModal } from './update-status-modal'
+import { UpdateStatusModal } from '@/features/repair-shared/update-status-modal'
 import { IssuePartsModal } from './issue-parts-modal'
 import { CheckoutDeliveryModal } from './checkout-delivery-modal'
 import { InsertScheduleModal } from './insert-schedule-modal'

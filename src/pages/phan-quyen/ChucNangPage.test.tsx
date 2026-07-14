@@ -6,7 +6,7 @@
  * CrudTablePage host.
  */
 import { describe, it, expect } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/test/render-with-providers'
 import { ROUTES } from '@/constants/routes'
@@ -24,6 +24,11 @@ describe('ChucNangPage', () => {
     expect(headerText).toContain('Mã chức năng')
     expect(headerText).toContain('Tên chức năng')
     expect(headerText).toContain('Nhóm chức năng')
+
+    const codeCell = await screen.findByRole('cell', { name: 'CN-G01' })
+    expect(
+      within(codeCell.closest('tr')!).getByText('Chi nhánh'),
+    ).toBeInTheDocument()
   })
 
   it('supports bulk-select via the Chọn tất cả column + row checkboxes', async () => {

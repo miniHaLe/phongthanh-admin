@@ -8,6 +8,8 @@ import type { BranchId } from '@/mock/seed/branches'
 export type { BaseEntity }
 
 export interface KhachHang extends BaseEntity {
+  /** Server-owned creator branch; list requests may narrow by this value. */
+  branchId?: string
   tenKH: string
   dienThoai: string
   dienThoai2?: string | null
@@ -34,6 +36,7 @@ export interface KhachHang extends BaseEntity {
   loaiKhachHangId: number
   /** Đại lý/Trạm — self-referential parent dealer/station KhachHang id. */
   daiLyId?: string | null
+  daiLyTen?: string | null
   nguoiTao: string
   ghiChu?: string | null
 }

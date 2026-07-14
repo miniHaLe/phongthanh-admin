@@ -5,7 +5,7 @@ status: in-progress
 priority: P1
 branch: ""
 tags: [backend, database, nestjs, postgres, drizzle, auth, rbac, tdd, migration, security]
-blockedBy: []
+blockedBy: [260713-1817-fullstack-live-review-remediation]
 blocks: []
 created: "2026-07-07T10:25:36.634Z"
 createdBy: "ck:plan"
@@ -281,3 +281,15 @@ transition uncertainty, bootstrap unspecified) without contradicting any red-tea
 Consumes (read-only) the completed parity corpus in
 `plans/260703-1908-reference-ui-parity-tdd/` and the comparison doc-set in `docs/`.
 Both source plans are `completed` — no blocking relationship.
+
+**Blocked by `260713-1817-fullstack-live-review-remediation` (2026-07-13):** its Phase 3
+hardens the shared CRUD engine (filter-value validation, Postgres 23505/23503 → 409/400
+mapping incl. DELETE, `id ASC` pagination tiebreaker, ILIKE escape) — land those in
+`api/src/crud/crud.service.ts` BEFORE this plan's Phase 3 fans the engine out to ~37
+resources. Handoff notes for this plan's Phase 2: (a) the server-side `mustChangePassword`
+guard + client JWT-claim gate land in the remediation plan's Phase 3 — do not re-plan them
+here, extend them to RBAC; (b) `khach_hang.branch_id` has two conflicting semantics
+(creator-branch stamp at `khach-hang.resource-config.ts` vs province-derived seed at
+`seed/branch-map.ts`) — the remediation plan documents the decided rule; consume it, and
+the stale comment at `crud.service.ts:164-166` is removed there. Both plans touch
+`auth.controller.ts` and `crud.service.ts` — do not run their API phases in parallel.

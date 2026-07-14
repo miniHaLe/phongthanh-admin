@@ -56,7 +56,7 @@ const NHOM_HANG_OPTIONS = [
   'Nhà vệ sinh',
 ]
 
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const UNSET = '__all__'
 
 interface TonKhoLKXacFilters {

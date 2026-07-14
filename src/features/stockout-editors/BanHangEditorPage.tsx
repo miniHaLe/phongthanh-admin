@@ -7,22 +7,36 @@
  * that a shared host would leak config for one-offs.
  */
 import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { LineItemEditor, PageHeader, notify, type LineColumn } from '@/components/shared'
+import {
+  LineItemEditor,
+  PageHeader,
+  notify,
+  type LineColumn,
+} from '@/components/shared'
 import { ROUTES } from '@/constants/routes'
 import { formatVND } from '@/lib/format'
 import { CURRENT_USER } from '@/mock/current-user-mock'
-import { BRANCHES } from '@/mock/seed/branches'
+import { BRANCHES, type BranchId } from '@/mock/seed/branches'
+import { useAppStore, type ActiveBranch } from '@/store/app-store'
 import type { BanHangLine } from './stockout-editor-types'
-import { createSelling, updateSelling, findSellingOrder } from './create-selling'
+import {
+  createSelling,
+  updateSelling,
+  findSellingOrder,
+} from './create-selling'
 import {
   BanHangHeaderFields,
   type BanHangHeaderValues,
   type CustomerOption,
 } from './ban-hang-header-fields'
 import { BanHangLineEntry } from './ban-hang-line-entry'
-import { printPhieuBanHang, printPhieuThu } from '@/features/stockout/prints/stockout-prints'
+import {
+  printPhieuBanHang,
+  printPhieuThu,
+} from '@/features/stockout/prints/stockout-prints'
 
 const EMPTY_HEADER: BanHangHeaderValues = {
   hinhThucThanhToan: '',
@@ -42,10 +56,19 @@ function makeEmptyLine(): BanHangLine {
   }
 }
 
+function resolveSellingBranchId(activeBranch: ActiveBranch): BranchId | null {
+  if (activeBranch !== 'all') return activeBranch
+  return (
+    BRANCHES.find((branch) => branch.name === CURRENT_USER.chiNhanh)?.id ?? null
+  )
+}
+
 export default function BanHangEditorPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { id } = useParams<{ id: string }>()
   const isEdit = Boolean(id)
+  const activeBranch = useAppStore((state) => state.activeBranch)
 
   const [header, setHeader] = useState<BanHangHeaderValues>(EMPTY_HEADER)
   const [lines, setLines] = useState<BanHangLine[]>([])
@@ -63,7 +86,11 @@ export default function BanHangEditorPage() {
     }
     setHeader({
       hinhThucThanhToan: 'Tiền mặt',
-      khachHang: { id: existing.id, label: existing.khachHang, sdt: existing.dienThoai },
+      khachHang: {
+        id: existing.id,
+        label: existing.khachHang,
+        sdt: existing.dienThoai,
+      },
       ghiChu: existing.ghiChu,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -80,7 +107,9 @@ export default function BanHangEditorPage() {
   }
 
   function validate(): boolean {
-    const nextErrors: Partial<Record<'hinhThucThanhToan' | 'khachHang', string>> = {}
+    const nextErrors: Partial<
+      Record<'hinhThucThanhToan' | 'khachHang', string>
+    > = {}
     if (!header.hinhThucThanhToan)
       nextErrors.hinhThucThanhToan = 'Vui lòng chọn hình thức thanh toán!'
     if (!header.khachHang) nextErrors.khachHang = 'Vui lòng chọn khách hàng!'
@@ -96,14 +125,14 @@ export default function BanHangEditorPage() {
     return true
   }
 
-  function buildInput() {
+  function buildInput(branchId: BranchId) {
     const tongTien = lines.reduce((s, l) => s + l.thanhTien, 0)
     return {
       khachHang: header.khachHang!.label,
       dienThoai: (header.khachHang as CustomerOption).sdt ?? '',
       ghiChu: header.ghiChu,
       nguoiLap: CURRENT_USER.hoVaTen,
-      branchId: BRANCHES[0].id,
+      branchId,
       tongTien,
     }
   }
@@ -111,7 +140,13 @@ export default function BanHangEditorPage() {
   function handleSave({ saveAndNew }: { saveAndNew: boolean }) {
     if (!validate()) return
 
-    const input = buildInput()
+    const branchId = resolveSellingBranchId(activeBranch)
+    if (!branchId) {
+      notify.error('Không xác định được chi nhánh lập phiếu bán hàng!')
+      return
+    }
+
+    const input = buildInput(branchId)
     const order = isEdit && id ? updateSelling(id, input) : createSelling(input)
     if (!order) {
       notify.error('Không tìm thấy phiếu bán hàng!')
@@ -119,6 +154,7 @@ export default function BanHangEditorPage() {
     }
 
     notify.success(`Đã lưu phiếu bán hàng ${order.soPhieu}`)
+    void queryClient.invalidateQueries({ queryKey: ['ban-hang-list'] })
 
     if (saveAndNew) {
       resetForm()
@@ -138,7 +174,7 @@ export default function BanHangEditorPage() {
       tongTien,
       nguoiLap: CURRENT_USER.hoVaTen,
       ghiChu: header.ghiChu,
-      branchId: BRANCHES[0].id,
+      branchId: resolveSellingBranchId(activeBranch) ?? '',
     }
   }
 
@@ -156,7 +192,9 @@ export default function BanHangEditorPage() {
     {
       key: 'thanhTien',
       header: 'Thành tiền',
-      cell: (line) => <span className="tabular-nums">{formatVND(line.thanhTien)}</span>,
+      cell: (line) => (
+        <span className="tabular-nums">{formatVND(line.thanhTien)}</span>
+      ),
     },
   ]
 
@@ -195,8 +233,14 @@ export default function BanHangEditorPage() {
         <LineItemEditor<BanHangLine>
           header={
             <>
-              <BanHangHeaderFields values={header} onChange={patchHeader} errors={errors} />
-              <BanHangLineEntry onAdd={(line) => setLines((prev) => [...prev, line])} />
+              <BanHangHeaderFields
+                values={header}
+                onChange={patchHeader}
+                errors={errors}
+              />
+              <BanHangLineEntry
+                onAdd={(line) => setLines((prev) => [...prev, line])}
+              />
               <h3 className="mb-2 mt-6 text-sm font-semibold text-muted-foreground">
                 Danh sách hàng
               </h3>

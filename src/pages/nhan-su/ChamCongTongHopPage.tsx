@@ -42,6 +42,7 @@ import { KY, KY_DEFAULT } from '@/mock/seed/ky'
 import { LOAI_CHAM } from '@/mock/seed/cham-cong'
 import { CHAM_CONG_RECORD_ROWS } from '@/domains/hr/cham-cong.mock'
 import type { ChamCongRecord } from '@/domains/hr/types'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
 const KY_DESC = [...KY].reverse()
 
@@ -70,7 +71,10 @@ function aggregate(kyId: string, hoTenFilter: string): TongHopRow[] {
       )
       const ngayNghi = records
         .filter((r) => r.loaiCham === 1 || r.loaiCham === 2)
-        .reduce((s, r) => s + (r.loaiCham === 2 ? r.soLuong * 0.5 : r.soLuong), 0)
+        .reduce(
+          (s, r) => s + (r.loaiCham === 2 ? r.soLuong * 0.5 : r.soLuong),
+          0,
+        )
       const gioTangCa = records
         .filter((r) => r.loaiCham === 4)
         .reduce((s, r) => s + r.soLuong, 0)
@@ -138,7 +142,12 @@ export default function ChamCongTongHopPage() {
 
   const columns = useMemo<ColumnDef<TongHopRow, unknown>[]>(
     () => [
-      { id: 'stt', header: 'STT', cell: ({ row }) => row.index + 1, size: 50 },
+      {
+        id: 'stt',
+        header: 'STT',
+        cell: ({ row, table }) => getVisibleRowNumber(table, row),
+        size: 50,
+      },
       { accessorKey: 'maNV', header: 'Mã NV', size: 90 },
       { accessorKey: 'hoTen', header: 'Tên NV', size: 180 },
       { accessorKey: 'chiNhanh', header: 'Chi nhánh', size: 150 },
@@ -192,7 +201,12 @@ export default function ChamCongTongHopPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button size="sm" variant="outline" className="h-8" onClick={() => refetch()}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          onClick={() => refetch()}
+        >
           Tìm kiếm
         </Button>
         <Button
@@ -228,9 +242,7 @@ export default function ChamCongTongHopPage() {
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>
-              Chi tiết chấm công — {detailRow?.hoTen}
-            </DialogTitle>
+            <DialogTitle>Chi tiết chấm công — {detailRow?.hoTen}</DialogTitle>
           </DialogHeader>
           <Table>
             <TableHeader>
@@ -245,7 +257,8 @@ export default function ChamCongTongHopPage() {
                 <TableRow key={r.id}>
                   <TableCell>{formatDate(r.ngayCham)}</TableCell>
                   <TableCell>
-                    {LOAI_CHAM.find((l) => l.id === r.loaiCham)?.ten ?? r.loaiCham}
+                    {LOAI_CHAM.find((l) => l.id === r.loaiCham)?.ten ??
+                      r.loaiCham}
                   </TableCell>
                   <TableCell>
                     {r.soLuong} ({r.donVi})

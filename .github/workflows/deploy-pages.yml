@@ -6,9 +6,14 @@ on:
   workflow_dispatch:
     inputs:
       api_url:
-        description: Public API URL, e.g. your MacBook ngrok HTTPS URL
+        description: Override vars.API_URL for this deploy
         required: false
-        default: https://phongthanh-admin-api-minihale.onrender.com
+        type: string
+      skip_health_gate:
+        description: Emergency only - deploy without checking /health/ready
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -28,11 +33,28 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Validate API URL
+        env:
+          API_URL: ${{ github.event.inputs.api_url || vars.API_URL }}
+        run: |
+          if [[ -z "${API_URL//[[:space:]]/}" ]]; then
+            echo "API_URL is required. Set the API_URL repository variable or provide the workflow_dispatch api_url input."
+            exit 1
+          fi
+          if [[ ! "$API_URL" =~ ^https?://[^[:space:]]+$ ]]; then
+            echo "API_URL must be an absolute HTTP(S) URL without whitespace."
+            exit 1
+          fi
+      - name: Check API readiness
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.skip_health_gate != 'true' }}
+        env:
+          API_URL: ${{ github.event.inputs.api_url || vars.API_URL }}
+        run: curl -sf --retry 5 --retry-delay 10 "${API_URL%/}/health/ready"
       - run: npm ci
       - run: npm run build:prod
         env:
           VITE_REAL_RESOURCES: khach-hang,nha-san-xuat,san-pham,model,ngan-hang,dia-ly
-          VITE_API_URL: ${{ github.event.inputs.api_url || 'https://phongthanh-admin-api-minihale.onrender.com' }}
+          VITE_API_URL: ${{ github.event.inputs.api_url || vars.API_URL }}
           VITE_ROUTER_MODE: hash
           VITE_BASE_PATH: /phongthanh-admin/
       - uses: actions/configure-pages@v5

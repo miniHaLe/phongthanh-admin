@@ -4,9 +4,9 @@
  * deltas chain the opening stock across periods —
  *   tonDauKy(ky) = tonDauKy(prevKy) + nhập(prevKy) − xuất(prevKy)
  *   tonCuoiKy    = tonDauKy + nhập − xuất
- * so opening/closing are real (not two unrelated random numbers) and a
- * stock-out-heavy product can go negative (no clamp). No materialized
- * transaction-row ledger is needed for these read-only rows.
+ * so opening/closing are real (not two unrelated random numbers). Xuất is
+ * capped by available stock, and the latest closing balance reconciles to the
+ * same HANG_HOA_ROWS.tonKho value used by stock-out editors.
  */
 import { SeededRandom } from '@/lib/seeded-random'
 import { mockDelay } from '@/lib/mock-delay'
@@ -48,6 +48,7 @@ interface ProductWarehouse {
   nganChua: string
   coSerial: boolean
   branchId: string
+  currentAvailability: number
 }
 
 const PRODUCTS: ProductWarehouse[] = HANG_HOA_ROWS.slice(0, 30).map((hh, i) => {
@@ -66,26 +67,44 @@ const PRODUCTS: ProductWarehouse[] = HANG_HOA_ROWS.slice(0, 30).map((hh, i) => {
     nganChua: `Kệ ${String.fromCharCode(65 + (i % 5))}${(i % 4) + 1}`,
     coSerial: rng.bool(0.5),
     branchId: BRANCHES[i % BRANCHES.length].id,
+    currentAvailability: Math.max(0, hh.tonKho ?? 0),
   }
 })
 
-/** Per-(product, ky) seeded nhập/xuất deltas. Deterministic by index. */
-function deltaFor(productIdx: number, kyIdx: number): { nhap: number; xuat: number } {
+function periodFlow(
+  productIdx: number,
+  kyIdx: number,
+  opening: number,
+): { nhap: number; xuat: number } {
+  const currentAvailability = PRODUCTS[productIdx]?.currentAvailability ?? 0
+  if (kyIdx === KY_ASC.length - 1) {
+    return opening <= currentAvailability
+      ? { nhap: currentAvailability - opening, xuat: 0 }
+      : { nhap: 0, xuat: opening - currentAvailability }
+  }
+
   const rng = new SeededRandom(6200 + productIdx * 100 + kyIdx)
   const nhap = rng.int(0, 60)
-  // Xuất can exceed available → a product can go negative over time (no clamp).
-  const xuat = rng.int(0, 70)
+  const xuat = rng.int(0, Math.min(70, opening + nhap))
   return { nhap, xuat }
 }
 
 /** Opening stock for a product at a given Kỳ index — chained carry-forward. */
 function tonDauKy(productIdx: number, kyIdx: number): number {
-  let ton = 0 // baseline opening at the first tracked Kỳ
+  let ton = PRODUCTS[productIdx]?.currentAvailability ?? 0
   for (let k = 0; k < kyIdx; k++) {
-    const { nhap, xuat } = deltaFor(productIdx, k)
+    const { nhap, xuat } = periodFlow(productIdx, k, ton)
     ton = ton + nhap - xuat
   }
   return ton
+}
+
+/** Per-(product, ky) seeded nhập/xuất deltas. Deterministic by index. */
+function deltaFor(
+  productIdx: number,
+  kyIdx: number,
+): { nhap: number; xuat: number } {
+  return periodFlow(productIdx, kyIdx, tonDauKy(productIdx, kyIdx))
 }
 
 /** Build one inventory row for a product at the selected Kỳ. */
@@ -175,7 +194,7 @@ export async function fetchInventory(
     rows = rows.filter((r) => r.kyThuat?.toLowerCase().includes(q))
   }
 
-  // KPI trio sums the SAME rows (no parallel random source). Negatives allowed.
+  // KPI trio sums the SAME nonnegative rows (no parallel random source).
   const kpi = {
     tonDauKy: rows.reduce((s, r) => s + r.tonDauKy, 0),
     tongTien: rows.reduce((s, r) => s + r.tongTien, 0),

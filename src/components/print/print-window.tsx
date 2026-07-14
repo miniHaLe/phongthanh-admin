@@ -9,6 +9,7 @@
  * `react-dom/server` is dynamically imported so it stays out of the initial bundle.
  */
 import type { ReactElement } from 'react'
+import { notify } from '@/components/shared/toast'
 
 const PRINT_CSS = `
   @page { size: A4; margin: 14mm; }
@@ -41,7 +42,12 @@ export async function openPrintWindow(
   const bodyHtml = renderToStaticMarkup(element)
 
   const win = window.open('', '_blank', 'width=900,height=700')
-  if (!win) return null
+  if (!win) {
+    notify.error(
+      'Trình duyệt đã chặn cửa sổ in. Vui lòng cho phép cửa sổ bật lên và thử lại.',
+    )
+    return null
+  }
 
   // Keep a usable document handle in Chromium while isolating the new window.
   win.opener = null

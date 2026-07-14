@@ -6,14 +6,17 @@ import {
 } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import AppShell from '@/components/shell/AppShell'
-import StubPage from '@/pages/StubPage'
+import RouteErrorView from '@/components/shell/RouteErrorView'
+import NotFoundPage from '@/pages/NotFoundPage'
 import { ROUTES } from '@/constants/routes'
 import { RequireAuth } from './RequireAuth'
 
 // All page components are code-split via React.lazy so each section loads on
 // demand (AppShell provides the Suspense boundary). Keeps the initial bundle
 // small — only the shell + the first visited route are fetched up front.
-const GalleryPage = lazy(() => import('@/pages/GalleryPage'))
+const GalleryPage = import.meta.env.DEV
+  ? lazy(() => import('@/pages/GalleryPage'))
+  : null
 // Auth (rendered outside AppShell)
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const ChangePasswordPage = lazy(() => import('@/pages/auth/ChangePasswordPage'))
@@ -37,6 +40,10 @@ const DanhMucPage = lazy(() => import('@/pages/danh-muc/DanhMucPage'))
 const NhanSuPage = lazy(() => import('@/pages/nhan-su/NhanSuPage'))
 const PhanQuyenPage = lazy(() => import('@/pages/phan-quyen/PhanQuyenPage'))
 const QuanLyPage = lazy(() => import('@/pages/quan-ly/QuanLyPage'))
+const QuanLyKhoPage = lazy(() => import('@/pages/quan-ly-kho/QuanLyKhoPage'))
+const XuatKhoPage = lazy(() => import('@/pages/xuat-kho/XuatKhoPage'))
+const TaiChinhPage = lazy(() => import('@/pages/tai-chinh/TaiChinhPage'))
+const BaoCaoPage = lazy(() => import('@/pages/reports/BaoCaoPage'))
 // Phase 5 — Customers (top-level)
 const KhachHangPage = lazy(() => import('@/pages/danh-muc/KhachHangPage'))
 // Phase 5 — Danh Mục leaves
@@ -94,9 +101,7 @@ const KyThuatReportPage = lazy(
 const TinhTrangChungReportPage = lazy(
   () => import('@/pages/reports/TinhTrangChungReportPage'),
 )
-const MayTonReportPage = lazy(
-  () => import('@/pages/reports/MayTonReportPage'),
-)
+const MayTonReportPage = lazy(() => import('@/pages/reports/MayTonReportPage'))
 const BaoHanhReportPage = lazy(
   () => import('@/pages/reports/BaoHanhReportPage'),
 )
@@ -152,24 +157,10 @@ const ChuyenKhoCrossBranchPage = lazy(
 )
 // Phase 2 — Shell-accessed pages (header widgets / user menu)
 const ThongBaoPage = lazy(() => import('@/pages/thong-bao/ThongBaoPage'))
-const TinTucPage = lazy(() => import('@/pages/tin-tuc/TinTucPage'))
-const TinTucDetailPage = lazy(() => import('@/pages/tin-tuc/TinTucDetailPage'))
 const TaiKhoanPage = lazy(() => import('@/pages/tai-khoan/TaiKhoanPage'))
 
 /** Relative path helper — strips the section prefix from an absolute ROUTE. */
 const rel = (full: string, base: string) => full.replace(`${base}/`, '')
-
-/** Build a StubPage element with breadcrumb derived from its section. */
-function stub(title: string, section?: { label: string; href: string }) {
-  const crumbs = section
-    ? [
-        { label: 'Trang chủ', href: ROUTES.home },
-        { label: section.label, href: section.href },
-        { label: title },
-      ]
-    : [{ label: 'Trang chủ', href: ROUTES.home }, { label: title }]
-  return <StubPage title={title} breadcrumbs={crumbs} />
-}
 
 /**
  * Full application route tree (C6). Real pages from Phases 3/4/5/7 are wired;
@@ -191,9 +182,19 @@ function suspended(node: React.ReactNode) {
   )
 }
 
-const routes = [
+export function buildDevOnlyRoutes(enabled: boolean) {
+  return enabled && GalleryPage
+    ? [{ path: rel(ROUTES.gallery, ''), element: <GalleryPage /> }]
+    : []
+}
+
+export const appRoutes = [
   // Auth — standalone, no AppShell chrome.
-  { path: rel(ROUTES.login, ''), element: suspended(<LoginPage />) },
+  {
+    path: rel(ROUTES.login, ''),
+    element: suspended(<LoginPage />),
+    errorElement: <RouteErrorView />,
+  },
   {
     path: '/',
     element: (
@@ -201,6 +202,7 @@ const routes = [
         <AppShell />
       </RequireAuth>
     ),
+    errorElement: <RouteErrorView />,
     children: [
       { index: true, element: <Navigate to={ROUTES.home} replace /> },
 
@@ -217,21 +219,68 @@ const routes = [
 
       // Nhân viên full-page editor (Phase 6, H7b) — outside the Nhân Sự
       // tab-strip layout, matching the reference's dedicated create/edit pages.
-      { path: rel(ROUTES.hrEmployeeCreate, ''), element: <EmployeeEditorPage /> },
+      {
+        path: rel(ROUTES.hrEmployeeCreate, ''),
+        element: <EmployeeEditorPage />,
+      },
       { path: 'nhan-su/nhan-vien/:id/sua', element: <EmployeeEditorPage /> },
 
       // Hàng hóa full-page editor (Phase 6, C5b) — outside the Danh Mục
       // tab-strip layout, matching the reference's dedicated create/edit pages.
-      { path: rel(ROUTES.catalogGoodsCreate, ''), element: <ProductEditorPage /> },
+      {
+        path: rel(ROUTES.catalogGoodsCreate, ''),
+        element: <ProductEditorPage />,
+      },
       { path: 'danh-muc/hang-hoa/:id/sua', element: <ProductEditorPage /> },
 
       // Invoice full-page composer (Phase 6, F3b) — outside the Tài Chính
       // tab-strip layout, matching the reference's dedicated /Invoice/Create page.
-      { path: rel(ROUTES.financeInvoicesCreate, ''), element: <InvoiceComposerPage /> },
+      {
+        path: rel(ROUTES.financeInvoicesCreate, ''),
+        element: <InvoiceComposerPage />,
+      },
+
+      // Operational create/edit screens stay outside module tab layouts.
+      {
+        path: rel(ROUTES.inventoryStockEntryCreate, ''),
+        element: <NhapKhoCreatePage />,
+      },
+      {
+        path: rel(ROUTES.stockOutPartsDispatchCreate, ''),
+        element: <CapLinhKienCreatePage />,
+      },
+      {
+        path: rel(ROUTES.stockOutSalesCreate, ''),
+        element: <BanHangEditorPage />,
+      },
+      { path: 'xuat-kho/ban-hang/:id/sua', element: <BanHangEditorPage /> },
+      {
+        path: rel(ROUTES.stockOutReturnsCreate, ''),
+        element: <TraHangCreatePage />,
+      },
+      {
+        path: rel(ROUTES.stockOutTransferSameBranch, ''),
+        element: <ChuyenKhoSameBranchPage />,
+      },
+      {
+        path: rel(ROUTES.stockOutTransferCrossBranch, ''),
+        element: <ChuyenKhoCrossBranchPage />,
+      },
+
+      // Preserved aliases for moved/merged screens.
+      {
+        path: rel(ROUTES.hrBanks, ''),
+        element: <Navigate to={ROUTES.catalogBanks} replace />,
+      },
+      {
+        path: rel(ROUTES.manageInvoices, ''),
+        element: <Navigate to={ROUTES.financeInvoices} replace />,
+      },
 
       // Warehouse (Phase 6)
       {
         path: 'quan-ly-kho',
+        element: <QuanLyKhoPage />,
         children: [
           {
             index: true,
@@ -265,16 +314,13 @@ const routes = [
             path: rel(ROUTES.inventoryPartsReturnXac, ROUTES.inventory),
             element: <DsTraLKXacPage />,
           },
-          {
-            path: rel(ROUTES.inventoryStockEntryCreate, ROUTES.inventory),
-            element: <NhapKhoCreatePage />,
-          },
         ],
       },
 
       // Stock-out (Phase 6)
       {
         path: 'xuat-kho',
+        element: <XuatKhoPage />,
         children: [
           {
             index: true,
@@ -285,40 +331,16 @@ const routes = [
             element: <CapLinhKienPage />,
           },
           {
-            path: rel(ROUTES.stockOutPartsDispatchCreate, ROUTES.stockOut),
-            element: <CapLinhKienCreatePage />,
-          },
-          {
             path: rel(ROUTES.stockOutSales, ROUTES.stockOut),
             element: <BanHangPage />,
-          },
-          {
-            path: rel(ROUTES.stockOutSalesCreate, ROUTES.stockOut),
-            element: <BanHangEditorPage />,
-          },
-          {
-            path: 'ban-hang/:id/sua',
-            element: <BanHangEditorPage />,
           },
           {
             path: rel(ROUTES.stockOutReturns, ROUTES.stockOut),
             element: <TraHangPage />,
           },
           {
-            path: rel(ROUTES.stockOutReturnsCreate, ROUTES.stockOut),
-            element: <TraHangCreatePage />,
-          },
-          {
             path: rel(ROUTES.stockOutTransfer, ROUTES.stockOut),
             element: <ChuyenKhoPage />,
-          },
-          {
-            path: rel(ROUTES.stockOutTransferSameBranch, ROUTES.stockOut),
-            element: <ChuyenKhoSameBranchPage />,
-          },
-          {
-            path: rel(ROUTES.stockOutTransferCrossBranch, ROUTES.stockOut),
-            element: <ChuyenKhoCrossBranchPage />,
           },
         ],
       },
@@ -326,6 +348,7 @@ const routes = [
       // Finance (Phase 6 — sole owner of Hóa Đơn)
       {
         path: 'tai-chinh',
+        element: <TaiChinhPage />,
         children: [
           {
             index: true,
@@ -349,6 +372,7 @@ const routes = [
       // Reports (Phase 7 — reference 6 canonical + 2 local extras)
       {
         path: 'bao-cao',
+        element: <BaoCaoPage />,
         children: [
           { index: true, element: <Navigate to={ROUTES.reportKpi} replace /> },
           {
@@ -452,6 +476,10 @@ const routes = [
             path: rel(ROUTES.catalogFaultType, ROUTES.catalog),
             element: <LoiSuaChuaPage />,
           },
+          {
+            path: rel(ROUTES.catalogBanks, ROUTES.catalog),
+            element: <NganHangPage />,
+          },
         ],
       },
 
@@ -463,10 +491,6 @@ const routes = [
           {
             index: true,
             element: <Navigate to={ROUTES.hrEmployees} replace />,
-          },
-          {
-            path: rel(ROUTES.hrBanks, ROUTES.hr),
-            element: <NganHangPage />,
           },
           {
             path: rel(ROUTES.hrDepartments, ROUTES.hr),
@@ -521,10 +545,6 @@ const routes = [
             path: rel(ROUTES.manageUsers, ROUTES.manage),
             element: <NguoiDungPage />,
           },
-          {
-            path: 'hoa-don',
-            element: <Navigate to={ROUTES.financeInvoices} replace />,
-          },
         ],
       },
 
@@ -551,17 +571,18 @@ const routes = [
 
       // Shell-accessed pages (Phase 2 — header widgets / user menu)
       { path: rel(ROUTES.notifications, ''), element: <ThongBaoPage /> },
-      { path: rel(ROUTES.news, ''), element: <TinTucPage /> },
-      { path: 'tin-tuc/:id', element: <TinTucDetailPage /> },
+      {
+        path: 'tin-tuc/*',
+        element: <Navigate to={ROUTES.notifications} replace />,
+      },
       { path: rel(ROUTES.account, ''), element: <TaiKhoanPage /> },
 
       // Change-password (inside shell — reached from user menu / first login)
       { path: rel(ROUTES.changePassword, ''), element: <ChangePasswordPage /> },
 
-      // Dev
-      { path: 'gallery', element: <GalleryPage /> },
+      ...buildDevOnlyRoutes(import.meta.env.DEV),
 
-      { path: '*', element: stub('Không tìm thấy trang') },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ]
@@ -576,5 +597,5 @@ export function shouldUseHashRouter(): boolean {
 }
 
 export const router = shouldUseHashRouter()
-  ? createHashRouter(routes)
-  : createBrowserRouter(routes)
+  ? createHashRouter(appRoutes)
+  : createBrowserRouter(appRoutes)

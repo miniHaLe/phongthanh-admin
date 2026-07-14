@@ -6,7 +6,7 @@ import { renderWithProviders } from '@/test/render-with-providers'
 import { NotifBadge } from './NotifBadge'
 import { useNotificationStore } from '@/store/notification-store'
 
-beforeEach(() => useNotificationStore.setState({ seenIds: [], seenNewsIds: [] }))
+beforeEach(() => useNotificationStore.setState({ seenIds: [] }))
 
 describe('NotifBadge', () => {
   it('button label reflects the store unseen count', () => {
@@ -21,9 +21,7 @@ describe('NotifBadge', () => {
     const user = userEvent.setup()
     renderWithProviders(<NotifBadge />)
     await user.click(screen.getByRole('button'))
-    await user.click(
-      await screen.findByText('Đánh dấu tất cả là đã đọc'),
-    )
+    await user.click(await screen.findByText('Đánh dấu tất cả là đã đọc'))
     expect(useNotificationStore.getState().unseenCount()).toBe(0)
     expect(screen.getByLabelText('Thông báo (0 mới)')).toBeInTheDocument()
   })

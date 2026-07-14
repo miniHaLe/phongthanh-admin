@@ -1,12 +1,14 @@
 /**
- * KT board search panel — the reference "Thông tin tìm kiếm" fieldset (12
- * fields, in order). Distinct field set from the admin repair-list advanced
+ * KT board search panel — the reference "Thông tin tìm kiếm" fieldset plus
+ * technician assignment. Distinct field set from the admin repair-list advanced
  * filters (own Sản phẩm/Model autocompletes, KT-scoped Tình trạng select).
  */
 import { useId } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
+import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
+import { filterFieldsGridClassName } from '@/components/shared/filter-panel/filter-field'
 import {
   Select,
   SelectContent,
@@ -14,8 +16,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ServerAutocomplete, type AutocompleteOption } from '@/components/shared'
-import { STATUS_HEX, STATUS_LABEL, type RepairStatusId } from '@/domains/repair/status'
+import {
+  ServerAutocomplete,
+  type AutocompleteOption,
+} from '@/components/shared'
+import {
+  STATUS_HEX,
+  STATUS_LABEL,
+  type RepairStatusId,
+} from '@/domains/repair/status'
 import {
   HINH_THUC_LABEL,
   type HinhThuc,
@@ -25,18 +34,11 @@ import {
   MANUFACTURERS,
   PRODUCTS,
   MODELS,
+  TECHNICIANS,
   TINH_OPTIONS,
   HUYEN_BY_TINH,
 } from '@/domains/repair/reference-data'
-
-/**
- * KT status filter presentation sequence — distinct from the ascending
- * membership set the canonical status module exports. Defined here (in the KT
- * board module) rather than in the status module; never deep-equal the two.
- */
-export const KT_DISPLAY_ORDER: readonly RepairStatusId[] = [
-  2, 4, 15, 6, 7, 13, 17, 16, 8, 9,
-]
+import { KT_DISPLAY_ORDER } from './repair-kt-constants'
 
 /** "Hình thức chung" options in the reference order. */
 const HINH_THUC_ORDER: HinhThuc[] = ['bao_hanh', 'sua_dich_vu', 'bh_sua_chua']
@@ -58,7 +60,7 @@ function Field({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex min-w-0 flex-col gap-1.5">
       <Label
         htmlFor={htmlFor}
         className="text-xs font-medium text-muted-foreground"
@@ -70,12 +72,16 @@ function Field({
   )
 }
 
-async function searchManufacturers(query: string): Promise<AutocompleteOption[]> {
+async function searchManufacturers(
+  query: string,
+): Promise<AutocompleteOption[]> {
   const q = query.toLowerCase()
-  return MANUFACTURERS.filter((m) => m.ten.toLowerCase().includes(q)).map((m) => ({
-    id: m.id,
-    label: m.ten,
-  }))
+  return MANUFACTURERS.filter((m) => m.ten.toLowerCase().includes(q)).map(
+    (m) => ({
+      id: m.id,
+      label: m.ten,
+    }),
+  )
 }
 
 async function searchProducts(query: string): Promise<AutocompleteOption[]> {
@@ -116,12 +122,12 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className={filterFieldsGridClassName}>
       {/* 1. Số phiếu SC */}
       <Field label="Số phiếu SC" htmlFor={`${uid}-sophieu`}>
         <Input
           id={`${uid}-sophieu`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           placeholder="Số phiếu SC"
           value={filters.soPhieu ?? ''}
           onChange={(e) => onChange({ soPhieu: e.target.value || undefined })}
@@ -132,10 +138,12 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
       <Field label="Số phiếu hãng" htmlFor={`${uid}-sph`}>
         <Input
           id={`${uid}-sph`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           placeholder="Số phiếu hãng"
           value={filters.soPhieuHang ?? ''}
-          onChange={(e) => onChange({ soPhieuHang: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ soPhieuHang: e.target.value || undefined })
+          }
         />
       </Field>
 
@@ -143,7 +151,7 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
       <Field label="Số Serial" htmlFor={`${uid}-serial`}>
         <Input
           id={`${uid}-serial`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           placeholder="Số Serial"
           value={filters.soSerial ?? ''}
           onChange={(e) => onChange({ soSerial: e.target.value || undefined })}
@@ -154,10 +162,12 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
       <Field label="Tên khách hàng" htmlFor={`${uid}-ten`}>
         <Input
           id={`${uid}-ten`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           placeholder="Tên khách hàng"
           value={filters.tenKhachHang ?? ''}
-          onChange={(e) => onChange({ tenKhachHang: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ tenKhachHang: e.target.value || undefined })
+          }
         />
       </Field>
 
@@ -165,7 +175,7 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
       <Field label="Điện thoại" htmlFor={`${uid}-dt`}>
         <Input
           id={`${uid}-dt`}
-          className="h-8 text-sm"
+          className={filterControlClassName}
           placeholder="Điện thoại"
           value={filters.sdt ?? ''}
           onChange={(e) => onChange({ sdt: e.target.value || undefined })}
@@ -194,7 +204,10 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
         <ServerAutocomplete
           value={
             filters.sanPhamId
-              ? { id: filters.sanPhamId, label: labelOfId(filters.sanPhamId, PRODUCTS) }
+              ? {
+                  id: filters.sanPhamId,
+                  label: labelOfId(filters.sanPhamId, PRODUCTS),
+                }
               : null
           }
           onChange={(opt) => onChange({ sanPhamId: opt?.id })}
@@ -208,7 +221,10 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
         <ServerAutocomplete
           value={
             filters.modelId
-              ? { id: filters.modelId, label: labelOfId(filters.modelId, MODELS) }
+              ? {
+                  id: filters.modelId,
+                  label: labelOfId(filters.modelId, MODELS),
+                }
               : null
           }
           onChange={(opt) => onChange({ modelId: opt?.id })}
@@ -217,17 +233,45 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
         />
       </Field>
 
-      {/* 9. Tình trạng — KT-scoped 10-option subset, presentation order */}
+      {/* 9. Kỹ thuật */}
+      <Field label="Kỹ thuật" htmlFor={`${uid}-ky-thuat`}>
+        <Select
+          value={filters.kyThuatId ?? UNSET}
+          onValueChange={(value) =>
+            onChange({
+              kyThuatId: value === UNSET ? undefined : value,
+            })
+          }
+        >
+          <SelectTrigger
+            id={`${uid}-ky-thuat`}
+            className={filterControlClassName}
+          >
+            <SelectValue placeholder="Tất cả kỹ thuật viên" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={UNSET}>Tất cả kỹ thuật viên</SelectItem>
+            {TECHNICIANS.map((technician) => (
+              <SelectItem key={technician.id} value={technician.id}>
+                {technician.ten}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+
+      {/* 10. Tình trạng — KT-scoped 10-option subset, presentation order */}
       <Field label="Tình trạng" htmlFor={`${uid}-tt`}>
         <Select
           value={filters.tinhTrang != null ? String(filters.tinhTrang) : UNSET}
           onValueChange={(v) =>
             onChange({
-              tinhTrang: v === UNSET ? undefined : (Number(v) as RepairStatusId),
+              tinhTrang:
+                v === UNSET ? undefined : (Number(v) as RepairStatusId),
             })
           }
         >
-          <SelectTrigger id={`${uid}-tt`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-tt`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả tình trạng" />
           </SelectTrigger>
           <SelectContent>
@@ -247,13 +291,13 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
         </Select>
       </Field>
 
-      {/* 10. Hình thức chung */}
+      {/* 11. Hình thức chung */}
       <Field label="Hình thức chung">
         <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1">
           {HINH_THUC_ORDER.map((value) => (
             <label
               key={value}
-              className="flex cursor-pointer items-center gap-1.5 text-sm"
+              className="flex min-h-11 cursor-pointer items-center gap-1.5 text-base md:min-h-0 md:text-sm"
             >
               <Checkbox
                 checked={(filters.hinhThuc ?? []).includes(value)}
@@ -266,7 +310,7 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
         </div>
       </Field>
 
-      {/* 11. Tên Tỉnh */}
+      {/* 12. Tên Tỉnh */}
       <Field label="Tên Tỉnh" htmlFor={`${uid}-tinh`}>
         <Select
           value={filters.tinh ?? UNSET}
@@ -274,7 +318,7 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
             onChange({ tinh: v === UNSET ? undefined : v, huyen: undefined })
           }
         >
-          <SelectTrigger id={`${uid}-tinh`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-tinh`} className={filterControlClassName}>
             <SelectValue placeholder="Tên Tỉnh" />
           </SelectTrigger>
           <SelectContent>
@@ -288,14 +332,16 @@ export function RepairKtFilters({ filters, onChange }: RepairKtFiltersProps) {
         </Select>
       </Field>
 
-      {/* 12. TP/Huyện */}
+      {/* 13. TP/Huyện */}
       <Field label="TP/Huyện" htmlFor={`${uid}-huyen`}>
         <Select
           value={filters.huyen ?? UNSET}
-          onValueChange={(v) => onChange({ huyen: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ huyen: v === UNSET ? undefined : v })
+          }
           disabled={!filters.tinh}
         >
-          <SelectTrigger id={`${uid}-huyen`} className="h-8 text-sm">
+          <SelectTrigger id={`${uid}-huyen`} className={filterControlClassName}>
             <SelectValue placeholder="TP/Huyện" />
           </SelectTrigger>
           <SelectContent>

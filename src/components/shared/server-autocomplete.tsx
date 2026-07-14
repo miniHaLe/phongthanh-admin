@@ -41,6 +41,9 @@ interface ServerAutocompleteProps {
   value: AutocompleteOption | null
   onChange: (opt: AutocompleteOption | null) => void
   fetchOptions: (query: string) => Promise<AutocompleteOption[]>
+  inputId?: string
+  ariaLabel?: string
+  required?: boolean
   placeholder?: string
   quickCreate?: QuickCreateConfig
   className?: string
@@ -54,6 +57,9 @@ export function ServerAutocomplete({
   value,
   onChange,
   fetchOptions,
+  inputId,
+  ariaLabel,
+  required = false,
   placeholder = 'Tìm kiếm…',
   quickCreate,
   className,
@@ -154,9 +160,11 @@ export function ServerAutocomplete({
     <div ref={rootRef} className={cn('relative', className)}>
       <div className="flex items-center gap-1.5">
         <Input
+          id={inputId}
           value={query}
           placeholder={placeholder}
           disabled={disabled}
+          required={required}
           onChange={(e) => {
             setQuery(e.target.value)
             setOpen(true)
@@ -174,7 +182,8 @@ export function ServerAutocomplete({
               ? `${listboxId}-option-${activeIndex}`
               : undefined
           }
-          aria-label={placeholder}
+          aria-label={ariaLabel ?? placeholder}
+          aria-required={required || undefined}
         />
         {quickCreate && (
           <Button

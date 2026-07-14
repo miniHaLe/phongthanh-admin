@@ -9,9 +9,12 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
-import { NAV_ITEMS } from '@/config/nav-config'
 import { useCommandStore, useRegisteredCommands } from './command-registry'
 import { useAppStore } from '@/store/app-store'
+import {
+  filterPaletteDynamicActions,
+  getPaletteNavigationItems,
+} from './navigation-command-utils'
 
 /**
  * ⌘K / Ctrl+K command palette (C5). Lists all screens (from nav-config, which
@@ -22,7 +25,8 @@ export function CommandPalette() {
   const open = useCommandStore((s) => s.open)
   const setOpen = useCommandStore((s) => s.setOpen)
   const toggle = useCommandStore((s) => s.toggle)
-  const dynamicActions = useRegisteredCommands()
+  const dynamicActions = filterPaletteDynamicActions(useRegisteredCommands())
+  const navigationItems = getPaletteNavigationItems(import.meta.env.DEV)
   const setTheme = useAppStore((s) => s.setTheme)
   const theme = useAppStore((s) => s.theme)
 
@@ -54,15 +58,15 @@ export function CommandPalette() {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Tìm màn hình hoặc hành động…" />
+      <CommandInput placeholder="Đi tới…" />
       <CommandList>
         <CommandEmpty>Không tìm thấy kết quả.</CommandEmpty>
 
         <CommandGroup heading="Màn hình">
-          {NAV_ITEMS.map((item) => (
+          {navigationItems.map((item) => (
             <CommandItem
               key={item.id}
-              value={`${item.label} ${item.keywords?.join(' ') ?? ''}`}
+              value={`${item.label} ${item.keywords.join(' ')}`}
               onSelect={() => runAndClose(() => navigate(item.path))}
             >
               <item.icon className="mr-2 size-4" />

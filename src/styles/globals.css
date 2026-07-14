@@ -35,6 +35,8 @@
     --border: 220 16% 90%;
     --input: 220 16% 90%;
     --ring: 221 83% 53%;
+    --scrollbar-track: 220 20% 94%;
+    --scrollbar-thumb: 220 10% 62%;
 
     /* Sidebar surface */
     --sidebar: 222 47% 13%;
@@ -69,6 +71,8 @@
     --border: 222 20% 22%;
     --input: 222 20% 24%;
     --ring: 217 91% 60%;
+    --scrollbar-track: 222 20% 14%;
+    --scrollbar-thumb: 220 10% 38%;
 
     --sidebar: 222 40% 10%;
     --sidebar-foreground: 220 14% 82%;
@@ -80,6 +84,23 @@
 @layer base {
   * {
     @apply border-border;
+    scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track));
+    scrollbar-width: thin;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: hsl(var(--scrollbar-track));
+  }
+  *::-webkit-scrollbar-thumb {
+    border: 2px solid hsl(var(--scrollbar-track));
+    border-radius: 999px;
+    background: hsl(var(--scrollbar-thumb));
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
   }
   body {
     @apply bg-background font-sans text-foreground antialiased;

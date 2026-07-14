@@ -15,11 +15,11 @@ export const sanPhamResourceConfig: CrudResourceConfig = {
     createdAt: sanPham.createdAt,
   },
   filterableColumns: {
-    tenSP: { column: sanPham.tenSP },
-    nhomSanPhamId: { column: sanPham.nhomSanPhamId },
+    tenSP: { column: sanPham.tenSP, valueType: 'string' },
+    nhomSanPhamId: { column: sanPham.nhomSanPhamId, valueType: 'string' },
     active: {
       column: sanPham.active,
-      parse: (raw) => raw === 'true' || raw === true,
+      valueType: 'boolean',
     },
   },
   searchColumns: [sanPham.tenSP, sanPham.maSP],

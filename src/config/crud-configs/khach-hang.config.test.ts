@@ -1,5 +1,16 @@
 import { describe, it, expect } from 'vitest'
 import { khachHangConfig } from './khach-hang.config'
+import type { CrudLookups } from '@/types/crud-types'
+import type { KhachHang } from '@/types/masterdata-types'
+
+function renderColumn(
+  key: keyof KhachHang,
+  row: Partial<KhachHang>,
+  lookups?: CrudLookups,
+) {
+  const column = khachHangConfig.columns.find((item) => item.key === key)
+  return column?.renderCell?.(row[key], row as KhachHang, lookups)
+}
 
 describe('khachHangConfig', () => {
   it('renders current two-level address and finance columns without district', () => {
@@ -24,21 +35,8 @@ describe('khachHangConfig', () => {
     )
   })
 
-  it('uses the approved customer editor fields and validates tax codes', () => {
-    const labels = khachHangConfig.fields.map((field) => field.label)
-    expect(labels).toContain('Tên đường')
-    expect(labels).toContain('Tỉnh/Thành phố')
-    expect(labels).toContain('Phường/Xã')
-    expect(labels).toContain('Mã số thuế')
-    expect(labels).toContain('Ngân hàng')
-    expect(labels).toContain('Số tài khoản')
-    expect(labels).not.toContain('Quận/Huyện')
-
-    const tax = khachHangConfig.fields.find((field) => field.key === 'maSoThue')
-    expect(tax?.zodSchema?.safeParse('').success).toBe(true)
-    expect(tax?.zodSchema?.safeParse('0123456789').success).toBe(true)
-    expect(tax?.zodSchema?.safeParse('0123456789-001').success).toBe(true)
-    expect(tax?.zodSchema?.safeParse('123').success).toBe(false)
+  it('does not retain dead CrudSheet fields behind the bespoke customer form', () => {
+    expect(khachHangConfig.fields).toEqual([])
   })
 
   it('has no invented Mã KH / Tổng phiếu / Trạng thái columns', () => {
@@ -66,5 +64,56 @@ describe('khachHangConfig', () => {
       key: 'createdAt',
       dir: 'desc',
     })
+  })
+
+  it('renders modern geography, then legacy names, then an em dash', () => {
+    const lookups: CrudLookups = {
+      customerProvinceNames: new Map([['66', 'Tên tỉnh từ API']]),
+      customerCommuneNames: new Map([['00004', 'Tên phường từ API']]),
+    }
+
+    expect(
+      renderColumn(
+        'tinhThanhCode',
+        {
+          tinhThanhCode: '66',
+          tinhId: 'tinh-dak-nong',
+        },
+        lookups,
+      ),
+    ).toBe('Tên tỉnh từ API')
+    expect(renderColumn('tinhThanhCode', { tinhId: 'tinh-dak-nong' })).toBe(
+      'ĐẮK NÔNG',
+    )
+    expect(renderColumn('tinhThanhCode', {})).toBe('—')
+
+    expect(
+      renderColumn(
+        'phuongXaCode',
+        {
+          phuongXaCode: '00004',
+          phuongXaId: 'xa-tan-loi',
+        },
+        lookups,
+      ),
+    ).toBe('Tên phường từ API')
+    expect(renderColumn('phuongXaCode', { phuongXaId: 'xa-tan-loi' })).toBe(
+      'Phường Tân Lợi',
+    )
+    expect(renderColumn('phuongXaCode', {})).toBe('—')
+  })
+
+  it('uses the API-enriched dealer name without a mock lookup', () => {
+    expect(
+      renderColumn('daiLyId', { daiLyId: 'kh-1', daiLyTen: 'Đại lý A' }),
+    ).toBe('Đại lý A')
+    expect(renderColumn('daiLyId', { daiLyId: 'kh-1' })).toBe('—')
+  })
+
+  it('leaves geography filter options for the page-level query', () => {
+    const filter = khachHangConfig.filters?.find(
+      (item) => item.key === 'tinhThanhCode',
+    )
+    expect(filter?.options).toBeUndefined()
   })
 })

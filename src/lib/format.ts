@@ -25,11 +25,11 @@ export function formatDate(iso: string | null | undefined): string {
   }
 }
 
-/** ISO string → dd/MM/yyyy hh:mm AM/PM (reference datetime format). */
+/** ISO string → Vietnamese 24-hour date/time. */
 export function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return ''
   try {
-    return format(parseISO(iso), 'dd/MM/yyyy hh:mm a')
+    return format(parseISO(iso), 'dd/MM/yyyy HH:mm')
   } catch {
     return ''
   }

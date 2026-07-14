@@ -255,6 +255,8 @@ export async function seedDatabase(
           dienThoai: kh.dienThoai,
           dienThoai2: kh.dienThoai2,
           diaChi: kh.diaChi,
+          tinhThanhCode: kh.tinhThanhCode,
+          phuongXaCode: kh.phuongXaCode,
           phuongXaId: kh.phuongXaId,
           quanId: kh.quanId,
           tinhId: kh.tinhId,

@@ -24,6 +24,8 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
+      data-empty-state
+      role="status"
       className={cn(
         'flex flex-col items-center justify-center gap-2 px-6 py-10 text-center',
         className,
@@ -34,6 +36,7 @@ export function EmptyState({
       {body && <p className="max-w-sm text-sm text-muted-foreground">{body}</p>}
       {action && (
         <Button
+          type="button"
           variant="outline"
           size="sm"
           className="mt-1"

@@ -8,8 +8,11 @@
  */
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
+import {
+  FilterField,
+  filterFieldsGridClassName,
+} from '@/components/shared/filter-panel/filter-field'
 import {
   Select,
   SelectContent,
@@ -40,34 +43,17 @@ interface BanHangFiltersProps {
 
 const UNSET = '__all__'
 
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string
-  htmlFor?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
-        {label}
-      </Label>
-      {children}
-    </div>
-  )
-}
-
 export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
   const uid = useId()
 
   return (
-    <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Field label="Chi nhánh" htmlFor={`${uid}-cn`}>
+    <div className={filterFieldsGridClassName}>
+      <FilterField label="Chi nhánh" htmlFor={`${uid}-cn`}>
         <Select
           value={filters.branchId ?? UNSET}
-          onValueChange={(v) => onChange({ branchId: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ branchId: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả chi nhánh" />
@@ -81,12 +67,14 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
             ))}
           </SelectContent>
         </Select>
-      </Field>
+      </FilterField>
 
-      <Field label="Nhà kho" htmlFor={`${uid}-kho`}>
+      <FilterField label="Nhà kho" htmlFor={`${uid}-kho`}>
         <Select
           value={filters.khoId ?? UNSET}
-          onValueChange={(v) => onChange({ khoId: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ khoId: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-kho`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả nhà kho" />
@@ -100,12 +88,14 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
             ))}
           </SelectContent>
         </Select>
-      </Field>
+      </FilterField>
 
-      <Field label="Hình thức thu chi" htmlFor={`${uid}-httc`}>
+      <FilterField label="Hình thức thu chi" htmlFor={`${uid}-httc`}>
         <Select
           value={filters.hinhThucThuChi ?? UNSET}
-          onValueChange={(v) => onChange({ hinhThucThuChi: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ hinhThucThuChi: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-httc`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả" />
@@ -119,36 +109,38 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
             ))}
           </SelectContent>
         </Select>
-      </Field>
+      </FilterField>
 
-      <Field label="Số phiếu/Ghi chú" htmlFor={`${uid}-sp`}>
+      <FilterField label="Số phiếu / Ghi chú" htmlFor={`${uid}-sp`}>
         <Input
           id={`${uid}-sp`}
           className={filterControlClassName}
           value={filters.soPhieu ?? ''}
           onChange={(e) => onChange({ soPhieu: e.target.value || undefined })}
         />
-      </Field>
+      </FilterField>
 
-      <Field label="Tên khách hàng" htmlFor={`${uid}-kh`}>
+      <FilterField label="Tên khách hàng" htmlFor={`${uid}-kh`}>
         <Input
           id={`${uid}-kh`}
           className={filterControlClassName}
           value={filters.tenKhachHang ?? ''}
-          onChange={(e) => onChange({ tenKhachHang: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ tenKhachHang: e.target.value || undefined })
+          }
         />
-      </Field>
+      </FilterField>
 
-      <Field label="Mã hàng/Tên hàng" htmlFor={`${uid}-mh`}>
+      <FilterField label="Mã hàng / Tên hàng" htmlFor={`${uid}-mh`}>
         <Input
           id={`${uid}-mh`}
           className={filterControlClassName}
           value={filters.maHang ?? ''}
           onChange={(e) => onChange({ maHang: e.target.value || undefined })}
         />
-      </Field>
+      </FilterField>
 
-      <Field label="Từ ngày" htmlFor={`${uid}-df`}>
+      <FilterField label="Từ ngày" htmlFor={`${uid}-df`}>
         <Input
           id={`${uid}-df`}
           type="date"
@@ -156,8 +148,8 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
-      </Field>
-      <Field label="Đến ngày" htmlFor={`${uid}-dt`}>
+      </FilterField>
+      <FilterField label="Đến ngày" htmlFor={`${uid}-dt`}>
         <Input
           id={`${uid}-dt`}
           type="date"
@@ -165,7 +157,7 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />
-      </Field>
+      </FilterField>
     </div>
   )
 }

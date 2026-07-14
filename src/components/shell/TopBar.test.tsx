@@ -5,14 +5,14 @@ import { renderWithProviders } from '@/test/render-with-providers'
 import { TopBar } from './TopBar'
 import { useNotificationStore } from '@/store/notification-store'
 
-beforeEach(() => useNotificationStore.setState({ seenIds: [], seenNewsIds: [] }))
+beforeEach(() => useNotificationStore.setState({ seenIds: [] }))
 
 describe('TopBar', () => {
-  it('renders search, bell, news, support, theme toggle, and user menu', () => {
+  it('renders navigation search, one notification center, support, theme, and user menu', () => {
     renderWithProviders(<TopBar />)
-    expect(screen.getAllByLabelText('Tìm kiếm')[0]).toBeInTheDocument()
+    expect(screen.getByLabelText('Đi tới')).toBeInTheDocument()
     expect(screen.getByLabelText(/Thông báo/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Tin tức/)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/Tin tức/)).not.toBeInTheDocument()
     expect(screen.getByLabelText('Hỗ trợ')).toBeInTheDocument()
     expect(screen.getByLabelText('Menu tài khoản')).toBeInTheDocument()
   })

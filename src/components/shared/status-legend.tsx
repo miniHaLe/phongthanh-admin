@@ -1,3 +1,5 @@
+import { useId, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   REPAIR_STATUSES,
@@ -20,42 +22,74 @@ interface StatusLegendProps {
  * swatches. With `counts`, renders them in the repair-list display order as
  * `Label (count)` colored squares — the Index_8 legend strip.
  */
-export function StatusLegend({ className, counts, onSelect }: StatusLegendProps) {
-  const order = counts ? REPAIR_STATUS_DISPLAY_ORDER : REPAIR_STATUSES.map((s) => s.id)
+export function StatusLegend({
+  className,
+  counts,
+  onSelect,
+}: StatusLegendProps) {
+  const contentId = useId()
+  const [mobileExpanded, setMobileExpanded] = useState(false)
+  const mobileCollapsible = counts !== undefined
+  const order = counts
+    ? REPAIR_STATUS_DISPLAY_ORDER
+    : REPAIR_STATUSES.map((s) => s.id)
 
   return (
-    <div
-      className={cn('flex flex-wrap items-center gap-x-4 gap-y-2', className)}
-      aria-label="Chú thích màu trạng thái"
-    >
-      {order.map((id) => {
-        const label = STATUS_LABEL[id]
-        const text = counts ? `${label} (${counts[id] ?? 0})` : label
-        const content = (
-          <>
-            <span
-              className="h-2.5 w-2.5 rounded-sm"
-              style={{ backgroundColor: STATUS_HEX[id] }}
-              aria-hidden="true"
-            />
-            <span className="text-muted-foreground">{text}</span>
-          </>
-        )
-        return onSelect ? (
-          <button
-            key={id}
-            type="button"
-            className="flex items-center gap-1.5 text-xs hover:text-foreground"
-            onClick={() => onSelect(id)}
-          >
-            {content}
-          </button>
-        ) : (
-          <div key={id} className="flex items-center gap-1.5 text-xs">
-            {content}
-          </div>
-        )
-      })}
+    <div aria-label="Chú thích màu trạng thái" className={className}>
+      {mobileCollapsible && (
+        <button
+          type="button"
+          className="flex min-h-11 items-center gap-1.5 text-sm font-medium md:hidden"
+          aria-expanded={mobileExpanded}
+          aria-controls={contentId}
+          onClick={() => setMobileExpanded((expanded) => !expanded)}
+        >
+          Chú thích trạng thái
+          <ChevronDown
+            className={cn(
+              'size-4 transition-transform',
+              mobileExpanded && 'rotate-180',
+            )}
+            aria-hidden="true"
+          />
+        </button>
+      )}
+      <div
+        id={contentId}
+        className={cn(
+          'flex flex-wrap items-center gap-x-4 gap-y-2',
+          mobileCollapsible && !mobileExpanded && 'hidden md:flex',
+        )}
+      >
+        {order.map((id) => {
+          const label = STATUS_LABEL[id]
+          const text = counts ? `${label} (${counts[id] ?? 0})` : label
+          const content = (
+            <>
+              <span
+                className="h-2.5 w-2.5 rounded-sm"
+                style={{ backgroundColor: STATUS_HEX[id] }}
+                aria-hidden="true"
+              />
+              <span className="text-muted-foreground">{text}</span>
+            </>
+          )
+          return onSelect ? (
+            <button
+              key={id}
+              type="button"
+              className="flex items-center gap-1.5 text-xs hover:text-foreground"
+              onClick={() => onSelect(id)}
+            >
+              {content}
+            </button>
+          ) : (
+            <div key={id} className="flex items-center gap-1.5 text-xs">
+              {content}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

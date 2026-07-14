@@ -1,6 +1,6 @@
 import { Suspense, useMemo } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
-import { Loader2, Map, PhoneIncoming } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { CommandPalette } from '@/components/shell/CommandPalette'
 import { Sidebar } from './Sidebar'
 import { SidebarDrawer } from './SidebarDrawer'
@@ -9,6 +9,7 @@ import { AppFooter } from './AppFooter'
 import { BranchMapModal, useBranchMapStore } from './BranchMapModal'
 import { useRegisterCommands } from './command-registry'
 import { useCallCenterDemo, triggerDemoCall } from '@/demo/call-center-demo'
+import { buildShellCommands } from './navigation-command-utils'
 
 function PageSpinner() {
   return (
@@ -24,22 +25,10 @@ export default function AppShell() {
   useCallCenterDemo()
 
   const shellCommands = useMemo(
-    () => [
-      {
-        id: 'shell-branch-map',
-        label: 'Bản đồ chi nhánh',
-        group: 'Hành động nhanh',
-        icon: Map,
-        run: openBranchMap,
-      },
-      {
-        id: 'shell-demo-call',
-        label: 'Demo: Cuộc gọi đến',
-        group: 'Demo',
-        icon: PhoneIncoming,
-        run: () => triggerDemoCall(navigate),
-      },
-    ],
+    () =>
+      buildShellCommands(import.meta.env.DEV, openBranchMap, () =>
+        triggerDemoCall(navigate),
+      ),
     [navigate, openBranchMap],
   )
   useRegisterCommands('shell', shellCommands)

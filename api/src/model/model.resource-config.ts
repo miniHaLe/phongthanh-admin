@@ -13,12 +13,12 @@ export const modelResourceConfig: CrudResourceConfig = {
     createdAt: model.createdAt,
   },
   filterableColumns: {
-    tenModel: { column: model.tenModel },
-    nhaSanXuatId: { column: model.nhaSanXuatId },
-    sanPhamId: { column: model.sanPhamId },
+    tenModel: { column: model.tenModel, valueType: 'string' },
+    nhaSanXuatId: { column: model.nhaSanXuatId, valueType: 'string' },
+    sanPhamId: { column: model.sanPhamId, valueType: 'string' },
     active: {
       column: model.active,
-      parse: (raw) => raw === 'true' || raw === true,
+      valueType: 'boolean',
     },
   },
   searchColumns: [model.tenModel, model.ghiChu],
