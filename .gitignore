@@ -37,3 +37,4 @@ api/.env.*
 *.sw?
 
 docs/journals
+plans
