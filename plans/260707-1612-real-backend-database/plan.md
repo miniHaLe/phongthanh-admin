@@ -126,8 +126,8 @@ real HTTP. So:
 | Phase | Rel | Name | Status |
 |-------|-----|------|--------|
 | 1 | v1 | [Backend skeleton + auth + Khách hàng vertical slice](./phase-01-backend-skeleton-auth-khach-hang-vertical-slice.md) | ✅ Completed (2026-07-08) |
-| 2 | v1 | [Real permission enforcement + identity](./phase-02-real-permission-enforcement-identity.md) | Pending |
-| 3 | v1 | [Simple CRUD fan-out (~37 config entities)](./phase-03-simple-crud-fan-out.md) | Pending |
+| 2 | v1 | [Real permission enforcement + identity](./phase-02-real-permission-enforcement-identity.md) | Pending — identity CRUD/secret gate subset completed 2026-07-15 |
+| 3 | v1 | [Simple CRUD fan-out (~37 config entities)](./phase-03-simple-crud-fan-out.md) | Pending — 15 catalogs + chi-nhanh subset completed 2026-07-15 |
 | 4 | v1 | [Repair workspace endpoints (bespoke rewire)](./phase-04-repair-workspace-endpoints.md) | Pending |
 | 5 | v2 | [Warehouse stock-movement ledger (BUILD)](./phase-05-warehouse-stock-movement-ledger.md) | Pending |
 | 6 | v2 | [Finance: chứng-từ, công-nợ, invoices (BUILD)](./phase-06-finance-chung-tu-cong-no-invoices.md) | Pending |

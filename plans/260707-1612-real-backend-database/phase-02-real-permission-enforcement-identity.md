@@ -129,6 +129,23 @@ deny-by-default; a contract test asserts no secret column appears on any respons
 
 ## Success Criteria
 
+### Delivered subset (2026-07-15)
+
+- [x] Real `nguoi-dung` CRUD uses bcrypt-12, superScope-only writes, exact
+      visible filters, and response projection that never serializes
+      `password` or `passwordHash`.
+- [x] Admin-created users can log in immediately; `nhom-quyen` has the real
+      read endpoint needed by the user editor.
+- [x] Generic CRUD gained additive async create stamping, response projection,
+      write guards, and Vietnamese database-constraint errors without breaking
+      the existing `khach-hang` slice.
+- [ ] Full authored RBAC matrix, `PermissionGuard`, route completeness,
+      persisted permission demotion, HR/menu/chuc-nang identity entities, and
+      `CURRENT_USER` removal remain owned by this phase.
+
+The interim `superScope` write guard is a coarse seam, not the final RBAC
+model. Replace it with the permission guard when the remaining phase executes.
+
 - [ ] RBAC modeled menu-keyed (`role_menu` + `menu_function`); seed is an **authored
       least-privilege matrix** (not translated from localStorage); a `resource_key ↔
       permission_code` map exists with a completeness test.

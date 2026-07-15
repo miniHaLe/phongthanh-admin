@@ -79,6 +79,22 @@ one schema file + one config edit + one seeder block).
 
 ## Success Criteria
 
+### Delivered subset (2026-07-15)
+
+- [x] Real tables/endpoints/config flips delivered for `chi-nhanh` plus 15
+      catalog resources: `don-vi-tinh`, `nhom-san-pham`, `nhom-hang-hoa`,
+      `nha-san-xuat`, `thoi-han`, `nha-kho`, `phuong-xa`, `khu-vuc`,
+      `loi-sua-chua`, `ngan-chua`, `san-pham`, `hang-hoa`, `model`, and
+      `phi-giao`.
+- [x] Frozen fixtures, FK-closure validation, parent-before-child seeding,
+      repeated-seed idempotency, nullable PATCH clearing, and Vietnamese
+      constraint errors are covered by database tests.
+- [x] Direct dropdown/lookup consumers of the delivered resources now use the
+      real-or-mock API seam; customer/product quick creates persist and
+      invalidate dependent queries.
+- [ ] HR lookups/entities, menu/chuc-nang, and the remaining simple-CRUD
+      resources stay pending in this phase.
+
 - [ ] All ~39 simple entities have real tables + endpoints + filter allowlists + seeded
       data; each page works unchanged against Postgres.
 - [ ] Migration done in FK order; FK violations return VI errors (not 500s).

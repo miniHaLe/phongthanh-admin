@@ -24,6 +24,13 @@ prototype** (no backend; writes lost on reload; permission matrix has no
 enforcement). Where the rebuild "fixes" something, it does so in the prototype — not
 in a shipped production system.
 
+> **Current rebuild status — 2026-07-15.** The preceding honesty note and the
+> historical "Rebuild handling" cells describe the 2026-07-07 comparison
+> baseline. The repo now has a NestJS/Postgres backend for auth and 18 release
+> resources; most repair, warehouse, finance, HR, and report workflows remain
+> mock-backed. Full permission-matrix enforcement remains deferred. Legacy
+> findings and historical handling cells below are intentionally unchanged.
+
 ---
 
 ## 1. Functional defects

@@ -14,6 +14,15 @@ vendor "Phần Mềm Quốc Bảo") · **Rebuild:** React 18 + Vite + TypeScript
 > **[the evidence appendix](./assets/legacy-audit-evidence.md)**. Vietnamese
 > load-bearing strings come from **[the glossary](./assets/vi-term-glossary.md)**.
 
+> **Current rebuild status — 2026-07-15.** Blanket statements below that call the
+> rebuild "100% mock" or say it has "no backend" describe the preserved
+> 2026-07-07 comparison baseline. The repo is now hybrid: auth plus 18 release
+> resources use NestJS/Postgres, including Khách hàng, Người dùng, read-only Nhóm
+> quyền, Chi nhánh, and 14 catalog resources. Repair, warehouse, finance, HR, and
+> report workflows remain mostly mock-backed. The permission matrix still has no
+> server-side enforcement; historical tables, counts, and `Closed (mock)` labels
+> remain unchanged for audit traceability.
+
 ---
 
 ## Tóm tắt điều hành (Executive Summary — tiếng Việt)

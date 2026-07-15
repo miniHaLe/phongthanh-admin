@@ -132,3 +132,11 @@ real ledger movements here.
   permissiveness and avoids blocking out-of-order data entry. Do NOT add a hard `< 0` block.
 - **Coupling to repair (P4)** → the parts↔movement wiring is the integration seam; test
   it end-to-end (issue part on a ticket → stock decrements).
+
+## Voucher code contract delivered upstream (2026-07-15)
+
+Warehouse/stock-out mock create paths now emit `PTH`, `PCK`, `PCH`, and `PNK`
+codes as `PREFIX-yyyymm-N`, with an independent ordinal per prefix and month.
+Real voucher endpoints MUST preserve this display contract using a
+concurrency-safe server sequence; legacy seeded codes remain historical and do
+not advance the new sequence.

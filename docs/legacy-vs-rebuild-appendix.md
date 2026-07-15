@@ -18,6 +18,13 @@ Lows (75 total) are cosmetic/intentional-IA and summarized per section, not tabl
 Source files (read-only): `plans/reports/ref-ui-parity-sections/section-*.md`,
 `plans/reports/brainstorm-260703-reference-ui-parity-gap-matrix.md`.
 
+> **Current rebuild status — 2026-07-15.** The `Closed (mock)` labels below are a
+> preserved 2026-07-07 parity snapshot, not a current blanket architecture claim.
+> Auth plus 18 release resources now use NestJS/Postgres; most repair, warehouse,
+> finance, HR, and report workflows remain mock-backed, and the permission matrix
+> still has no server-side enforcement. Historical rows remain unchanged for
+> traceability.
+
 ---
 
 ## 1. Shell / nav / layout — 4H / 6M / 6L

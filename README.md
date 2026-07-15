@@ -2,12 +2,15 @@
 
 Giao diện quản trị cho chuỗi cửa hàng sửa chữa điện thoại Phong Thành — React 18 + Vite + TypeScript + Tailwind v3 + shadcn/ui.
 
-Phần lớn dữ liệu vẫn là **mock** phía client. Backend thật (NestJS + Postgres +
-Drizzle, thư mục [`api/`](./api/README.md)) đã được dựng cho phân hệ **Khách hàng**
-(auth JWT + phân quyền theo chi nhánh); các phân hệ còn lại sẽ chuyển sang backend
-thật theo lộ trình trong `plans/260707-1612-real-backend-database/`. Cờ
-`VITE_REAL_RESOURCES` (dev/CI) chọn resource nào gọi API thật; bản build production
-bắt buộc mọi resource của release phải là thật.
+Ứng dụng đang ở mô hình lai. Backend thật (NestJS + Postgres + Drizzle, thư mục
+[`api/`](./api/README.md)) phục vụ auth, Khách hàng, Người dùng, Nhóm quyền đọc,
+Chi nhánh và 14 danh mục. Các workflow sửa chữa, kho, tài chính, nhân sự và báo
+cáo còn chủ yếu dùng mock phía client. Cờ `VITE_REAL_RESOURCES` (dev/CI) chọn
+resource gọi API thật; bản build production bắt buộc đủ 18 resource của release:
+
+```text
+khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao
+```
 
 ---
 
@@ -43,7 +46,7 @@ npm run type-check
 npm run lint
 npm run test
 npm run test:e2e:uiux
-env VITE_REAL_RESOURCES=khach-hang npm run build:prod
+env VITE_REAL_RESOURCES=khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao npm run build:prod
 npm run test:api:with-db
 ```
 
@@ -88,6 +91,8 @@ với database test `phongthanh_test`.
 - **Bản đồ chi nhánh** — modal nhúng bản đồ theo toạ độ chi nhánh.
 - **Demo call-center** — `Ctrl+Shift+G` mô phỏng cuộc gọi đến → tiếp nhận phiếu.
 - **Bộ lọc nâng cao** — trang Sửa chữa hỗ trợ lọc theo 22 trường tham chiếu.
+- **Đồng bộ danh mục thật** — danh mục vừa tạo được nạp lại qua API và xuất hiện ở các dropdown phụ thuộc.
+- **Mã phiếu mới** — các phiếu tạo trong mock dùng `PREFIX-yyyymm-N`, đánh số riêng theo loại và tháng; dữ liệu seed cũ giữ nguyên. Sinh mã đồng thời an toàn phía server còn thuộc giai đoạn backend tiếp theo.
 - **Reset demo** — `Ctrl+Shift+R` (chỉ ở chế độ dev) xóa toàn bộ state lưu trữ và tải lại trang về trạng thái ban đầu.
 
 ---

@@ -124,3 +124,11 @@ service methods, not array splices.
   intent) and wire the real ledger movement in P5; keep P4 shippable with parts as
   metadata until then.
 - **SMS/print** → SMS stays a noop/toast (D4 from parity); prints reuse client helpers.
+
+## Voucher code contract delivered upstream (2026-07-15)
+
+The frontend/mock create paths now use `PREFIX-yyyymm-N`, where `N` is the
+per-prefix ordinal within the local calendar month and legacy seed codes are
+ignored. The real repair create endpoint MUST generate `PSC-yyyymm-N`
+server-side with a concurrency-safe per-`(prefix, yyyymm)` sequence; never trust
+or reuse a client-provided ordinal.

@@ -11,7 +11,7 @@ Frontend:
 - Hosted by GitHub Pages from `.github/workflows/deploy-pages.yml`
 - URL: `https://minihale.github.io/phongthanh-admin/`
 - Build env:
-  - `VITE_REAL_RESOURCES=khach-hang`
+  - `VITE_REAL_RESOURCES=khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao`
   - `VITE_API_URL=https://phongthanh-admin-api-minihale.onrender.com`
   - `VITE_ROUTER_MODE=hash`
   - `VITE_BASE_PATH=/phongthanh-admin/`
@@ -39,19 +39,27 @@ Default Render service URLs:
 If Render assigns different external URLs, use the URLs shown in the Render
 Dashboard and update `VITE_API_URL` in the GitHub Pages workflow.
 
+This guide documents the intended deployment configuration. Verification on
+2026-07-15 used local services and a throwaway Postgres database; it does not
+prove that the current live Render service has completed migrations or is
+healthy. Check the live health, authentication, and migrated resource endpoints
+after every deploy.
+
 ## Required Render Input
 
 Render prompts for one secret during Blueprint creation:
 
 - `INITIAL_ADMIN_PASSWORD` — initial seeded password for `admin` and seeded users.
 
-Do not commit this value. The seed forces users to change password on first login.
+Do not commit this value. Seeded users have `mustChangePassword=true` and must
+change it on first login. Users later created by an administrator have
+`mustChangePassword=false` and can immediately use the assigned password.
 
 ## Environment Variables
 
 Frontend GitHub Pages workflow:
 
-- `VITE_REAL_RESOURCES=khach-hang`
+- `VITE_REAL_RESOURCES=khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao`
 - `VITE_API_URL=https://phongthanh-admin-api-minihale.onrender.com`
 - `VITE_ROUTER_MODE=hash`
 - `VITE_BASE_PATH=/phongthanh-admin/`
@@ -74,7 +82,7 @@ npm run type-check
 npm run lint
 npm run test
 npm run test:e2e:uiux
-env VITE_REAL_RESOURCES=khach-hang npm run build:prod
+env VITE_REAL_RESOURCES=khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao npm run build:prod
 npm run test:api:with-db
 ```
 
@@ -112,7 +120,7 @@ curl -i https://<api-service>.onrender.com/api/v1/khach-hang
 Frontend:
 
 ```bash
-VITE_REAL_RESOURCES=khach-hang \
+VITE_REAL_RESOURCES=khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao \
 VITE_API_URL=https://phongthanh-admin-api-minihale.onrender.com \
 VITE_ROUTER_MODE=hash \
 VITE_BASE_PATH=/phongthanh-admin/ \
@@ -238,7 +246,9 @@ https://minihale.github.io/phongthanh-admin/
 ```
 
 Seeded users such as `admin`, `giamdoc`, and `tiepnhan1` use
-`INITIAL_ADMIN_PASSWORD` on first login, then must change password.
+`INITIAL_ADMIN_PASSWORD` on first login, then must change password. Users created
+later through the real Người Dùng admin flow do not receive this forced-change
+flag.
 
 ## Rollback
 

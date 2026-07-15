@@ -112,3 +112,10 @@ invoice lines reference hàng-hóa and may pull cost from the warehouse ledger (
 - **Receivable/repair coupling** → công-nợ rows are created from ticket events (P4);
   test the create-from-ticket path so receivables don't orphan.
 - **Client total tampering** → server recomputes; never persist client totals — tested.
+
+## Voucher code contract delivered upstream (2026-07-15)
+
+Finance mock create paths now emit `PTT-yyyymm-N` and `PCC-yyyymm-N`, with
+independent per-prefix monthly ordinals. Real finance writes and settle-debt
+transactions MUST allocate these codes atomically on the server; legacy seeded
+codes are ignored when determining the next new-format ordinal.

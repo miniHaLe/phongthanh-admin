@@ -1,13 +1,19 @@
 # Codebase Summary
 
-Updated: 2026-07-11
+Updated: 2026-07-15
 
 ## Overview
 
 Phong Thành Admin is a React 18 + Vite + TypeScript + Tailwind/shadcn admin app
-with a NestJS + Postgres API under `api/`. Most frontend domains still use mock
-client data; the Khách hàng resource can call the real API behind
-`VITE_REAL_RESOURCES=khach-hang`.
+with a NestJS + Postgres + Drizzle API under `api/`. It is currently hybrid:
+auth and 18 release resources use the real API, while most repair, warehouse,
+finance, HR, permission-editing, and reporting workflows remain mock-backed.
+
+The production release allowlist is:
+
+```text
+khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao
+```
 
 ## Frontend
 
@@ -31,6 +37,14 @@ client data; the Khách hàng resource can call the real API behind
 - CRUD and repair workflows: `src/components/crud/` and
   `src/features/repair-list/` preserve existing selection, pagination, filters,
   exports, actions, dialogs, and the repair mobile-card path.
+- API selection: `src/api/api-for.ts` chooses the HTTP or mock implementation per
+  resource. `src/hooks/use-lookup.ts` loads all lookup pages, caches rows and ID
+  maps with TanStack Query, and shares invalidation with CRUD/custom create paths.
+  Generic CRUD fields and filters can also load options asynchronously.
+- Sync behavior: customer, product, and quick-create mutations now use their
+  selected API implementation instead of writing real-resource mock arrays.
+  Real customer persistence and newly created warehouse dropdown visibility were
+  verified against a throwaway Postgres database in a live browser session.
 - Dashboard: `src/pages/DashboardPage.tsx` caps and composes large-screen
   content with dashboard-local grid/height rules instead of global zoom.
 
@@ -39,9 +53,37 @@ client data; the Khách hàng resource can call the real API behind
 - `api/src/auth/` implements JWT access + httpOnly refresh rotation, CSRF guard
   on cookie routes, and session family reuse detection.
 - `api/src/crud/` implements the generic CRUD engine with per-resource
-  allowlists for sort/filter/search and branch scoping.
+  allowlists for sort/filter/search, optional response projection/write guards,
+  audit stamping, branch scoping, and Vietnamese database error mapping.
+- `nguoi-dung` supports real list/get/create/update/delete. Writes require the
+  interim server-side `superScope` check; passwords are bcrypt-12 hashes, new
+  admin-created users can log in immediately with `mustChangePassword=false`, and
+  password material is never serialized. `nhom-quyen` is real but read-only.
+- Migration `0001_masterdata_catalogs.sql` adds 14 catalog tables. Together with
+  the existing `chi_nhanh` table, these expose 15 real catalog/branch resources.
+  Frozen JSON fixtures preserve legacy IDs; seed order and FK closure cover the
+  full dependency graph, and repeated-seed tests prove idempotent table counts.
+- Nullable PATCH inputs preserve omission as no-op and map explicit blank/null to
+  SQL `NULL` only for nullable fields. Generated non-null warehouse codes remain
+  protected from null clearing.
 - `api/test/global-setup.ts` provisions `phongthanh_test` on compose Postgres,
   runs migrations, and seeds deterministic fixtures before Jest.
+
+## Voucher Codes
+
+New mock/module-memory voucher create paths use `PREFIX-yyyymm-N`, where the
+ordinal is independent per prefix and calendar month. Current prefixes are PSC,
+PBH, PTH, PCK, PCH, PNK, PTT, and PCC. Legacy seed codes are ignored by the new
+sequence scan and remain unchanged. Concurrency-safe server-side generation is
+deferred until the corresponding repair/warehouse/finance endpoints move to the
+real backend.
+
+## Deferred Work
+
+- Full RBAC matrix persistence and `PermissionGuard` enforcement; current
+  permission screens remain UI-only and `superScope` is an interim user-write seam.
+- Real HR, menu/chuc-nang, repair, warehouse-ledger, finance, and report APIs.
+- `CURRENT_USER` removal and the bigint/money JSON-string contract migration.
 
 ## Verification
 
@@ -52,7 +94,7 @@ npm run type-check
 npm run lint
 npm run test
 npm run test:e2e:uiux
-env VITE_REAL_RESOURCES=khach-hang npm run build:prod
+env VITE_REAL_RESOURCES=khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao npm run build:prod
 npm run test:api:with-db
 ```
 
@@ -66,4 +108,12 @@ matrix; `uiux-composite-table-contracts.spec.ts` adds all-route collapsed-sideba
 fit, synthetic overlength bounded scrolling, dark/focus, export/print, and detail
 dialog contracts.
 
-`test:api:with-db` starts only compose Postgres and avoids committed secrets.
+Root Vitest explicitly excludes `api/**`; database-backed API behavior belongs to
+API Jest. `test:api:with-db` starts only compose Postgres, avoids committed
+secrets, and runs API lint/build plus all DB suites.
+
+`build:prod` requires all 18 release resources. The guard rejects
+`ALLOW_MOCK_BUILD=1` when invoked with `--prod` or `NODE_ENV=production`; the
+override remains available only for non-production previews. Final 2026-07-15
+verification passed 507 frontend tests, 74 API tests, the full production build,
+the missing-resource negative probe, and the production-override negative probe.
