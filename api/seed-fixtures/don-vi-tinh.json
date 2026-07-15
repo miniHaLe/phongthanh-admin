@@ -1,0 +1,77 @@
+[
+  {
+    "id": "dvt-1",
+    "tenDVT": "Cái",
+    "active": true,
+    "createdAt": "2026-05-01T07:35:45.470Z"
+  },
+  {
+    "id": "dvt-2",
+    "tenDVT": "Chiếc",
+    "active": true,
+    "createdAt": "2025-06-21T22:14:13.628Z"
+  },
+  {
+    "id": "dvt-3",
+    "tenDVT": "Bộ",
+    "active": true,
+    "createdAt": "2025-07-25T07:46:47.336Z"
+  },
+  {
+    "id": "dvt-4",
+    "tenDVT": "Hộp",
+    "active": true,
+    "createdAt": "2026-03-06T19:35:31.852Z",
+    "updatedAt": "2026-07-12T13:24:50.091Z"
+  },
+  {
+    "id": "dvt-5",
+    "tenDVT": "Gói",
+    "active": true,
+    "createdAt": "2025-12-04T07:13:08.851Z"
+  },
+  {
+    "id": "dvt-6",
+    "tenDVT": "Cuộn",
+    "active": true,
+    "createdAt": "2025-11-28T09:51:59.787Z",
+    "updatedAt": "2026-06-27T12:13:23.319Z"
+  },
+  {
+    "id": "dvt-7",
+    "tenDVT": "Mét",
+    "active": true,
+    "createdAt": "2025-07-09T05:14:55.257Z"
+  },
+  {
+    "id": "dvt-8",
+    "tenDVT": "Gram",
+    "active": true,
+    "createdAt": "2025-09-12T01:51:36.023Z"
+  },
+  {
+    "id": "dvt-9",
+    "tenDVT": "Kg",
+    "active": true,
+    "createdAt": "2026-02-23T14:17:09.702Z"
+  },
+  {
+    "id": "dvt-10",
+    "tenDVT": "Lít",
+    "active": true,
+    "createdAt": "2026-04-21T11:15:24.135Z",
+    "updatedAt": "2026-05-12T04:40:54.168Z"
+  },
+  {
+    "id": "dvt-11",
+    "tenDVT": "Chai",
+    "active": true,
+    "createdAt": "2026-06-03T06:24:08.943Z"
+  },
+  {
+    "id": "dvt-12",
+    "tenDVT": "Lon",
+    "active": true,
+    "createdAt": "2025-06-24T08:58:00.001Z"
+  }
+]

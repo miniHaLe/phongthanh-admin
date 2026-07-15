@@ -7,7 +7,8 @@ import type { DbClient } from '../db/client'
 import * as schema from '../db/schema'
 import { branchIdForTinh } from './branch-map'
 import { loadFixtures } from './load-fixtures'
-import { validateFkClosure } from './validate-fk-closure'
+import { seedMasterdataTables } from './seed-masterdata'
+import { validateSeedFixtureClosure } from './validate-fk-closure'
 
 const SUPER_ADMIN_LOGIN = 'admin'
 const BCRYPT_ROUNDS = 12
@@ -21,6 +22,20 @@ export interface SeedResult {
   nhomQuyen: number
   nguoiDung: number
   khachHang: number
+  donViTinh: number
+  nhomSanPham: number
+  nhomHangHoa: number
+  nhaSanXuat: number
+  thoiHan: number
+  nhaKho: number
+  phuongXa: number
+  khuVuc: number
+  loiSuaChua: number
+  nganChua: number
+  sanPham: number
+  phiGiao: number
+  model: number
+  hangHoa: number
 }
 
 export async function seedDatabase(
@@ -29,16 +44,7 @@ export async function seedDatabase(
 ): Promise<SeedResult> {
   const fixtures = loadFixtures()
 
-  validateFkClosure({
-    tinhIds: new Set(fixtures.tinh.map((t) => t.id)),
-    quan: fixtures.quan,
-    xa: fixtures.xa,
-    chiNhanhIds: new Set(fixtures.chiNhanh.map((c) => c.id)),
-    nhomQuyenIds: new Set(fixtures.nhomQuyen.map((n) => n.id)),
-    loaiKhachHangIds: new Set(fixtures.loaiKhachHang.map((l) => l.id)),
-    nguoiDung: fixtures.nguoiDung,
-    khachHang: fixtures.khachHang,
-  })
+  validateSeedFixtureClosure(fixtures)
 
   // FK order: chi_nhanh, tinh, quan, xa, loai_khach_hang, nhom_quyen,
   // nguoi_dung, khach_hang.
@@ -120,6 +126,10 @@ export async function seedDatabase(
       .onConflictDoNothing({ target: schema.nhomQuyen.id })
   }
 
+  // Danh-muc FK order is encapsulated here: group-1 lookups first, then the
+  // dependent product/model/goods tables.
+  const masterdataResult = await seedMasterdataTables(db, fixtures)
+
   if (fixtures.nguoiDung.length > 0) {
     // Every seeded user gets a password from INITIAL_ADMIN_PASSWORD + forced
     // change on first login (V4) — none have a real password in the source
@@ -187,5 +197,6 @@ export async function seedDatabase(
     nhomQuyen: fixtures.nhomQuyen.length,
     nguoiDung: fixtures.nguoiDung.length,
     khachHang: fixtures.khachHang.length,
+    ...masterdataResult,
   }
 }

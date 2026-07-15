@@ -22,7 +22,13 @@ async function main() {
     console.log(
       `Seed complete: ${r.chiNhanh} chi_nhanh, ${r.tinh} tinh, ${r.quan} quan, ` +
         `${r.xa} xa, ${r.loaiKhachHang} loai_khach_hang, ${r.nhomQuyen} nhom_quyen, ` +
-        `${r.nguoiDung} nguoi_dung, ${r.khachHang} khach_hang.`,
+        `${r.nguoiDung} nguoi_dung, ${r.khachHang} khach_hang, ` +
+        `${r.donViTinh} don_vi_tinh, ${r.nhomSanPham} nhom_san_pham, ` +
+        `${r.nhomHangHoa} nhom_hang_hoa, ${r.nhaSanXuat} nha_san_xuat, ` +
+        `${r.thoiHan} thoi_han, ${r.nhaKho} nha_kho, ${r.phuongXa} phuong_xa, ` +
+        `${r.khuVuc} khu_vuc, ${r.loiSuaChua} loi_sua_chua, ` +
+        `${r.nganChua} ngan_chua, ${r.sanPham} san_pham, ${r.model} model, ` +
+        `${r.hangHoa} hang_hoa, ${r.phiGiao} phi_giao.`,
     )
   } finally {
     await pool.end()

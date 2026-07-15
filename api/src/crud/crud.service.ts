@@ -6,7 +6,11 @@ import {
 import { and, eq, ilike, inArray, or, sql, type SQL } from 'drizzle-orm'
 import type { DbClient } from '../db/client'
 import type { AuthenticatedUser } from '../auth/jwt-payload'
-import type { CrudResourceConfig } from './crud-resource-config'
+import type {
+  CrudResourceConfig,
+  CrudWriteOperation,
+} from './crud-resource-config'
+import { rethrowDatabaseWriteError } from './crud-database-error'
 import type { ListParamsQuery } from './list-params.dto'
 
 export interface PagedResult<T> {
@@ -42,9 +46,7 @@ export class CrudService {
   private resolveSortColumn(sortKey: string) {
     const column = this.config.sortableColumns[sortKey]
     if (!column) {
-      throw new BadRequestException(
-        `Trường sắp xếp không hợp lệ: "${sortKey}"`,
-      )
+      throw new BadRequestException(`Trường sắp xếp không hợp lệ: "${sortKey}"`)
     }
     return column
   }
@@ -73,6 +75,21 @@ export class CrudService {
     const like = `%${search}%`
     const clauses = this.config.searchColumns.map((col) => ilike(col, like))
     return or(...clauses)
+  }
+
+  private async projectRow(
+    row: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    return this.config.toResponse ? await this.config.toResponse(row) : row
+  }
+
+  private async assertWriteAllowed(
+    operation: CrudWriteOperation,
+    user: AuthenticatedUser,
+    dto?: Record<string, unknown>,
+    id?: string,
+  ): Promise<void> {
+    await this.config.writeGuard?.({ operation, user, dto, id })
   }
 
   async list(
@@ -117,8 +134,12 @@ export class CrudService {
       ? await countQuery.where(whereClause)
       : await countQuery
 
+    const data = await Promise.all(
+      (rows as Record<string, unknown>[]).map((row) => this.projectRow(row)),
+    )
+
     return {
-      data: rows as Record<string, unknown>[],
+      data,
       total: count,
       page: params.page,
       pageSize: params.pageSize,
@@ -143,7 +164,7 @@ export class CrudService {
     if (!row) {
       throw new NotFoundException(this.config.notFoundMessage(id))
     }
-    return row as Record<string, unknown>
+    return this.projectRow(row as Record<string, unknown>)
   }
 
   /** The stamped-row property key for the branch column. Drizzle rows are keyed
@@ -185,9 +206,10 @@ export class CrudService {
     dto: Record<string, unknown>,
     user: AuthenticatedUser,
   ): Promise<Record<string, unknown>> {
+    await this.assertWriteAllowed('create', user, dto)
     const now = new Date()
     const stamped = this.config.stampCreate
-      ? this.config.stampCreate(dto, { user })
+      ? await this.config.stampCreate(dto, { user })
       : dto
     const row = {
       ...stamped,
@@ -197,11 +219,15 @@ export class CrudService {
     }
     // Gate 4 on the WRITE path: a cn-1 user cannot POST a row into cn-2.
     this.assertBranchWritable(row, user)
-    const [inserted] = await this.db
-      .insert(this.config.table)
-      .values(row)
-      .returning()
-    return inserted as Record<string, unknown>
+    try {
+      const [inserted] = await this.db
+        .insert(this.config.table)
+        .values(row)
+        .returning()
+      return this.projectRow(inserted as Record<string, unknown>)
+    } catch (error) {
+      rethrowDatabaseWriteError(error, 'create', this.config)
+    }
   }
 
   async update(
@@ -209,26 +235,36 @@ export class CrudService {
     dto: Record<string, unknown>,
     user: AuthenticatedUser,
   ): Promise<Record<string, unknown>> {
+    await this.assertWriteAllowed('update', user, dto, id)
     // Read-scoped existence check first so a branch-forged update on another
     // branch's row 404s instead of silently succeeding or leaking a 403.
     await this.get(id, user)
     // Branch predicate on the write ITSELF (not just the prior read) — closes
     // the TOCTOU window and stays correct if branchId ever becomes mutable.
-    const [updated] = await this.db
-      .update(this.config.table)
-      .set({ ...dto, updatedAt: new Date() })
-      .where(this.scopedRowCondition(id, user))
-      .returning()
-    if (!updated) {
-      throw new NotFoundException(this.config.notFoundMessage(id))
+    try {
+      const [updated] = await this.db
+        .update(this.config.table)
+        .set({ ...dto, updatedAt: new Date() })
+        .where(this.scopedRowCondition(id, user))
+        .returning()
+      if (!updated) {
+        throw new NotFoundException(this.config.notFoundMessage(id))
+      }
+      return this.projectRow(updated as Record<string, unknown>)
+    } catch (error) {
+      rethrowDatabaseWriteError(error, 'update', this.config)
     }
-    return updated as Record<string, unknown>
   }
 
   async remove(id: string, user: AuthenticatedUser): Promise<void> {
+    await this.assertWriteAllowed('delete', user, undefined, id)
     await this.get(id, user)
-    await this.db
-      .delete(this.config.table)
-      .where(this.scopedRowCondition(id, user))
+    try {
+      await this.db
+        .delete(this.config.table)
+        .where(this.scopedRowCondition(id, user))
+    } catch (error) {
+      rethrowDatabaseWriteError(error, 'delete', this.config)
+    }
   }
 }

@@ -1,0 +1,178 @@
+[
+  {
+    "id": "px-1",
+    "tenPhuongXa": "Phường Tân Lợi",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-bmt",
+    "khoangCach": 37,
+    "tienCong": 200000,
+    "tuyenId": "tuyen-01",
+    "active": true,
+    "createdAt": "2023-12-31T17:00:00.000Z"
+  },
+  {
+    "id": "px-2",
+    "tenPhuongXa": "Phường Thắng Lợi",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-bmt",
+    "khoangCach": 15,
+    "tienCong": 350000,
+    "tuyenId": "tuyen-01",
+    "active": true,
+    "createdAt": "2024-01-01T17:00:00.000Z"
+  },
+  {
+    "id": "px-3",
+    "tenPhuongXa": "Phường Ea Tam",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-bmt",
+    "khoangCach": 35,
+    "tienCong": 350000,
+    "tuyenId": "tuyen-01",
+    "active": true,
+    "createdAt": "2024-01-02T17:00:00.000Z"
+  },
+  {
+    "id": "px-4",
+    "tenPhuongXa": "Phường Tự An",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-bmt",
+    "khoangCach": 10,
+    "tienCong": 50000,
+    "tuyenId": "tuyen-01",
+    "active": true,
+    "createdAt": "2024-01-03T17:00:00.000Z"
+  },
+  {
+    "id": "px-5",
+    "tenPhuongXa": "Phường Khánh Xuân",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-bmt",
+    "khoangCach": 15,
+    "tienCong": 350000,
+    "tuyenId": "tuyen-01",
+    "active": true,
+    "createdAt": "2024-01-04T17:00:00.000Z"
+  },
+  {
+    "id": "px-6",
+    "tenPhuongXa": "Thị trấn Ea Drăng",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-ea-hleo",
+    "khoangCach": 45,
+    "tienCong": 300000,
+    "tuyenId": "tuyen-02",
+    "active": true,
+    "createdAt": "2024-01-05T17:00:00.000Z"
+  },
+  {
+    "id": "px-7",
+    "tenPhuongXa": "Xã Ea H'Leo",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-ea-hleo",
+    "khoangCach": 10,
+    "tienCong": 200000,
+    "tuyenId": "tuyen-02",
+    "active": true,
+    "createdAt": "2024-01-06T17:00:00.000Z"
+  },
+  {
+    "id": "px-8",
+    "tenPhuongXa": "Thị trấn Quảng Phú",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-cu-mgar",
+    "khoangCach": 23,
+    "tienCong": 150000,
+    "tuyenId": "tuyen-03",
+    "active": true,
+    "createdAt": "2024-01-07T17:00:00.000Z"
+  },
+  {
+    "id": "px-9",
+    "tenPhuongXa": "Xã Ea Pốk",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-cu-mgar",
+    "khoangCach": 36,
+    "tienCong": 50000,
+    "tuyenId": "tuyen-03",
+    "active": true,
+    "createdAt": "2024-01-08T17:00:00.000Z"
+  },
+  {
+    "id": "px-10",
+    "tenPhuongXa": "Phường Nghĩa Phú",
+    "tinhId": "tinh-dak-nong",
+    "quanId": "quan-gia-nghia",
+    "khoangCach": 15,
+    "tienCong": 300000,
+    "tuyenId": "tuyen-04",
+    "active": true,
+    "createdAt": "2024-01-09T17:00:00.000Z"
+  },
+  {
+    "id": "px-11",
+    "tenPhuongXa": "Phường Nghĩa Đức",
+    "tinhId": "tinh-dak-nong",
+    "quanId": "quan-gia-nghia",
+    "khoangCach": 43,
+    "tienCong": 150000,
+    "tuyenId": "tuyen-04",
+    "active": true,
+    "createdAt": "2024-01-10T17:00:00.000Z"
+  },
+  {
+    "id": "px-12",
+    "tenPhuongXa": "Phường Nghĩa Xuân",
+    "tinhId": "tinh-dak-nong",
+    "quanId": "quan-gia-nghia",
+    "khoangCach": 27,
+    "tienCong": 400000,
+    "tuyenId": "tuyen-04",
+    "active": true,
+    "createdAt": "2024-01-11T17:00:00.000Z"
+  },
+  {
+    "id": "px-13",
+    "tenPhuongXa": "Thị trấn Kiến Đức",
+    "tinhId": "tinh-dak-nong",
+    "quanId": "quan-dak-rlap",
+    "khoangCach": 33,
+    "tienCong": 50000,
+    "tuyenId": "tuyen-05",
+    "active": true,
+    "createdAt": "2024-01-12T17:00:00.000Z"
+  },
+  {
+    "id": "px-14",
+    "tenPhuongXa": "Xã Đắk R'Moan",
+    "tinhId": "tinh-dak-nong",
+    "quanId": "quan-dak-rlap",
+    "khoangCach": 3,
+    "tienCong": 100000,
+    "tuyenId": "tuyen-05",
+    "active": true,
+    "createdAt": "2024-01-13T17:00:00.000Z"
+  },
+  {
+    "id": "px-15",
+    "tenPhuongXa": "Thị trấn Ea T'Ling",
+    "tinhId": "tinh-dak-nong",
+    "quanId": "quan-cu-jut",
+    "khoangCach": 44,
+    "tienCong": 150000,
+    "tuyenId": "tuyen-06",
+    "active": true,
+    "createdAt": "2024-01-14T17:00:00.000Z"
+  },
+  {
+    "id": "px-16",
+    "tenPhuongXa": "Xã Tâm Thắng",
+    "tinhId": "tinh-dak-nong",
+    "quanId": "quan-cu-jut",
+    "khoangCach": 37,
+    "tienCong": 400000,
+    "tuyenId": "tuyen-06",
+    "active": true,
+    "createdAt": "2024-01-15T17:00:00.000Z"
+  }
+]

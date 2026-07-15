@@ -1,0 +1,115 @@
+[
+  {
+    "id": "ngc-1",
+    "tenNgan": "Ngăn A1",
+    "nhaKhoId": "nk-2",
+    "active": false,
+    "createdAt": "2026-02-10T13:39:43.380Z"
+  },
+  {
+    "id": "ngc-2",
+    "tenNgan": "Ngăn A2",
+    "nhaKhoId": "nk-4",
+    "active": true,
+    "createdAt": "2026-04-01T14:31:11.677Z"
+  },
+  {
+    "id": "ngc-3",
+    "tenNgan": "Ngăn A3",
+    "nhaKhoId": "nk-2",
+    "active": true,
+    "createdAt": "2026-05-10T18:01:23.125Z"
+  },
+  {
+    "id": "ngc-4",
+    "tenNgan": "Ngăn B1",
+    "nhaKhoId": "nk-5",
+    "active": true,
+    "createdAt": "2026-05-27T20:27:05.014Z"
+  },
+  {
+    "id": "ngc-5",
+    "tenNgan": "Ngăn B2",
+    "nhaKhoId": "nk-2",
+    "active": true,
+    "createdAt": "2025-07-17T13:34:07.706Z"
+  },
+  {
+    "id": "ngc-6",
+    "tenNgan": "Ngăn B3",
+    "nhaKhoId": "nk-3",
+    "active": true,
+    "createdAt": "2025-12-28T05:34:55.975Z"
+  },
+  {
+    "id": "ngc-7",
+    "tenNgan": "Ngăn C1",
+    "nhaKhoId": "nk-2",
+    "active": true,
+    "createdAt": "2025-06-16T22:06:23.327Z"
+  },
+  {
+    "id": "ngc-8",
+    "tenNgan": "Ngăn C2",
+    "nhaKhoId": "nk-3",
+    "active": true,
+    "createdAt": "2025-08-17T10:00:24.458Z"
+  },
+  {
+    "id": "ngc-9",
+    "tenNgan": "Ngăn D1",
+    "nhaKhoId": "nk-5",
+    "active": true,
+    "createdAt": "2026-04-02T17:14:32.924Z",
+    "updatedAt": "2026-06-27T01:06:48.516Z"
+  },
+  {
+    "id": "ngc-10",
+    "tenNgan": "Ngăn D2",
+    "nhaKhoId": "nk-3",
+    "active": true,
+    "createdAt": "2025-10-20T06:57:57.351Z"
+  },
+  {
+    "id": "ngc-11",
+    "tenNgan": "Ngăn E1",
+    "nhaKhoId": "nk-5",
+    "active": true,
+    "createdAt": "2025-07-27T05:15:47.851Z"
+  },
+  {
+    "id": "ngc-12",
+    "tenNgan": "Ngăn E2",
+    "nhaKhoId": "nk-2",
+    "active": true,
+    "createdAt": "2025-10-02T19:01:05.353Z"
+  },
+  {
+    "id": "ngc-13",
+    "tenNgan": "Ngăn F1",
+    "nhaKhoId": "nk-4",
+    "active": true,
+    "createdAt": "2026-01-29T03:12:35.563Z"
+  },
+  {
+    "id": "ngc-14",
+    "tenNgan": "Ngăn F2",
+    "nhaKhoId": "nk-1",
+    "active": true,
+    "createdAt": "2025-09-14T19:02:11.662Z"
+  },
+  {
+    "id": "ngc-15",
+    "tenNgan": "Ngăn G1",
+    "nhaKhoId": "nk-5",
+    "active": true,
+    "createdAt": "2025-11-26T14:56:33.615Z"
+  },
+  {
+    "id": "ngc-16",
+    "tenNgan": "Ngăn G2",
+    "nhaKhoId": "nk-2",
+    "active": true,
+    "createdAt": "2026-05-12T14:03:24.375Z"
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "kv-1",
+    "tenKhuVuc": "Tuyến Tp. Buôn Ma Thuột",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-bmt",
+    "xaId": "xa-tan-loi",
+    "caySo": 17,
+    "tienCong": 150000,
+    "tienCong2": 150000,
+    "active": true,
+    "createdAt": "2023-12-31T17:00:00.000Z"
+  },
+  {
+    "id": "kv-2",
+    "tenKhuVuc": "Tuyến Ea H'Leo",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-ea-hleo",
+    "xaId": "xa-ea-drang",
+    "caySo": 39,
+    "tienCong": 100000,
+    "tienCong2": 300000,
+    "active": true,
+    "createdAt": "2024-01-01T17:00:00.000Z"
+  },
+  {
+    "id": "kv-3",
+    "tenKhuVuc": "Tuyến Cư M'gar",
+    "tinhId": "tinh-dak-lak",
+    "quanId": "quan-cu-mgar",
+    "xaId": "xa-quang-phu",
+    "caySo": 12,
+    "tienCong": 200000,
+    "tienCong2": 250000,
+    "active": true,
+    "createdAt": "2024-01-02T17:00:00.000Z"
+  },
+  {
+    "id": "kv-4",
+    "tenKhuVuc": "Tuyến Tp. Gia Nghĩa",
+    "tinhId": "tinh-dak-nong",
+    "quanId": "quan-gia-nghia",
+    "xaId": "xa-nghia-phu",
+    "caySo": 6,
+    "tienCong": 150000,
+    "tienCong2": 150000,
+    "active": true,
+    "createdAt": "2024-01-03T17:00:00.000Z"
+  },
+  {
+    "id": "kv-5",
+    "tenKhuVuc": "Tuyến Đắk R'Lấp",
+    "tinhId": "tinh-dak-nong",
+    "quanId": "quan-dak-rlap",
+    "xaId": "xa-kien-duc",
+    "caySo": 26,
+    "tienCong": 200000,
+    "tienCong2": 350000,
+    "active": true,
+    "createdAt": "2024-01-04T17:00:00.000Z"
+  },
+  {
+    "id": "kv-6",
+    "tenKhuVuc": "Tuyến Cư Jút",
+    "tinhId": "tinh-dak-nong",
+    "quanId": "quan-cu-jut",
+    "xaId": "xa-ea-tling",
+    "caySo": 28,
+    "tienCong": 300000,
+    "tienCong2": 150000,
+    "active": true,
+    "createdAt": "2024-01-05T17:00:00.000Z"
+  }
+]

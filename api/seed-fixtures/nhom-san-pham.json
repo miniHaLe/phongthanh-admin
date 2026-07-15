@@ -1,0 +1,75 @@
+[
+  {
+    "id": "nhomsp-1",
+    "tenNhomSP": "Điện thoại thông minh",
+    "active": true,
+    "createdAt": "2026-04-16T10:36:39.342Z"
+  },
+  {
+    "id": "nhomsp-2",
+    "tenNhomSP": "Máy tính bảng",
+    "active": true,
+    "createdAt": "2025-08-02T22:27:56.899Z"
+  },
+  {
+    "id": "nhomsp-3",
+    "tenNhomSP": "Laptop",
+    "active": false,
+    "createdAt": "2026-05-23T00:58:15.002Z"
+  },
+  {
+    "id": "nhomsp-4",
+    "tenNhomSP": "Đồng hồ thông minh",
+    "active": true,
+    "createdAt": "2026-05-13T09:19:35.128Z"
+  },
+  {
+    "id": "nhomsp-5",
+    "tenNhomSP": "Tai nghe không dây",
+    "active": true,
+    "createdAt": "2026-02-08T04:40:21.541Z"
+  },
+  {
+    "id": "nhomsp-6",
+    "tenNhomSP": "Loa bluetooth",
+    "active": true,
+    "createdAt": "2025-07-25T19:12:42.650Z"
+  },
+  {
+    "id": "nhomsp-7",
+    "tenNhomSP": "Pin sạc dự phòng",
+    "active": false,
+    "createdAt": "2026-05-04T19:36:57.803Z"
+  },
+  {
+    "id": "nhomsp-8",
+    "tenNhomSP": "Cáp sạc",
+    "active": true,
+    "createdAt": "2025-07-18T08:17:05.802Z"
+  },
+  {
+    "id": "nhomsp-9",
+    "tenNhomSP": "Ốp lưng",
+    "active": true,
+    "createdAt": "2026-03-20T11:31:15.447Z"
+  },
+  {
+    "id": "nhomsp-10",
+    "tenNhomSP": "Kính cường lực",
+    "active": true,
+    "createdAt": "2026-02-21T07:10:10.533Z"
+  },
+  {
+    "id": "nhomsp-11",
+    "tenNhomSP": "Bàn phím",
+    "active": true,
+    "createdAt": "2025-07-05T20:06:21.308Z"
+  },
+  {
+    "id": "nhomsp-12",
+    "tenNhomSP": "Chuột máy tính",
+    "active": true,
+    "createdAt": "2025-08-23T07:54:08.505Z",
+    "updatedAt": "2026-05-18T02:19:17.609Z"
+  }
+]

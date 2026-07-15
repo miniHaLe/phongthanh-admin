@@ -1,0 +1,197 @@
+[
+  {
+    "id": "sp-1",
+    "maSP": "SP0001",
+    "tenSP": "iPhone 15",
+    "nhomSanPhamId": "nhomsp-1",
+    "tienKhoan": 100000,
+    "active": true,
+    "createdAt": "2025-12-06T08:21:38.289Z"
+  },
+  {
+    "id": "sp-2",
+    "maSP": "SP0002",
+    "tenSP": "iPhone 14",
+    "nhomSanPhamId": "nhomsp-1",
+    "tienKhoan": 170000,
+    "active": true,
+    "createdAt": "2025-07-24T08:37:21.667Z"
+  },
+  {
+    "id": "sp-3",
+    "maSP": "SP0003",
+    "tenSP": "Galaxy S24",
+    "nhomSanPhamId": "nhomsp-1",
+    "tienKhoan": 40000,
+    "active": true,
+    "createdAt": "2026-01-30T03:08:54.723Z"
+  },
+  {
+    "id": "sp-4",
+    "maSP": "SP0004",
+    "tenSP": "Galaxy A54",
+    "nhomSanPhamId": "nhomsp-1",
+    "tienKhoan": 20000,
+    "active": true,
+    "createdAt": "2025-11-16T11:09:13.949Z"
+  },
+  {
+    "id": "sp-5",
+    "maSP": "SP0005",
+    "tenSP": "Xiaomi 14",
+    "nhomSanPhamId": "nhomsp-1",
+    "tienKhoan": 170000,
+    "active": true,
+    "createdAt": "2026-07-10T16:17:30.901Z",
+    "updatedAt": "2026-07-05T03:02:45.148Z"
+  },
+  {
+    "id": "sp-6",
+    "maSP": "SP0006",
+    "tenSP": "Redmi Note 13",
+    "nhomSanPhamId": "nhomsp-1",
+    "tienKhoan": 190000,
+    "active": false,
+    "createdAt": "2025-06-26T15:40:22.612Z"
+  },
+  {
+    "id": "sp-7",
+    "maSP": "SP0007",
+    "tenSP": "Oppo Reno 11",
+    "nhomSanPhamId": "nhomsp-1",
+    "tienKhoan": 190000,
+    "active": true,
+    "createdAt": "2025-10-07T01:35:46.765Z"
+  },
+  {
+    "id": "sp-8",
+    "tenSP": "Vivo Y36",
+    "nhomSanPhamId": "nhomsp-1",
+    "active": true,
+    "createdAt": "2026-03-25T23:44:41.357Z"
+  },
+  {
+    "id": "sp-9",
+    "maSP": "SP0009",
+    "tenSP": "iPad Air",
+    "nhomSanPhamId": "nhomsp-2",
+    "active": true,
+    "createdAt": "2026-03-13T11:51:37.054Z"
+  },
+  {
+    "id": "sp-10",
+    "maSP": "SP0010",
+    "tenSP": "iPad Pro",
+    "nhomSanPhamId": "nhomsp-2",
+    "active": true,
+    "createdAt": "2026-02-01T05:22:50.836Z",
+    "updatedAt": "2026-05-26T21:23:55.695Z"
+  },
+  {
+    "id": "sp-11",
+    "maSP": "SP0011",
+    "tenSP": "Galaxy Tab S9",
+    "nhomSanPhamId": "nhomsp-2",
+    "active": true,
+    "createdAt": "2026-03-23T02:56:08.334Z",
+    "updatedAt": "2026-07-01T23:26:29.081Z"
+  },
+  {
+    "id": "sp-12",
+    "maSP": "SP0012",
+    "tenSP": "Xiaomi Pad 6",
+    "nhomSanPhamId": "nhomsp-2",
+    "active": false,
+    "createdAt": "2025-12-15T01:42:53.918Z"
+  },
+  {
+    "id": "sp-13",
+    "maSP": "SP0013",
+    "tenSP": "MacBook Air M3",
+    "nhomSanPhamId": "nhomsp-3",
+    "tienKhoan": 130000,
+    "active": true,
+    "createdAt": "2026-04-25T07:19:05.266Z",
+    "updatedAt": "2026-06-26T08:00:51.361Z"
+  },
+  {
+    "id": "sp-14",
+    "maSP": "SP0014",
+    "tenSP": "MacBook Pro M3",
+    "nhomSanPhamId": "nhomsp-3",
+    "active": true,
+    "createdAt": "2025-11-07T08:37:12.143Z"
+  },
+  {
+    "id": "sp-15",
+    "tenSP": "Galaxy Book 4",
+    "nhomSanPhamId": "nhomsp-3",
+    "tienKhoan": 120000,
+    "active": true,
+    "createdAt": "2026-02-08T06:39:26.759Z"
+  },
+  {
+    "id": "sp-16",
+    "maSP": "SP0016",
+    "tenSP": "IdeaPad 5",
+    "nhomSanPhamId": "nhomsp-3",
+    "tienKhoan": 190000,
+    "active": true,
+    "createdAt": "2026-06-19T07:55:14.690Z"
+  },
+  {
+    "id": "sp-17",
+    "maSP": "SP0017",
+    "tenSP": "Apple Watch Series 9",
+    "nhomSanPhamId": "nhomsp-4",
+    "active": true,
+    "createdAt": "2025-11-09T16:20:41.913Z"
+  },
+  {
+    "id": "sp-18",
+    "maSP": "SP0018",
+    "tenSP": "Galaxy Watch 6",
+    "nhomSanPhamId": "nhomsp-4",
+    "tienKhoan": 60000,
+    "active": true,
+    "createdAt": "2025-09-30T15:33:15.567Z"
+  },
+  {
+    "id": "sp-19",
+    "maSP": "SP0019",
+    "tenSP": "Xiaomi Watch S3",
+    "nhomSanPhamId": "nhomsp-4",
+    "tienKhoan": 20000,
+    "active": true,
+    "createdAt": "2026-04-18T10:48:48.106Z",
+    "updatedAt": "2026-06-26T07:35:20.467Z"
+  },
+  {
+    "id": "sp-20",
+    "tenSP": "AirPods Pro",
+    "nhomSanPhamId": "nhomsp-5",
+    "tienKhoan": 140000,
+    "active": true,
+    "createdAt": "2026-05-07T15:19:38.825Z"
+  },
+  {
+    "id": "sp-21",
+    "maSP": "SP0021",
+    "tenSP": "Galaxy Buds 2",
+    "nhomSanPhamId": "nhomsp-5",
+    "tienKhoan": 130000,
+    "active": true,
+    "createdAt": "2025-07-10T13:16:59.041Z",
+    "updatedAt": "2026-06-23T10:21:18.719Z"
+  },
+  {
+    "id": "sp-22",
+    "maSP": "SP0022",
+    "tenSP": "Xiaomi Buds 4",
+    "nhomSanPhamId": "nhomsp-5",
+    "tienKhoan": 30000,
+    "active": true,
+    "createdAt": "2025-09-15T05:25:56.483Z",
+    "updatedAt": "2026-07-10T07:34:38.572Z"
+  }
+]

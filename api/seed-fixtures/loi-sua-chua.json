@@ -1,0 +1,362 @@
+[
+  {
+    "id": "lsc-1",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-dienthoai",
+    "tenLoi": "Thay loa",
+    "tienCong": 350000,
+    "tienCongDV": 200000,
+    "active": true,
+    "createdAt": "2023-12-31T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-2",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-dienthoai",
+    "tenLoi": "Sửa nguồn",
+    "tienCong": 300000,
+    "tienCongDV": 100000,
+    "active": true,
+    "createdAt": "2024-01-01T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-3",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-dienthoai",
+    "tenLoi": "Thay camera",
+    "tienCong": 450000,
+    "tienCongDV": 50000,
+    "active": true,
+    "createdAt": "2024-01-02T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-4",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-maytinhbang",
+    "tenLoi": "Thay màn hình",
+    "tienCong": 450000,
+    "tienCongDV": 100000,
+    "active": true,
+    "createdAt": "2024-01-03T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-5",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-maytinhbang",
+    "tenLoi": "Sửa nguồn",
+    "tienCong": 200000,
+    "tienCongDV": 250000,
+    "active": true,
+    "createdAt": "2024-01-04T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-6",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-dongho",
+    "tenLoi": "Sửa main",
+    "tienCong": 150000,
+    "tienCongDV": 50000,
+    "active": true,
+    "createdAt": "2024-01-05T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-7",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-dongho",
+    "tenLoi": "Thay màn hình",
+    "tienCong": 50000,
+    "tienCongDV": 50000,
+    "active": true,
+    "createdAt": "2024-01-06T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-8",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-taiphone",
+    "tenLoi": "Thay màn hình",
+    "tienCong": 400000,
+    "tienCongDV": 0,
+    "active": true,
+    "createdAt": "2024-01-07T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-9",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-taiphone",
+    "tenLoi": "Sửa main",
+    "tienCong": 250000,
+    "tienCongDV": 200000,
+    "active": true,
+    "createdAt": "2024-01-08T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-10",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-taiphone",
+    "tenLoi": "Sửa nguồn",
+    "tienCong": 450000,
+    "tienCongDV": 0,
+    "active": true,
+    "createdAt": "2024-01-09T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-11",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-phuongkien",
+    "tenLoi": "Thay camera",
+    "tienCong": 500000,
+    "tienCongDV": 100000,
+    "active": true,
+    "createdAt": "2024-01-10T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-12",
+    "branchId": "cn-1",
+    "nhomSanPhamId": "nsp-phuongkien",
+    "tenLoi": "Thay cảm biến",
+    "tienCong": 450000,
+    "tienCongDV": 250000,
+    "active": true,
+    "createdAt": "2024-01-11T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-13",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-dienthoai",
+    "tenLoi": "Vệ sinh máy",
+    "tienCong": 450000,
+    "tienCongDV": 300000,
+    "active": true,
+    "createdAt": "2024-01-12T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-14",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-dienthoai",
+    "tenLoi": "Sửa nguồn",
+    "tienCong": 500000,
+    "tienCongDV": 250000,
+    "active": true,
+    "createdAt": "2024-01-13T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-15",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-dienthoai",
+    "tenLoi": "Thay camera",
+    "tienCong": 400000,
+    "tienCongDV": 250000,
+    "active": true,
+    "createdAt": "2024-01-14T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-16",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-maytinhbang",
+    "tenLoi": "Sửa main",
+    "tienCong": 500000,
+    "tienCongDV": 100000,
+    "active": true,
+    "createdAt": "2024-01-15T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-17",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-maytinhbang",
+    "tenLoi": "Thay camera",
+    "tienCong": 450000,
+    "tienCongDV": 250000,
+    "active": true,
+    "createdAt": "2024-01-16T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-18",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-dongho",
+    "tenLoi": "Thay cảm biến",
+    "tienCong": 100000,
+    "tienCongDV": 100000,
+    "active": true,
+    "createdAt": "2024-01-17T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-19",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-dongho",
+    "tenLoi": "Vệ sinh máy",
+    "tienCong": 400000,
+    "tienCongDV": 100000,
+    "active": true,
+    "createdAt": "2024-01-18T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-20",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-taiphone",
+    "tenLoi": "Thay camera",
+    "tienCong": 300000,
+    "tienCongDV": 300000,
+    "active": true,
+    "createdAt": "2024-01-19T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-21",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-taiphone",
+    "tenLoi": "Sửa main",
+    "tienCong": 500000,
+    "tienCongDV": 0,
+    "active": true,
+    "createdAt": "2024-01-20T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-22",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-phuongkien",
+    "tenLoi": "Thay camera",
+    "tienCong": 350000,
+    "tienCongDV": 150000,
+    "active": true,
+    "createdAt": "2024-01-21T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-23",
+    "branchId": "cn-2",
+    "nhomSanPhamId": "nsp-phuongkien",
+    "tenLoi": "Thay cảm biến",
+    "tienCong": 150000,
+    "tienCongDV": 100000,
+    "active": true,
+    "createdAt": "2024-01-22T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-24",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-dienthoai",
+    "tenLoi": "Thay màn hình",
+    "tienCong": 450000,
+    "tienCongDV": 250000,
+    "active": true,
+    "createdAt": "2024-01-23T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-25",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-dienthoai",
+    "tenLoi": "Vệ sinh máy",
+    "tienCong": 50000,
+    "tienCongDV": 300000,
+    "active": true,
+    "createdAt": "2024-01-24T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-26",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-dienthoai",
+    "tenLoi": "Thay pin",
+    "tienCong": 500000,
+    "tienCongDV": 0,
+    "active": true,
+    "createdAt": "2024-01-25T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-27",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-maytinhbang",
+    "tenLoi": "Thay cảm biến",
+    "tienCong": 250000,
+    "tienCongDV": 100000,
+    "active": true,
+    "createdAt": "2024-01-26T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-28",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-maytinhbang",
+    "tenLoi": "Sửa main",
+    "tienCong": 150000,
+    "tienCongDV": 300000,
+    "active": true,
+    "createdAt": "2024-01-27T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-29",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-dongho",
+    "tenLoi": "Thay camera",
+    "tienCong": 300000,
+    "tienCongDV": 300000,
+    "active": true,
+    "createdAt": "2024-01-28T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-30",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-dongho",
+    "tenLoi": "Thay cảm biến",
+    "tienCong": 400000,
+    "tienCongDV": 200000,
+    "active": true,
+    "createdAt": "2024-01-29T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-31",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-taiphone",
+    "tenLoi": "Thay loa",
+    "tienCong": 450000,
+    "tienCongDV": 150000,
+    "active": true,
+    "createdAt": "2024-01-30T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-32",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-taiphone",
+    "tenLoi": "Vệ sinh máy",
+    "tienCong": 300000,
+    "tienCongDV": 300000,
+    "active": true,
+    "createdAt": "2024-01-31T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-33",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-taiphone",
+    "tenLoi": "Thay màn hình",
+    "tienCong": 450000,
+    "tienCongDV": 250000,
+    "active": true,
+    "createdAt": "2024-02-01T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-34",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-phuongkien",
+    "tenLoi": "Vệ sinh máy",
+    "tienCong": 450000,
+    "tienCongDV": 0,
+    "active": true,
+    "createdAt": "2024-02-02T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-35",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-phuongkien",
+    "tenLoi": "Sửa main",
+    "tienCong": 350000,
+    "tienCongDV": 0,
+    "active": true,
+    "createdAt": "2024-02-03T17:00:00.000Z"
+  },
+  {
+    "id": "lsc-36",
+    "branchId": "cn-3",
+    "nhomSanPhamId": "nsp-phuongkien",
+    "tenLoi": "Sửa nguồn",
+    "tienCong": 100000,
+    "tienCongDV": 250000,
+    "active": true,
+    "createdAt": "2024-02-04T17:00:00.000Z"
+  }
+]

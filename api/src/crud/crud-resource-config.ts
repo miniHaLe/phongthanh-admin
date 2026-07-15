@@ -13,6 +13,14 @@ export interface CrudContext {
   user: AuthenticatedUser
 }
 
+export type CrudWriteOperation = 'create' | 'update' | 'delete'
+
+export interface CrudWriteContext extends CrudContext {
+  operation: CrudWriteOperation
+  id?: string
+  dto?: Record<string, unknown>
+}
+
 /**
  * Declarative per-resource wiring for the generic CRUD engine. Every field
  * here IS the security gate: only columns listed in `sortableColumns` /
@@ -51,5 +59,15 @@ export interface CrudResourceConfig {
   stampCreate?: (
     dto: Record<string, unknown>,
     ctx: CrudContext,
-  ) => Record<string, unknown>
+  ) => Record<string, unknown> | Promise<Record<string, unknown>>
+  /** Projects a selected/inserted row before it crosses the HTTP boundary. */
+  toResponse?: (
+    row: Record<string, unknown>,
+  ) => Record<string, unknown> | Promise<Record<string, unknown>>
+  /** Resource-level write gate used for temporary coarse authorization. */
+  writeGuard?: (ctx: CrudWriteContext) => void | Promise<void>
+  /** Vietnamese message returned when Postgres rejects a unique value. */
+  uniqueViolationMessage?: string
+  /** Optional resource-specific message for an invalid/in-use foreign key. */
+  foreignKeyViolationMessage?: string
 }

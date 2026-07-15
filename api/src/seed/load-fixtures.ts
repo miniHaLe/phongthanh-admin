@@ -99,6 +99,126 @@ export interface KhachHangFixture {
   updatedAt?: string
 }
 
+interface BaseMasterdataFixture {
+  id: string
+  active: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface DonViTinhFixture extends BaseMasterdataFixture {
+  tenDVT: string
+}
+
+export interface NhomSanPhamFixture extends BaseMasterdataFixture {
+  tenNhomSP: string
+}
+
+export interface NhomHangHoaFixture extends BaseMasterdataFixture {
+  maNhom?: string
+  tenNhom: string
+}
+
+export interface NhaSanXuatFixture extends BaseMasterdataFixture {
+  maNSX?: string
+  tenNSX: string
+  ghiChu?: string
+}
+
+export interface ThoiHanFixture extends BaseMasterdataFixture {
+  ten: string
+  loai: 'Tháng' | 'Năm'
+  thoiGian: number
+}
+
+export interface NhaKhoFixture extends BaseMasterdataFixture {
+  maNhaKho: string
+  tenNhaKho: string
+  chiNhanhId: string
+  diaChi?: string
+  khoXac: boolean
+}
+
+export interface PhuongXaFixture extends BaseMasterdataFixture {
+  tenPhuongXa: string
+  tinhId: string
+  quanId: string
+  khoangCach: number
+  tienCong: number
+  tuyenId?: string
+}
+
+export interface KhuVucFixture extends BaseMasterdataFixture {
+  tenKhuVuc: string
+  tinhId: string
+  quanId: string
+  xaId: string
+  caySo: number
+  tienCong: number
+  tienCong2: number
+}
+
+export interface LoiSuaChuaFixture extends BaseMasterdataFixture {
+  branchId: string
+  nhomSanPhamId: string
+  tenLoi: string
+  tienCong: number
+  tienCongDV: number
+}
+
+export interface NganChuaFixture extends BaseMasterdataFixture {
+  tenNgan: string
+  nhaKhoId: string
+}
+
+export interface SanPhamFixture extends BaseMasterdataFixture {
+  maSP?: string
+  tenSP: string
+  nhomSanPhamId: string
+  tienKhoan?: number
+}
+
+export interface ModelFixture extends BaseMasterdataFixture {
+  tenModel: string
+  maModel?: string
+  nhaSanXuatId: string
+  sanPhamId: string
+  nguoiTao: string
+  ghiChu?: string
+}
+
+export interface HangHoaFixture extends BaseMasterdataFixture {
+  maHH: string
+  maHHPhu?: string
+  tenHH: string
+  tenTiengAnh?: string
+  nhomHangHoaId: string
+  nhaSanXuatId?: string
+  modelId?: string
+  modelDungChung: boolean
+  modelDungChungText?: string
+  donViTinhId: string
+  coSerial: boolean
+  phatSinhTuDong: boolean
+  viTriLinhKien?: string
+  hinh?: string
+  giaMua?: number
+  giaBanSi?: number
+  giaBanLe?: number
+  nguoiTao: string
+  giaNhap?: number
+  giaBan?: number
+  tonKho: number
+}
+
+export interface PhiGiaoFixture extends BaseMasterdataFixture {
+  sanPhamId: string | null
+  tenPhi: string
+  soTien: number
+  loaiPhi: number
+  ghiChu?: string
+}
+
 export function loadFixtures() {
   return {
     chiNhanh: loadJson<ChiNhanhFixture[]>('chi-nhanh.json'),
@@ -109,5 +229,21 @@ export function loadFixtures() {
     nhomQuyen: loadJson<NhomQuyenFixture[]>('nhom-quyen.json'),
     nguoiDung: loadJson<NguoiDungFixture[]>('nguoi-dung.json'),
     khachHang: loadJson<KhachHangFixture[]>('khach-hang.json'),
+    donViTinh: loadJson<DonViTinhFixture[]>('don-vi-tinh.json'),
+    nhomSanPham: loadJson<NhomSanPhamFixture[]>('nhom-san-pham.json'),
+    nhomHangHoa: loadJson<NhomHangHoaFixture[]>('nhom-hang-hoa.json'),
+    nhaSanXuat: loadJson<NhaSanXuatFixture[]>('nha-san-xuat.json'),
+    thoiHan: loadJson<ThoiHanFixture[]>('thoi-han.json'),
+    nhaKho: loadJson<NhaKhoFixture[]>('nha-kho.json'),
+    phuongXa: loadJson<PhuongXaFixture[]>('phuong-xa.json'),
+    khuVuc: loadJson<KhuVucFixture[]>('khu-vuc.json'),
+    loiSuaChua: loadJson<LoiSuaChuaFixture[]>('loi-sua-chua.json'),
+    nganChua: loadJson<NganChuaFixture[]>('ngan-chua.json'),
+    sanPham: loadJson<SanPhamFixture[]>('san-pham.json'),
+    model: loadJson<ModelFixture[]>('model.json'),
+    hangHoa: loadJson<HangHoaFixture[]>('hang-hoa.json'),
+    phiGiao: loadJson<PhiGiaoFixture[]>('phi-giao.json'),
   }
 }
+
+export type SeedFixtures = ReturnType<typeof loadFixtures>

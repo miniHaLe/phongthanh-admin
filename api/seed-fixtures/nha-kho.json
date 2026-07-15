@@ -1,0 +1,52 @@
+[
+  {
+    "id": "nk-1",
+    "maNhaKho": "NK001",
+    "tenNhaKho": "Kho Chính BMT",
+    "chiNhanhId": "cn-1",
+    "diaChi": "10 Nguyễn Tất Thành, Buôn Ma Thuột",
+    "khoXac": false,
+    "active": true,
+    "createdAt": "2025-06-03T11:39:19.191Z"
+  },
+  {
+    "id": "nk-2",
+    "maNhaKho": "NK002",
+    "tenNhaKho": "Kho Phụ BMT",
+    "chiNhanhId": "cn-1",
+    "diaChi": "45 Lê Duẩn, Buôn Ma Thuột",
+    "khoXac": false,
+    "active": true,
+    "createdAt": "2025-03-27T00:09:11.360Z"
+  },
+  {
+    "id": "nk-3",
+    "maNhaKho": "NK003",
+    "tenNhaKho": "Kho Linh Kiện BMT",
+    "chiNhanhId": "cn-1",
+    "diaChi": "22 Trần Phú, Buôn Ma Thuột",
+    "khoXac": true,
+    "active": true,
+    "createdAt": "2025-08-25T07:57:06.557Z"
+  },
+  {
+    "id": "nk-4",
+    "maNhaKho": "NK004",
+    "tenNhaKho": "Kho Chính GN",
+    "chiNhanhId": "cn-2",
+    "diaChi": "8 Hùng Vương, Gia Nghĩa",
+    "khoXac": false,
+    "active": true,
+    "createdAt": "2025-03-27T20:39:20.443Z"
+  },
+  {
+    "id": "nk-5",
+    "maNhaKho": "NK005",
+    "tenNhaKho": "Kho Phụ GN",
+    "chiNhanhId": "cn-2",
+    "diaChi": "31 Đinh Tiên Hoàng, Gia Nghĩa",
+    "khoXac": true,
+    "active": true,
+    "createdAt": "2026-06-04T05:42:43.701Z"
+  }
+]

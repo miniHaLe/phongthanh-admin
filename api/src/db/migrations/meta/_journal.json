@@ -8,6 +8,13 @@
       "when": 1783433495425,
       "tag": "0000_omniscient_mesmero",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784105183889,
+      "tag": "0001_masterdata_catalogs",
+      "breakpoints": true
     }
   ]
 }

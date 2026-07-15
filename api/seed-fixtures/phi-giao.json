@@ -1,0 +1,374 @@
+[
+  {
+    "id": "pg-1",
+    "sanPhamId": "sp-quat-dien",
+    "tenPhi": "Phí giao QUẠT ĐIỆN",
+    "soTien": 20000,
+    "loaiPhi": 2,
+    "active": true,
+    "createdAt": "2023-12-31T17:00:00.000Z"
+  },
+  {
+    "id": "pg-2",
+    "sanPhamId": "sp-may-giat",
+    "tenPhi": "Phí giao MÁY GIẶT",
+    "soTien": 180000,
+    "loaiPhi": 2,
+    "active": true,
+    "createdAt": "2024-01-01T17:00:00.000Z"
+  },
+  {
+    "id": "pg-3",
+    "sanPhamId": "sp-binh-dun-sieu-toc",
+    "tenPhi": "Phí giao BÌNH ĐUN SIÊU TỐC",
+    "soTien": 180000,
+    "loaiPhi": 3,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-01-02T17:00:00.000Z"
+  },
+  {
+    "id": "pg-4",
+    "sanPhamId": "sp-may-lam-mat",
+    "tenPhi": "Phí giao MÁY LÀM MÁT",
+    "soTien": 100000,
+    "loaiPhi": 1,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-01-03T17:00:00.000Z"
+  },
+  {
+    "id": "pg-5",
+    "sanPhamId": "sp-tu-lanh",
+    "tenPhi": "Phí giao TỦ LẠNH",
+    "soTien": 200000,
+    "loaiPhi": 1,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-01-04T17:00:00.000Z"
+  },
+  {
+    "id": "pg-6",
+    "sanPhamId": "sp-tu-lanh",
+    "tenPhi": "Phí giao TỦ LẠNH",
+    "soTien": 180000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-05T17:00:00.000Z"
+  },
+  {
+    "id": "pg-7",
+    "sanPhamId": "sp-may-nuoc-nong",
+    "tenPhi": "Phí giao MÁY NƯỚC NÓNG",
+    "soTien": 40000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-06T17:00:00.000Z"
+  },
+  {
+    "id": "pg-8",
+    "sanPhamId": "sp-may-giat",
+    "tenPhi": "Phí giao MÁY GIẶT",
+    "soTien": 200000,
+    "loaiPhi": 2,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-01-07T17:00:00.000Z"
+  },
+  {
+    "id": "pg-9",
+    "sanPhamId": "sp-may-nuoc-nong",
+    "tenPhi": "Phí giao MÁY NƯỚC NÓNG",
+    "soTien": 20000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-08T17:00:00.000Z"
+  },
+  {
+    "id": "pg-10",
+    "sanPhamId": "sp-binh-dun-sieu-toc",
+    "tenPhi": "Phí giao BÌNH ĐUN SIÊU TỐC",
+    "soTien": 60000,
+    "loaiPhi": 2,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-01-09T17:00:00.000Z"
+  },
+  {
+    "id": "pg-11",
+    "sanPhamId": "sp-may-hut-mui",
+    "tenPhi": "Phí giao MÁY HÚT MÙI",
+    "soTien": 180000,
+    "loaiPhi": 1,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-01-10T17:00:00.000Z"
+  },
+  {
+    "id": "pg-12",
+    "sanPhamId": "sp-may-say-quan-ao",
+    "tenPhi": "Phí giao MÁY SẤY QUẦN ÁO",
+    "soTien": 120000,
+    "loaiPhi": 2,
+    "active": true,
+    "createdAt": "2024-01-11T17:00:00.000Z"
+  },
+  {
+    "id": "pg-13",
+    "sanPhamId": "sp-may-say-quan-ao",
+    "tenPhi": "Phí giao MÁY SẤY QUẦN ÁO",
+    "soTien": 160000,
+    "loaiPhi": 2,
+    "active": true,
+    "createdAt": "2024-01-12T17:00:00.000Z"
+  },
+  {
+    "id": "pg-14",
+    "sanPhamId": "sp-am-dun-nuoc",
+    "tenPhi": "Phí giao ẤM ĐUN NƯỚC",
+    "soTien": 140000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-13T17:00:00.000Z"
+  },
+  {
+    "id": "pg-15",
+    "sanPhamId": "sp-may-say-quan-ao",
+    "tenPhi": "Phí giao MÁY SẤY QUẦN ÁO",
+    "soTien": 180000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-14T17:00:00.000Z"
+  },
+  {
+    "id": "pg-16",
+    "sanPhamId": "sp-tivi",
+    "tenPhi": "Phí giao TIVI",
+    "soTien": 40000,
+    "loaiPhi": 1,
+    "active": true,
+    "createdAt": "2024-01-15T17:00:00.000Z"
+  },
+  {
+    "id": "pg-17",
+    "sanPhamId": "sp-lo-vi-song",
+    "tenPhi": "Phí giao LÒ VI SÓNG",
+    "soTien": 180000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-16T17:00:00.000Z"
+  },
+  {
+    "id": "pg-18",
+    "sanPhamId": "sp-lo-vi-song",
+    "tenPhi": "Phí giao LÒ VI SÓNG",
+    "soTien": 120000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-17T17:00:00.000Z"
+  },
+  {
+    "id": "pg-19",
+    "sanPhamId": "sp-tu-lanh",
+    "tenPhi": "Phí giao TỦ LẠNH",
+    "soTien": 180000,
+    "loaiPhi": 1,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-01-18T17:00:00.000Z"
+  },
+  {
+    "id": "pg-20",
+    "sanPhamId": "sp-may-xay-sinh-to",
+    "tenPhi": "Phí giao MÁY XAY SINH TỐ",
+    "soTien": 60000,
+    "loaiPhi": 2,
+    "active": true,
+    "createdAt": "2024-01-19T17:00:00.000Z"
+  },
+  {
+    "id": "pg-21",
+    "sanPhamId": "sp-bep-ga",
+    "tenPhi": "Phí giao BẾP GA",
+    "soTien": 140000,
+    "loaiPhi": 2,
+    "active": true,
+    "createdAt": "2024-01-20T17:00:00.000Z"
+  },
+  {
+    "id": "pg-22",
+    "sanPhamId": "sp-tu-lanh",
+    "tenPhi": "Phí giao TỦ LẠNH",
+    "soTien": 100000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-21T17:00:00.000Z"
+  },
+  {
+    "id": "pg-23",
+    "sanPhamId": "sp-bep-ga",
+    "tenPhi": "Phí giao BẾP GA",
+    "soTien": 140000,
+    "loaiPhi": 2,
+    "active": true,
+    "createdAt": "2024-01-22T17:00:00.000Z"
+  },
+  {
+    "id": "pg-24",
+    "sanPhamId": "sp-may-hut-mui",
+    "tenPhi": "Phí giao MÁY HÚT MÙI",
+    "soTien": 200000,
+    "loaiPhi": 1,
+    "active": true,
+    "createdAt": "2024-01-23T17:00:00.000Z"
+  },
+  {
+    "id": "pg-25",
+    "sanPhamId": "sp-may-loc-nuoc",
+    "tenPhi": "Phí giao MÁY LỌC NƯỚC",
+    "soTien": 160000,
+    "loaiPhi": 2,
+    "active": true,
+    "createdAt": "2024-01-24T17:00:00.000Z"
+  },
+  {
+    "id": "pg-26",
+    "sanPhamId": "sp-bep-ga",
+    "tenPhi": "Phí giao BẾP GA",
+    "soTien": 120000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-25T17:00:00.000Z"
+  },
+  {
+    "id": "pg-27",
+    "sanPhamId": "sp-may-hut-mui",
+    "tenPhi": "Phí giao MÁY HÚT MÙI",
+    "soTien": 120000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-26T17:00:00.000Z"
+  },
+  {
+    "id": "pg-28",
+    "sanPhamId": "sp-may-lam-mat",
+    "tenPhi": "Phí giao MÁY LÀM MÁT",
+    "soTien": 40000,
+    "loaiPhi": 1,
+    "active": true,
+    "createdAt": "2024-01-27T17:00:00.000Z"
+  },
+  {
+    "id": "pg-29",
+    "sanPhamId": "sp-lo-vi-song",
+    "tenPhi": "Phí giao LÒ VI SÓNG",
+    "soTien": 40000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-01-28T17:00:00.000Z"
+  },
+  {
+    "id": "pg-30",
+    "sanPhamId": "sp-tivi",
+    "tenPhi": "Phí giao TIVI",
+    "soTien": 160000,
+    "loaiPhi": 2,
+    "active": true,
+    "createdAt": "2024-01-29T17:00:00.000Z"
+  },
+  {
+    "id": "pg-31",
+    "sanPhamId": "sp-binh-dun-sieu-toc",
+    "tenPhi": "Phí giao BÌNH ĐUN SIÊU TỐC",
+    "soTien": 60000,
+    "loaiPhi": 1,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-01-30T17:00:00.000Z"
+  },
+  {
+    "id": "pg-32",
+    "sanPhamId": "sp-tu-lanh",
+    "tenPhi": "Phí giao TỦ LẠNH",
+    "soTien": 20000,
+    "loaiPhi": 1,
+    "active": true,
+    "createdAt": "2024-01-31T17:00:00.000Z"
+  },
+  {
+    "id": "pg-33",
+    "sanPhamId": "sp-may-ep-trai-cay",
+    "tenPhi": "Phí giao MÁY ÉP TRÁI CÂY",
+    "soTien": 180000,
+    "loaiPhi": 1,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-02-01T17:00:00.000Z"
+  },
+  {
+    "id": "pg-34",
+    "sanPhamId": null,
+    "tenPhi": "Phí giao chung",
+    "soTien": 40000,
+    "loaiPhi": 1,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-02-02T17:00:00.000Z"
+  },
+  {
+    "id": "pg-35",
+    "sanPhamId": "sp-may-ep-trai-cay",
+    "tenPhi": "Phí giao MÁY ÉP TRÁI CÂY",
+    "soTien": 20000,
+    "loaiPhi": 3,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-02-03T17:00:00.000Z"
+  },
+  {
+    "id": "pg-36",
+    "sanPhamId": "sp-quat-dien",
+    "tenPhi": "Phí giao QUẠT ĐIỆN",
+    "soTien": 160000,
+    "loaiPhi": 3,
+    "active": true,
+    "createdAt": "2024-02-04T17:00:00.000Z"
+  },
+  {
+    "id": "pg-37",
+    "sanPhamId": "sp-binh-dun-sieu-toc",
+    "tenPhi": "Phí giao BÌNH ĐUN SIÊU TỐC",
+    "soTien": 60000,
+    "loaiPhi": 3,
+    "ghiChu": "Áp dụng trong nội thành",
+    "active": true,
+    "createdAt": "2024-02-05T17:00:00.000Z"
+  },
+  {
+    "id": "pg-38",
+    "sanPhamId": "sp-may-loc-nuoc",
+    "tenPhi": "Phí giao MÁY LỌC NƯỚC",
+    "soTien": 80000,
+    "loaiPhi": 1,
+    "active": true,
+    "createdAt": "2024-02-06T17:00:00.000Z"
+  },
+  {
+    "id": "pg-39",
+    "sanPhamId": "sp-may-lam-mat",
+    "tenPhi": "Phí giao MÁY LÀM MÁT",
+    "soTien": 20000,
+    "loaiPhi": 1,
+    "active": true,
+    "createdAt": "2024-02-07T17:00:00.000Z"
+  },
+  {
+    "id": "pg-40",
+    "sanPhamId": "sp-noi-com-dien",
+    "tenPhi": "Phí giao NỒI CƠM ĐIỆN",
+    "soTien": 140000,
+    "loaiPhi": 2,
+    "active": true,
+    "createdAt": "2024-02-08T17:00:00.000Z"
+  }
+]

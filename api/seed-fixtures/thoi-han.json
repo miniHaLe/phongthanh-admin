@@ -1,0 +1,77 @@
+[
+  {
+    "id": "th-1",
+    "ten": "Không bảo hành",
+    "loai": "Tháng",
+    "thoiGian": 0,
+    "active": true,
+    "createdAt": "2025-03-12T14:32:18.780Z"
+  },
+  {
+    "id": "th-2",
+    "ten": "1 tháng",
+    "loai": "Tháng",
+    "thoiGian": 1,
+    "active": true,
+    "createdAt": "2025-05-06T04:07:58.546Z"
+  },
+  {
+    "id": "th-3",
+    "ten": "2 tháng",
+    "loai": "Tháng",
+    "thoiGian": 2,
+    "active": true,
+    "createdAt": "2025-07-21T14:42:16.524Z"
+  },
+  {
+    "id": "th-4",
+    "ten": "3 tháng",
+    "loai": "Tháng",
+    "thoiGian": 3,
+    "active": true,
+    "createdAt": "2026-05-24T07:56:21.139Z"
+  },
+  {
+    "id": "th-5",
+    "ten": "6 tháng",
+    "loai": "Tháng",
+    "thoiGian": 6,
+    "active": true,
+    "createdAt": "2026-06-07T09:32:27.873Z",
+    "updatedAt": "2026-06-15T06:44:52.865Z"
+  },
+  {
+    "id": "th-6",
+    "ten": "12 tháng",
+    "loai": "Tháng",
+    "thoiGian": 12,
+    "active": true,
+    "createdAt": "2025-10-03T01:15:41.731Z"
+  },
+  {
+    "id": "th-7",
+    "ten": "1 năm",
+    "loai": "Năm",
+    "thoiGian": 1,
+    "active": true,
+    "createdAt": "2025-12-27T01:08:48.950Z"
+  },
+  {
+    "id": "th-8",
+    "ten": "2 năm",
+    "loai": "Năm",
+    "thoiGian": 2,
+    "active": true,
+    "createdAt": "2026-05-22T10:18:18.223Z",
+    "updatedAt": "2026-05-10T14:53:46.923Z"
+  },
+  {
+    "id": "th-9",
+    "ten": "3 năm",
+    "loai": "Năm",
+    "thoiGian": 3,
+    "active": false,
+    "createdAt": "2026-05-21T19:52:24.952Z",
+    "updatedAt": "2026-05-29T07:12:16.119Z"
+  }
+]
