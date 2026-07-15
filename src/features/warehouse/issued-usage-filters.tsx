@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BRANCHES } from '@/mock/seed/branches'
-import { NHA_KHO_ROWS } from '@/mock/masterdata'
+import { toResourceBranchId, useLookup } from '@/hooks/use-lookup'
 import { MANUFACTURERS, TECHNICIANS } from '@/domains/repair/reference-data'
 import {
   REPAIR_STATUS_DISPLAY_ORDER,
@@ -26,7 +26,11 @@ import {
 } from '@/domains/repair/status'
 import type { IssuedPartTinhTrang } from '@/domains/warehouse/types'
 
-export const MUC_DICH_OPTIONS = ['Sữa chữa dịch vụ', 'Bảo hành', 'Kỹ thuật mượn'] as const
+export const MUC_DICH_OPTIONS = [
+  'Sữa chữa dịch vụ',
+  'Bảo hành',
+  'Kỹ thuật mượn',
+] as const
 export const TINH_TRANG_OPTIONS: IssuedPartTinhTrang[] = [
   'Đã trả xác LK',
   'Chưa trả xác LK',
@@ -73,7 +77,10 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
+      <Label
+        htmlFor={htmlFor}
+        className="text-xs font-medium text-muted-foreground"
+      >
         {label}
       </Label>
       {children}
@@ -81,11 +88,17 @@ function Field({
   )
 }
 
-export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProps) {
+export function IssuedUsageFilters({
+  filters,
+  onChange,
+}: IssuedUsageFiltersProps) {
   const uid = useId()
+  const { rows: nhaKhoRows } = useLookup('nha-kho')
   const khoOptions = filters.branchId
-    ? NHA_KHO_ROWS.filter((k) => k.chiNhanhId === filters.branchId)
-    : NHA_KHO_ROWS
+    ? nhaKhoRows.filter(
+        (k) => k.chiNhanhId === toResourceBranchId(filters.branchId!),
+      )
+    : nhaKhoRows
 
   return (
     <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -93,7 +106,10 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
         <Select
           value={filters.branchId ?? UNSET}
           onValueChange={(v) =>
-            onChange({ branchId: v === UNSET ? undefined : v, khoId: undefined })
+            onChange({
+              branchId: v === UNSET ? undefined : v,
+              khoId: undefined,
+            })
           }
         >
           <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
@@ -113,7 +129,9 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
       <Field label="Nhà kho" htmlFor={`${uid}-kho`}>
         <Select
           value={filters.khoId ?? UNSET}
-          onValueChange={(v) => onChange({ khoId: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ khoId: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-kho`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả nhà kho" />
@@ -132,7 +150,9 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
       <Field label="Kỹ thuật" htmlFor={`${uid}-kt`}>
         <Select
           value={filters.kyThuat ?? UNSET}
-          onValueChange={(v) => onChange({ kyThuat: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ kyThuat: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-kt`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả KTV" />
@@ -153,20 +173,31 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
           id={`${uid}-spc`}
           className={filterControlClassName}
           value={filters.soPhieuCap ?? ''}
-          onChange={(e) => onChange({ soPhieuCap: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ soPhieuCap: e.target.value || undefined })
+          }
         />
       </Field>
 
       <Field label="Tình trạng phiếu" htmlFor={`${uid}-ttp`}>
         <Select
-          value={filters.tinhTrangPhieu != null ? String(filters.tinhTrangPhieu) : UNSET}
+          value={
+            filters.tinhTrangPhieu != null
+              ? String(filters.tinhTrangPhieu)
+              : UNSET
+          }
           onValueChange={(v) =>
             onChange({
-              tinhTrangPhieu: v === UNSET ? undefined : (Number(v) as RepairStatusId),
+              tinhTrangPhieu:
+                v === UNSET ? undefined : (Number(v) as RepairStatusId),
             })
           }
         >
-          <SelectTrigger id={`${uid}-ttp`} className={filterControlClassName} aria-label="Tình trạng phiếu">
+          <SelectTrigger
+            id={`${uid}-ttp`}
+            className={filterControlClassName}
+            aria-label="Tình trạng phiếu"
+          >
             <SelectValue placeholder="Tất cả tình trạng phiếu" />
           </SelectTrigger>
           <SelectContent>
@@ -194,7 +225,9 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
           id={`${uid}-sph`}
           className={filterControlClassName}
           value={filters.soPhieuHang ?? ''}
-          onChange={(e) => onChange({ soPhieuHang: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ soPhieuHang: e.target.value || undefined })
+          }
         />
       </Field>
 
@@ -211,9 +244,15 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
       <Field label="Mục Đích" htmlFor={`${uid}-md`}>
         <Select
           value={filters.mucDich ?? UNSET}
-          onValueChange={(v) => onChange({ mucDich: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ mucDich: v === UNSET ? undefined : v })
+          }
         >
-          <SelectTrigger id={`${uid}-md`} className={filterControlClassName} aria-label="Mục Đích">
+          <SelectTrigger
+            id={`${uid}-md`}
+            className={filterControlClassName}
+            aria-label="Mục Đích"
+          >
             <SelectValue placeholder="Tất cả mục đích" />
           </SelectTrigger>
           <SelectContent>
@@ -236,7 +275,11 @@ export function IssuedUsageFilters({ filters, onChange }: IssuedUsageFiltersProp
             })
           }
         >
-          <SelectTrigger id={`${uid}-tt`} className={filterControlClassName} aria-label="Tình trạng">
+          <SelectTrigger
+            id={`${uid}-tt`}
+            className={filterControlClassName}
+            aria-label="Tình trạng"
+          >
             <SelectValue placeholder="Tất cả tình trạng" />
           </SelectTrigger>
           <SelectContent>

@@ -1,6 +1,7 @@
+import { apiFor } from '@/api/api-for'
 import type { CrudConfig } from '@/types/crud-types'
 import type { NhomQuyen } from '@/types/masterdata-types'
-import { nhomQuyenApi } from '@/mock/masterdata/nhom-quyen.mock'
+import { NHOM_QUYEN_ROWS } from '@/mock/masterdata/nhom-quyen.mock'
 
 /**
  * List/field metadata for Nhóm Quyền. The page itself is hand-composed
@@ -13,7 +14,7 @@ export const nhomQuyenConfig: CrudConfig<NhomQuyen> = {
   resourceKey: 'nhom-quyen',
   title: 'Nhóm Quyền',
   pageSize: 20,
-  mockApi: nhomQuyenApi,
+  mockApi: apiFor('nhom-quyen', NHOM_QUYEN_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [

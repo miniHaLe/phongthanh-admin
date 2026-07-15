@@ -26,11 +26,11 @@ import { CrudFilterBar } from '@/components/crud/CrudFilterBar'
 import { formatDate } from '@/lib/format'
 import { chamCongConfig } from '@/config/crud-configs/cham-cong.config'
 import { NHAN_VIEN_ROWS } from '@/mock/masterdata'
-import { CHI_NHANH_ROWS } from '@/mock/masterdata/chi-nhanh.mock'
 import { CHUC_VU_ROWS } from '@/mock/masterdata/chuc-vu.mock'
 import { KY } from '@/mock/seed/ky'
 import { LOAI_CHAM, LOAI_TRU } from '@/mock/seed/cham-cong'
 import type { ChamCongRecord } from '@/domains/hr/types'
+import { useLookup } from '@/hooks/use-lookup'
 
 const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
 
@@ -45,6 +45,7 @@ const LOAI_TRU_LABEL = (v: number) =>
 
 export default function ChamCongPage() {
   const crud = useCrud(chamCongConfig)
+  const { byId: chiNhanhById } = useLookup('chi-nhanh')
   const {
     params,
     setSearch,
@@ -99,7 +100,9 @@ export default function ChamCongPage() {
         size: 170,
         cell: ({ row }) => {
           const r = nv(row.original.nhanVienId)
-          return CHUC_VU_ROWS.find((c) => c.id === r?.chucVuId)?.tenChucVu ?? '—'
+          return (
+            CHUC_VU_ROWS.find((c) => c.id === r?.chucVuId)?.tenChucVu ?? '—'
+          )
         },
       },
       {
@@ -108,10 +111,9 @@ export default function ChamCongPage() {
         size: 150,
         cell: ({ row }) => {
           const r = nv(row.original.nhanVienId)
-          return (
-            CHI_NHANH_ROWS.find((c) => c.id === r?.chiNhanhId)?.tenChiNhanh ??
-            '—'
-          )
+          return r?.chiNhanhId
+            ? (chiNhanhById.get(r.chiNhanhId)?.tenChiNhanh ?? '—')
+            : '—'
         },
       },
       {
@@ -173,7 +175,7 @@ export default function ChamCongPage() {
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [params.page, params.pageSize],
+    [chiNhanhById, params.page, params.pageSize],
   )
 
   function handleSheetSubmit(data: Partial<ChamCongRecord>) {

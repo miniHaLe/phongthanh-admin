@@ -1,13 +1,14 @@
 import type { CrudConfig } from '@/types/crud-types'
 import type { NhaSanXuat } from '@/types/masterdata-types'
-import { nhaSanXuatApi } from '@/mock/masterdata/nha-san-xuat.mock'
+import { NHA_SAN_XUAT_ROWS } from '@/mock/masterdata/nha-san-xuat.mock'
+import { apiFor } from '@/api/api-for'
 
 export const nhaSanXuatConfig: CrudConfig<NhaSanXuat> = {
   resourceKey: 'nha-san-xuat',
   title: 'Nhà Sản Xuất',
   pageSize: 20,
   defaultSort: { key: 'tenNSX', dir: 'asc' },
-  mockApi: nhaSanXuatApi,
+  mockApi: apiFor('nha-san-xuat', NHA_SAN_XUAT_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [

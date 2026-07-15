@@ -7,13 +7,9 @@
  */
 import { SELLING_ROWS } from '@/domains/warehouse/list-data'
 import type { SellingOrder } from '@/domains/warehouse/types'
+import { nextVoucherCode } from '@/lib/voucher-code'
 
-let sellingSeq = SELLING_ROWS.length
-
-function ymd(iso: string): string {
-  const d = new Date(iso)
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
-}
+let sellingIdSeq = SELLING_ROWS.length
 
 export interface SellingInput {
   khachHang: string
@@ -29,12 +25,16 @@ export function findSellingOrder(id: string): SellingOrder | undefined {
 }
 
 export function createSelling(input: SellingInput): SellingOrder {
-  sellingSeq += 1
-  const now = new Date().toISOString()
+  sellingIdSeq += 1
+  const now = new Date()
   const order: SellingOrder = {
-    id: `bh-new-${sellingSeq}`,
-    soPhieu: `PBH-${ymd(now)}-${sellingSeq}`,
-    ngayLap: now,
+    id: `bh-new-${sellingIdSeq}`,
+    soPhieu: nextVoucherCode(
+      'PBH',
+      SELLING_ROWS.map((row) => row.soPhieu),
+      now,
+    ),
+    ngayLap: now.toISOString(),
     khachHang: input.khachHang,
     dienThoai: input.dienThoai,
     tongTien: input.tongTien,

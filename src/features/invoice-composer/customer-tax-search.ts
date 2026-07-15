@@ -5,8 +5,7 @@
  * thoại" tooltip on the invoice's customer field) and auto-fills Tên đơn vị +
  * Địa chỉ from the matched row.
  */
-import { KHACH_HANG_ROWS } from '@/mock/masterdata'
-import type { KhachHang } from '@/types/masterdata-types'
+import { khachHangConfig } from '@/config/crud-configs/khach-hang.config'
 
 export interface CustomerTaxMatch {
   id: string
@@ -15,13 +14,17 @@ export interface CustomerTaxMatch {
   diaChi: string
 }
 
-export function searchCustomersByNameOrPhone(query: string): CustomerTaxMatch[] {
-  const q = query.trim().toLowerCase()
+export async function searchCustomersByNameOrPhone(
+  query: string,
+): Promise<CustomerTaxMatch[]> {
+  const q = query.trim()
   if (!q) return []
-  const matches: KhachHang[] = KHACH_HANG_ROWS.filter(
-    (k) => k.tenKH.toLowerCase().includes(q) || k.dienThoai.includes(query.trim()),
-  ).slice(0, 10)
-  return matches.map((k) => ({
+  const result = await khachHangConfig.mockApi.list({
+    page: 1,
+    pageSize: 10,
+    search: q,
+  })
+  return result.data.map((k) => ({
     id: k.id,
     label: `${k.tenKH} — ${k.dienThoai}`,
     tenDonVi: k.tenKH,

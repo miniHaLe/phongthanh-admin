@@ -4,33 +4,28 @@
  * Cập nhật giá checkbox + editable PriceNew + Số lượng, "Thêm hàng" appends a
  * row to the line grid via `onAdd`.
  */
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { ServerAutocomplete, notify, type AutocompleteOption } from '@/components/shared'
-import { HANG_HOA_ROWS } from '@/mock/masterdata'
+import {
+  ServerAutocomplete,
+  notify,
+  type AutocompleteOption,
+} from '@/components/shared'
+import { filterLookupOptions, useLookup } from '@/hooks/use-lookup'
 import type { BanHangLine } from './stockout-editor-types'
 
 type PriceKind = 'le' | 'si'
-
-async function searchHangHoa(query: string): Promise<AutocompleteOption[]> {
-  const q = query.trim().toLowerCase()
-  const list = q
-    ? HANG_HOA_ROWS.filter(
-        (h) => h.tenHH.toLowerCase().includes(q) || h.maHH.toLowerCase().includes(q),
-      )
-    : HANG_HOA_ROWS
-  return list.slice(0, 20).map((h) => ({ id: h.id, label: `${h.maHH} — ${h.tenHH}` }))
-}
 
 interface BanHangLineEntryProps {
   onAdd: (line: BanHangLine) => void
 }
 
 export function BanHangLineEntry({ onAdd }: BanHangLineEntryProps) {
+  const { rows: hangHoaRows, byId: hangHoaById } = useLookup('hang-hoa')
   const [hangHoa, setHangHoa] = useState<AutocompleteOption | null>(null)
   const [theoSerial, setTheoSerial] = useState(false)
   const [priceKind, setPriceKind] = useState<PriceKind>('le')
@@ -39,13 +34,24 @@ export function BanHangLineEntry({ onAdd }: BanHangLineEntryProps) {
   const [soLuong, setSoLuong] = useState('1')
   const [serial, setSerial] = useState('')
 
-  const selectedHang = HANG_HOA_ROWS.find((h) => h.id === hangHoa?.id)
+  const searchHangHoa = useCallback(
+    (query: string) =>
+      filterLookupOptions(
+        hangHoaRows,
+        query,
+        (row) => `${row.maHH} — ${row.tenHH}`,
+        (row) => `${row.maHH} ${row.tenHH}`,
+      ),
+    [hangHoaRows],
+  )
+  const selectedHang = hangHoa?.id ? hangHoaById.get(hangHoa.id) : undefined
   const basePrice = selectedHang
     ? priceKind === 'si'
       ? Math.round((selectedHang.giaBan ?? 0) * 0.9)
       : (selectedHang.giaBan ?? 0)
     : 0
-  const effectivePrice = capNhatGia && priceNew ? Number(priceNew) || 0 : basePrice
+  const effectivePrice =
+    capNhatGia && priceNew ? Number(priceNew) || 0 : basePrice
   const tonKho = selectedHang?.tonKho ?? 0
 
   function reset() {
@@ -96,7 +102,10 @@ export function BanHangLineEntry({ onAdd }: BanHangLineEntryProps) {
         </div>
 
         <label className="flex items-end gap-1.5 pb-1.5 text-sm">
-          <Checkbox checked={theoSerial} onCheckedChange={(c) => setTheoSerial(!!c)} />
+          <Checkbox
+            checked={theoSerial}
+            onCheckedChange={(c) => setTheoSerial(!!c)}
+          />
           Theo Serial
         </label>
 
@@ -130,7 +139,10 @@ export function BanHangLineEntry({ onAdd }: BanHangLineEntryProps) {
         </div>
 
         <label className="flex items-end gap-1.5 pb-1.5 text-sm">
-          <Checkbox checked={capNhatGia} onCheckedChange={(c) => setCapNhatGia(!!c)} />
+          <Checkbox
+            checked={capNhatGia}
+            onCheckedChange={(c) => setCapNhatGia(!!c)}
+          />
           Cập nhật giá
         </label>
 

@@ -36,6 +36,7 @@ export interface FieldConfig<T> {
   type: FieldType
   required?: boolean
   options?: { label: string; value: string }[]
+  loadOptions?: () => Promise<{ label: string; value: string }[]>
   zodSchema?: ZodTypeAny
   span?: 1 | 2
   /** Field only shown in create mode, not edit mode (e.g. password). */
@@ -47,6 +48,7 @@ export interface FilterConfig<T> {
   label: string
   type: 'text' | 'select' | 'date-range'
   options?: { label: string; value: string }[]
+  loadOptions?: () => Promise<{ label: string; value: string }[]>
 }
 
 export interface MockApi<T> {

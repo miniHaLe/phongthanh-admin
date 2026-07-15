@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BRANCH_NAME, type BranchId } from '@/mock/seed/branches'
-import { NHA_KHO_ROWS, NGAN_CHUA_ROWS } from '@/mock/masterdata'
+import { useLookup } from '@/hooks/use-lookup'
 
 export interface ChuyenKhoSameHeaderValues {
   tuKhoId: string
@@ -58,9 +58,11 @@ export function ChuyenKhoSameHeaderFields({
   onChange,
   errors,
 }: ChuyenKhoSameHeaderFieldsProps) {
+  const { rows: nhaKhoRows } = useLookup('nha-kho')
+  const { rows: nganChuaRows } = useLookup('ngan-chua')
   const denNganChuaOptions = values.denKhoId
-    ? NGAN_CHUA_ROWS.filter((n) => n.nhaKhoId === values.denKhoId)
-    : NGAN_CHUA_ROWS
+    ? nganChuaRows.filter((n) => n.nhaKhoId === values.denKhoId)
+    : nganChuaRows
 
   return (
     <section aria-labelledby="section-ckc-info">
@@ -76,12 +78,15 @@ export function ChuyenKhoSameHeaderFields({
         </Field>
 
         <Field label="Từ nhà kho" required error={errors.tuKhoId}>
-          <Select value={values.tuKhoId} onValueChange={(v) => onChange({ tuKhoId: v })}>
+          <Select
+            value={values.tuKhoId}
+            onValueChange={(v) => onChange({ tuKhoId: v })}
+          >
             <SelectTrigger aria-label="Từ nhà kho">
               <SelectValue placeholder="Chọn nhà kho" />
             </SelectTrigger>
             <SelectContent>
-              {NHA_KHO_ROWS.map((k) => (
+              {nhaKhoRows.map((k) => (
                 <SelectItem key={k.id} value={k.id}>
                   {k.tenNhaKho}
                 </SelectItem>
@@ -99,7 +104,7 @@ export function ChuyenKhoSameHeaderFields({
               <SelectValue placeholder="Chọn nhà kho" />
             </SelectTrigger>
             <SelectContent>
-              {NHA_KHO_ROWS.map((k) => (
+              {nhaKhoRows.map((k) => (
                 <SelectItem key={k.id} value={k.id}>
                   {k.tenNhaKho}
                 </SelectItem>
@@ -116,7 +121,9 @@ export function ChuyenKhoSameHeaderFields({
           >
             <SelectTrigger aria-label="Đến ngăn chứa">
               <SelectValue
-                placeholder={values.denKhoId ? 'Chọn ngăn chứa' : 'Chọn nhà kho trước'}
+                placeholder={
+                  values.denKhoId ? 'Chọn ngăn chứa' : 'Chọn nhà kho trước'
+                }
               />
             </SelectTrigger>
             <SelectContent>

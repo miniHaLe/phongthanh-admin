@@ -13,9 +13,13 @@ describe('NhapKhoCreatePage', () => {
   it('renders Lưu / Lưu & Thêm mới / In / Danh sách nhập kho', () => {
     renderWithProviders(<NhapKhoCreatePage />)
     expect(screen.getByRole('button', { name: 'Lưu' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Lưu & Thêm mới' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Lưu & Thêm mới' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'In' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Danh sách nhập kho' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Danh sách nhập kho' }),
+    ).toBeInTheDocument()
   })
 
   it('Nhóm khách hàng offers the 9 verified options', async () => {
@@ -38,6 +42,15 @@ describe('NhapKhoCreatePage', () => {
     }
   })
 
+  it('loads real-capable nhà kho options through the lookup seam', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<NhapKhoCreatePage />)
+    await user.click(screen.getByLabelText(/Nhà kho/))
+    expect(
+      await screen.findByRole('option', { name: 'Kho Chính BMT' }),
+    ).toBeInTheDocument()
+  })
+
   it('renders the verified line-grid column headers', () => {
     renderWithProviders(<NhapKhoCreatePage />)
     for (const label of [
@@ -50,7 +63,9 @@ describe('NhapKhoCreatePage', () => {
       'Cập nhật giá',
       'Serial',
     ]) {
-      expect(screen.getByRole('columnheader', { name: label })).toBeInTheDocument()
+      expect(
+        screen.getByRole('columnheader', { name: label }),
+      ).toBeInTheDocument()
     }
   })
 

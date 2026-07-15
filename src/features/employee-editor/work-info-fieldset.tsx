@@ -19,7 +19,7 @@ import type {
 } from './employee-editor-form-state'
 import { PHONG_BAN_ROWS } from '@/mock/masterdata/phong-ban.mock'
 import { CHUC_VU_ROWS } from '@/mock/masterdata/chuc-vu.mock'
-import { CHI_NHANH_ROWS } from '@/mock/masterdata/chi-nhanh.mock'
+import { useLookup } from '@/hooks/use-lookup'
 
 const HINH_THUC_THANH_TOAN_OPTIONS = ['Tiền mặt', 'Chuyển khoản'] as const
 
@@ -34,6 +34,7 @@ export function WorkInfoFieldset({
   onChange,
   errors,
 }: WorkInfoFieldsetProps) {
+  const { rows: chiNhanhRows } = useLookup('chi-nhanh')
   return (
     <section aria-labelledby="section-lam-viec">
       <h2 id="section-lam-viec" className="mb-4 text-base font-semibold">
@@ -97,7 +98,7 @@ export function WorkInfoFieldset({
               <SelectValue placeholder="Chọn chi nhánh" />
             </SelectTrigger>
             <SelectContent>
-              {CHI_NHANH_ROWS.map((c) => (
+              {chiNhanhRows.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.tenChiNhanh}
                 </SelectItem>
@@ -131,8 +132,7 @@ export function WorkInfoFieldset({
             value={values.hinhThucThanhToan}
             onValueChange={(v) =>
               onChange({
-                hinhThucThanhToan:
-                  v as EmployeeFormValues['hinhThucThanhToan'],
+                hinhThucThanhToan: v as EmployeeFormValues['hinhThucThanhToan'],
               })
             }
           >

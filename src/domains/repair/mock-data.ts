@@ -6,6 +6,7 @@
 import { SeededRandom } from '@/lib/seeded-random'
 import { mockDelay } from '@/lib/mock-delay'
 import { maybeThrow, MockApiError } from '@/lib/mock-error'
+import { nextVoucherCode } from '@/lib/voucher-code'
 import {
   REPAIR_STATUS_IDS,
   OPEN_STATUS_IDS,
@@ -644,7 +645,7 @@ export async function fetchRepairById(id: string): Promise<RepairTicket> {
   return ticket
 }
 
-let createCounter = 300000
+let createIdCounter = 300000
 
 /** Create a new ticket from form input. Returns the created ticket. */
 export async function createRepairTicket(
@@ -652,9 +653,14 @@ export async function createRepairTicket(
 ): Promise<RepairTicket> {
   await mockDelay(600, 200)
 
-  createCounter++
-  const id = `PSC-${createCounter}`
-  const now = new Date().toISOString()
+  createIdCounter++
+  const nowDate = new Date()
+  const now = nowDate.toISOString()
+  const id = nextVoucherCode(
+    'PSC',
+    MOCK_TICKETS.map((ticket) => ticket.soPhieu),
+    nowDate,
+  )
 
   const nsx = MANUFACTURERS.find((m) => m.id === input.nhaSanXuatId)
   const product = PRODUCTS.find((p) => p.id === input.sanPhamId)
@@ -662,7 +668,7 @@ export async function createRepairTicket(
   const tech = TECHNICIANS.find((t) => t.id === input.kyThuatId)
 
   const customer: Customer = {
-    id: input.khachHangId ?? `kh-new-${createCounter}`,
+    id: input.khachHangId ?? `kh-new-${createIdCounter}`,
     ten: input.tenKhach,
     sdt: input.sdt,
     diaChi: input.diaChi ?? '',

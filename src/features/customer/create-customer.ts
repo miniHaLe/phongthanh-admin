@@ -1,14 +1,7 @@
-/**
- * Mock create mutation shared by both customer create flows (Thêm Khách Hàng
- * / Thêm Đại Lý). Writes directly into the live `KHACH_HANG_ROWS` store
- * (owned by mock/masterdata/khach-hang.mock.ts) so the list immediately
- * reflects the new row on refetch — module-memory only, lost on reload.
- */
-import { KHACH_HANG_ROWS } from '@/mock/masterdata/khach-hang.mock'
+/** Shared real-or-mock create mutation for both customer create flows. */
+import { khachHangConfig } from '@/config/crud-configs/khach-hang.config'
 import { CURRENT_USER } from '@/mock/current-user-mock'
 import type { KhachHang } from '@/types/masterdata-types'
-
-let khachHangSeq = KHACH_HANG_ROWS.length
 
 export interface CreateCustomerInput {
   tenKH: string
@@ -16,7 +9,7 @@ export interface CreateCustomerInput {
   dienThoai2?: string
   email?: string
   diaChi?: string
-  tinhId?: string
+  tinhId: string
   quanId?: string
   phuongXaId?: string
   loaiKhachHangId: number
@@ -24,15 +17,10 @@ export interface CreateCustomerInput {
   ghiChu?: string
 }
 
-export function createCustomer(input: CreateCustomerInput): KhachHang {
-  khachHangSeq += 1
-  const row: KhachHang = {
-    id: `kh-new-${khachHangSeq}`,
+export function createCustomer(input: CreateCustomerInput): Promise<KhachHang> {
+  return khachHangConfig.mockApi.create({
     ...input,
     nguoiTao: CURRENT_USER.hoVaTen,
     active: true,
-    createdAt: new Date().toISOString(),
-  }
-  KHACH_HANG_ROWS.unshift(row)
-  return row
+  })
 }

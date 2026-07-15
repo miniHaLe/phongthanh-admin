@@ -11,10 +11,10 @@ import type { CrudConfig } from '@/types/crud-types'
 import type { ChamCongRecord } from '@/domains/hr/types'
 import { chamCongRecordApi } from '@/domains/hr/cham-cong.mock'
 import { NHAN_VIEN_ROWS } from '@/mock/masterdata'
-import { CHI_NHANH_ROWS } from '@/mock/masterdata/chi-nhanh.mock'
 import { CHUC_VU_ROWS } from '@/mock/masterdata/chuc-vu.mock'
 import { KY } from '@/mock/seed/ky'
 import { LOAI_CHAM, LOAI_TRU } from '@/mock/seed/cham-cong'
+import { lookupLabel } from '@/components/crud/lookup-label'
 
 function nv(id: string) {
   return NHAN_VIEN_ROWS.find((r) => r.id === id)
@@ -65,9 +65,11 @@ export const chamCongConfig: CrudConfig<ChamCongRecord> = {
       width: 150,
       renderCell: (v) => {
         const r = nv(v as string)
-        return (
-          CHI_NHANH_ROWS.find((c) => c.id === r?.chiNhanhId)?.tenChiNhanh ??
-          '—'
+        return lookupLabel(
+          'chi-nhanh',
+          r?.chiNhanhId,
+          (branch) => branch.tenChiNhanh,
+          '—',
         )
       },
     },

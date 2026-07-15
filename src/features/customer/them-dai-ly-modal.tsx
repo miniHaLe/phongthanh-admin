@@ -5,6 +5,7 @@
  * full 9-value list.
  */
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -27,6 +28,7 @@ import { notify } from '@/components/shared'
 import { LOAI_KHACH_HANG } from '@/mock/seed/nhom-khach-hang'
 import { TINH, QUAN, XA } from '@/mock/seed/tinh-quan-xa'
 import { createCustomer } from './create-customer'
+import { invalidateCrudQueries } from '@/hooks/use-crud'
 
 const DAI_LY_TEN = ['Đại lý chính', 'Đại lý/Cửa hàng', 'Trung tâm bảo hành']
 const DAI_LY_OPTIONS = LOAI_KHACH_HANG.filter((l) => DAI_LY_TEN.includes(l.ten))
@@ -63,8 +65,14 @@ const EMPTY: FormState = {
   ghiChu: '',
 }
 
-export function ThemDaiLyModal({ open, onClose, onCreated }: ThemDaiLyModalProps) {
+export function ThemDaiLyModal({
+  open,
+  onClose,
+  onCreated,
+}: ThemDaiLyModalProps) {
+  const queryClient = useQueryClient()
   const [form, setForm] = useState<FormState>(EMPTY)
+  const [isSaving, setIsSaving] = useState(false)
 
   function patch(p: Partial<FormState>) {
     setForm((prev) => ({ ...prev, ...p }))
@@ -75,7 +83,7 @@ export function ThemDaiLyModal({ open, onClose, onCreated }: ThemDaiLyModalProps
     onClose()
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!form.tenKH.trim()) {
       notify.error('Vui lòng nhập tên đại lý!')
       return
@@ -84,29 +92,48 @@ export function ThemDaiLyModal({ open, onClose, onCreated }: ThemDaiLyModalProps
       notify.error('Vui lòng nhập số điện thoại!')
       return
     }
-    createCustomer({
-      tenKH: form.tenKH.trim(),
-      dienThoai: form.dienThoai.trim(),
-      dienThoai2: form.dienThoai2.trim() || undefined,
-      email: form.email.trim() || undefined,
-      diaChi: form.diaChi.trim() || undefined,
-      tinhId: form.tinhId || undefined,
-      quanId: form.quanId || undefined,
-      phuongXaId: form.phuongXaId || undefined,
-      loaiKhachHangId: Number(form.loaiKhachHangId),
-      ghiChu: form.ghiChu.trim() || undefined,
-    })
-    notify.success('Đã thêm đại lý')
-    onCreated()
-    handleClose()
+    if (!form.tinhId) {
+      notify.error('Vui lòng chọn tỉnh!')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      await createCustomer({
+        tenKH: form.tenKH.trim(),
+        dienThoai: form.dienThoai.trim(),
+        dienThoai2: form.dienThoai2.trim() || undefined,
+        email: form.email.trim() || undefined,
+        diaChi: form.diaChi.trim() || undefined,
+        tinhId: form.tinhId,
+        quanId: form.quanId || undefined,
+        phuongXaId: form.phuongXaId || undefined,
+        loaiKhachHangId: Number(form.loaiKhachHangId),
+        ghiChu: form.ghiChu.trim() || undefined,
+      })
+      await invalidateCrudQueries(queryClient, 'khach-hang')
+      notify.success('Đã thêm đại lý')
+      onCreated()
+      handleClose()
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : 'Không thể thêm đại lý',
+      )
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const quanOptions = form.tinhId ? QUAN.filter((q) => q.tinhId === form.tinhId) : QUAN
-  const xaOptions = form.quanId ? XA.filter((x) => x.quanId === form.quanId) : XA
+  const quanOptions = form.tinhId
+    ? QUAN.filter((q) => q.tinhId === form.tinhId)
+    : QUAN
+  const xaOptions = form.quanId
+    ? XA.filter((x) => x.quanId === form.quanId)
+    : XA
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DialogContent>
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Thêm Đại Lý</DialogTitle>
         </DialogHeader>
@@ -181,10 +208,14 @@ export function ThemDaiLyModal({ open, onClose, onCreated }: ThemDaiLyModalProps
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Tỉnh</Label>
+            <Label>
+              Tỉnh <span className="text-destructive">*</span>
+            </Label>
             <Select
               value={form.tinhId}
-              onValueChange={(v) => patch({ tinhId: v, quanId: '', phuongXaId: '' })}
+              onValueChange={(v) =>
+                patch({ tinhId: v, quanId: '', phuongXaId: '' })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn tỉnh" />
@@ -200,7 +231,10 @@ export function ThemDaiLyModal({ open, onClose, onCreated }: ThemDaiLyModalProps
           </div>
           <div className="space-y-1.5">
             <Label>Quận/Huyện</Label>
-            <Select value={form.quanId} onValueChange={(v) => patch({ quanId: v, phuongXaId: '' })}>
+            <Select
+              value={form.quanId}
+              onValueChange={(v) => patch({ quanId: v, phuongXaId: '' })}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn quận" />
               </SelectTrigger>
@@ -215,7 +249,10 @@ export function ThemDaiLyModal({ open, onClose, onCreated }: ThemDaiLyModalProps
           </div>
           <div className="col-span-2 space-y-1.5">
             <Label>Phường/Xã</Label>
-            <Select value={form.phuongXaId} onValueChange={(v) => patch({ phuongXaId: v })}>
+            <Select
+              value={form.phuongXaId}
+              onValueChange={(v) => patch({ phuongXaId: v })}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn phường/xã" />
               </SelectTrigger>
@@ -239,11 +276,20 @@ export function ThemDaiLyModal({ open, onClose, onCreated }: ThemDaiLyModalProps
           </div>
         </div>
         <DialogFooter>
-          <Button type="button" variant="ghost" onClick={handleClose}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleClose}
+            disabled={isSaving}
+          >
             Hủy
           </Button>
-          <Button type="button" onClick={handleSave}>
-            Lưu
+          <Button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Đang lưu…' : 'Lưu'}
           </Button>
         </DialogFooter>
       </DialogContent>

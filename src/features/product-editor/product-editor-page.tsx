@@ -6,7 +6,8 @@
  * model" toggle, and a photo-upload preview panel. Toolbar: Lưu / Lưu & Thêm
  * mới / Tạo mới / Danh sách hàng hóa.
  */
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,13 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { PageHeader, ServerAutocomplete, notify, type AutocompleteOption } from '@/components/shared'
+import {
+  PageHeader,
+  ServerAutocomplete,
+  notify,
+  type AutocompleteOption,
+} from '@/components/shared'
 import { ROUTES } from '@/constants/routes'
-import { NHOM_HANG_HOA_ROWS } from '@/mock/masterdata/nhom-hang-hoa.mock'
-import { DON_VI_TINH_ROWS } from '@/mock/masterdata/don-vi-tinh.mock'
-import { NHA_SAN_XUAT_ROWS } from '@/mock/masterdata/nha-san-xuat.mock'
-import { MODEL_ROWS } from '@/mock/masterdata/model.mock'
 import { CURRENT_USER } from '@/mock/current-user-mock'
+import { filterLookupOptions, useLookup } from '@/hooks/use-lookup'
+import { invalidateCrudQueries } from '@/hooks/use-crud'
 import {
   createHangHoa,
   findHangHoa,
@@ -35,8 +39,6 @@ import {
 } from './create-product'
 import { QuickCreateNhaSanXuat } from './quick-create-nha-san-xuat'
 import { QuickCreateModel } from './quick-create-model'
-
-const DEFAULT_DVT = DON_VI_TINH_ROWS.find((d) => d.tenDVT === 'Cái')?.id ?? DON_VI_TINH_ROWS[0]?.id ?? ''
 
 interface FormState {
   nhomHangHoaId: string
@@ -64,7 +66,7 @@ const EMPTY: FormState = {
   model: null,
   modelDungChung: false,
   modelDungChungText: '',
-  donViTinhId: DEFAULT_DVT,
+  donViTinhId: '',
   phatSinhTuDong: false,
   maHH: '',
   maHHPhu: '',
@@ -76,40 +78,72 @@ const EMPTY: FormState = {
   giaBanLe: '',
 }
 
-async function searchNhaSanXuat(query: string): Promise<AutocompleteOption[]> {
-  const q = query.trim().toLowerCase()
-  const list = q
-    ? NHA_SAN_XUAT_ROWS.filter((r) => r.tenNSX.toLowerCase().includes(q))
-    : NHA_SAN_XUAT_ROWS
-  return list.slice(0, 20).map((r) => ({ id: r.id, label: r.tenNSX }))
-}
-
-async function searchModel(query: string): Promise<AutocompleteOption[]> {
-  const q = query.trim().toLowerCase()
-  const list = q
-    ? MODEL_ROWS.filter((r) => r.tenModel.toLowerCase().includes(q))
-    : MODEL_ROWS
-  return list.slice(0, 20).map((r) => ({ id: r.id, label: r.tenModel }))
-}
-
 export default function ProductEditorPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { id } = useParams<{ id: string }>()
   const isEdit = Boolean(id)
+  const { rows: nhomHangHoaRows } = useLookup('nhom-hang-hoa')
+  const { rows: donViTinhRows } = useLookup('don-vi-tinh')
+  const {
+    rows: nhaSanXuatRows,
+    byId: nhaSanXuatById,
+    isLoading: isNhaSanXuatLoading,
+  } = useLookup('nha-san-xuat')
+  const {
+    rows: modelRows,
+    byId: modelById,
+    isLoading: isModelLoading,
+  } = useLookup('model')
+  const { rows: sanPhamRows } = useLookup('san-pham')
 
   const [form, setForm] = useState<FormState>(EMPTY)
   const [error, setError] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const loadedExistingId = useRef<string | null>(null)
+
+  const existingQuery = useQuery({
+    queryKey: ['hang-hoa', id],
+    queryFn: () => findHangHoa(id!),
+    enabled: Boolean(id),
+  })
+
+  const searchNhaSanXuat = useCallback(
+    (query: string) =>
+      filterLookupOptions(nhaSanXuatRows, query, (row) => row.tenNSX),
+    [nhaSanXuatRows],
+  )
+  const searchModel = useCallback(
+    (query: string) =>
+      filterLookupOptions(modelRows, query, (row) => row.tenModel),
+    [modelRows],
+  )
 
   useEffect(() => {
-    if (!id) return
-    const existing = findHangHoa(id)
-    if (!existing) {
-      notify.error('Không tìm thấy hàng hóa!')
-      navigate(ROUTES.catalogGoods)
+    if (id || !donViTinhRows.length) return
+    const defaultId =
+      donViTinhRows.find((row) => row.tenDVT === 'Cái')?.id ??
+      donViTinhRows[0]?.id ??
+      ''
+    setForm((current) =>
+      current.donViTinhId ? current : { ...current, donViTinhId: defaultId },
+    )
+  }, [donViTinhRows, id])
+
+  useEffect(() => {
+    const existing = existingQuery.data
+    if (
+      !existing ||
+      isNhaSanXuatLoading ||
+      isModelLoading ||
+      loadedExistingId.current === existing.id
+    ) {
       return
     }
-    const nsx = NHA_SAN_XUAT_ROWS.find((r) => r.id === existing.nhaSanXuatId)
-    const model = MODEL_ROWS.find((r) => r.id === existing.modelId)
+    const nsx = existing.nhaSanXuatId
+      ? nhaSanXuatById.get(existing.nhaSanXuatId)
+      : undefined
+    const model = existing.modelId ? modelById.get(existing.modelId) : undefined
     setForm({
       nhomHangHoaId: existing.nhomHangHoaId,
       coSerial: existing.coSerial,
@@ -128,15 +162,31 @@ export default function ProductEditorPage() {
       giaBanSi: existing.giaBanSi ? String(existing.giaBanSi) : '',
       giaBanLe: existing.giaBanLe ? String(existing.giaBanLe) : '',
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
+    loadedExistingId.current = existing.id
+  }, [
+    existingQuery.data,
+    isModelLoading,
+    isNhaSanXuatLoading,
+    modelById,
+    nhaSanXuatById,
+  ])
+
+  useEffect(() => {
+    if (!existingQuery.isError) return
+    notify.error('Không tìm thấy hàng hóa!')
+    navigate(ROUTES.catalogGoods)
+  }, [existingQuery.isError, navigate])
 
   function patch(p: Partial<FormState>) {
     setForm((prev) => ({ ...prev, ...p }))
   }
 
   function resetForm() {
-    setForm(EMPTY)
+    const donViTinhId =
+      donViTinhRows.find((row) => row.tenDVT === 'Cái')?.id ??
+      donViTinhRows[0]?.id ??
+      ''
+    setForm({ ...EMPTY, donViTinhId })
     setError('')
   }
 
@@ -172,7 +222,9 @@ export default function ProductEditorPage() {
       nhaSanXuatId: form.nhaSanXuat?.id,
       modelId: form.model?.id,
       modelDungChung: form.modelDungChung,
-      modelDungChungText: form.modelDungChung ? form.modelDungChungText : undefined,
+      modelDungChungText: form.modelDungChung
+        ? form.modelDungChungText
+        : undefined,
       donViTinhId: form.donViTinhId,
       phatSinhTuDong: form.phatSinhTuDong,
       maHH: form.maHH.trim(),
@@ -187,19 +239,28 @@ export default function ProductEditorPage() {
     }
   }
 
-  function handleSave(saveAndNew: boolean) {
+  async function handleSave(saveAndNew: boolean) {
     if (!validate()) return
     const input = buildInput()
-    const row = isEdit && id ? updateHangHoa(id, input) : createHangHoa(input)
-    if (!row) {
-      notify.error('Không tìm thấy hàng hóa!')
-      return
-    }
-    notify.success(`Đã lưu hàng hóa ${row.maHH}`)
-    if (saveAndNew) {
-      resetForm()
-    } else {
-      navigate(ROUTES.catalogGoods)
+    setIsSaving(true)
+    try {
+      const row =
+        isEdit && id
+          ? await updateHangHoa(id, input)
+          : await createHangHoa(input)
+      await invalidateCrudQueries(queryClient, 'hang-hoa')
+      notify.success(`Đã lưu hàng hóa ${row.maHH}`)
+      if (saveAndNew) {
+        resetForm()
+      } else {
+        navigate(ROUTES.catalogGoods)
+      }
+    } catch (reason) {
+      notify.error(
+        reason instanceof Error ? reason.message : 'Không thể lưu hàng hóa',
+      )
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -213,10 +274,19 @@ export default function ProductEditorPage() {
           { label: isEdit ? 'Chỉnh sửa' : 'Tạo mới' },
         ]}
       >
-        <Button size="sm" onClick={() => handleSave(false)}>
-          Lưu
+        <Button
+          size="sm"
+          onClick={() => void handleSave(false)}
+          disabled={isSaving}
+        >
+          {isSaving ? 'Đang lưu…' : 'Lưu'}
         </Button>
-        <Button size="sm" variant="outline" onClick={() => handleSave(true)}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => void handleSave(true)}
+          disabled={isSaving}
+        >
           Lưu & Thêm mới
         </Button>
         <Button asChild size="sm" variant="outline">
@@ -251,7 +321,7 @@ export default function ProductEditorPage() {
                   <SelectValue placeholder="Chọn nhóm hàng hóa" />
                 </SelectTrigger>
                 <SelectContent>
-                  {NHOM_HANG_HOA_ROWS.map((r) => (
+                  {nhomHangHoaRows.map((r) => (
                     <SelectItem key={r.id} value={r.id}>
                       {r.tenNhom}
                     </SelectItem>
@@ -298,6 +368,7 @@ export default function ProductEditorPage() {
                   renderForm: (close, select) => (
                     <QuickCreateModel
                       nhaSanXuatId={form.nhaSanXuat?.id ?? ''}
+                      sanPhamId={sanPhamRows[0]?.id ?? ''}
                       close={close}
                       select={select}
                     />
@@ -319,7 +390,9 @@ export default function ProductEditorPage() {
                 <Label>Model dùng chung</Label>
                 <Input
                   value={form.modelDungChungText}
-                  onChange={(e) => patch({ modelDungChungText: e.target.value })}
+                  onChange={(e) =>
+                    patch({ modelDungChungText: e.target.value })
+                  }
                   placeholder="Ví dụ: RAS-F10CJV, RAS-F13CJV, RAS-F18CJV"
                 />
               </div>
@@ -337,7 +410,7 @@ export default function ProductEditorPage() {
                   <SelectValue placeholder="Chọn đơn vị tính" />
                 </SelectTrigger>
                 <SelectContent>
-                  {DON_VI_TINH_ROWS.map((r) => (
+                  {donViTinhRows.map((r) => (
                     <SelectItem key={r.id} value={r.id}>
                       {r.tenDVT}
                     </SelectItem>

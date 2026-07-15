@@ -5,7 +5,7 @@
  * Giá Mua price radios + Số lượng, and "Thêm hàng" which appends a row to the
  * line grid via `onAdd`.
  */
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -17,8 +17,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { ServerAutocomplete, notify, type AutocompleteOption } from '@/components/shared'
-import { HANG_HOA_ROWS, NHA_KHO_ROWS, NGAN_CHUA_ROWS } from '@/mock/masterdata'
+import {
+  ServerAutocomplete,
+  notify,
+  type AutocompleteOption,
+} from '@/components/shared'
+import { filterLookupOptions, useLookup } from '@/hooks/use-lookup'
 import { formatVND } from '@/lib/format'
 import {
   searchRepairTickets,
@@ -26,25 +30,22 @@ import {
 } from './cap-linh-kien-repair-lookup'
 import type { CapLinhKienLine } from './stockout-editor-types'
 
-export const MUC_DICH_OPTIONS = ['Sữa chữa dịch vụ', 'Bảo hành', 'Kỹ thuật mượn'] as const
+export const MUC_DICH_OPTIONS = [
+  'Sữa chữa dịch vụ',
+  'Bảo hành',
+  'Kỹ thuật mượn',
+] as const
 
 type PriceKind = 'ban' | 'si' | 'mua'
-
-async function searchHangHoa(query: string): Promise<AutocompleteOption[]> {
-  const q = query.trim().toLowerCase()
-  const list = q
-    ? HANG_HOA_ROWS.filter(
-        (h) => h.tenHH.toLowerCase().includes(q) || h.maHH.toLowerCase().includes(q),
-      )
-    : HANG_HOA_ROWS
-  return list.slice(0, 20).map((h) => ({ id: h.id, label: `${h.maHH} — ${h.tenHH}` }))
-}
 
 interface CapLinhKienLineEntryProps {
   onAdd: (line: CapLinhKienLine) => void
 }
 
 export function CapLinhKienLineEntry({ onAdd }: CapLinhKienLineEntryProps) {
+  const { rows: hangHoaRows, byId: hangHoaById } = useLookup('hang-hoa')
+  const { rows: nhaKhoRows } = useLookup('nha-kho')
+  const { rows: nganChuaRows } = useLookup('ngan-chua')
   const [ticket, setTicket] = useState<RepairTicketOption | null>(null)
   const [mucDich, setMucDich] = useState('')
   const [hangHoa, setHangHoa] = useState<AutocompleteOption | null>(null)
@@ -52,7 +53,17 @@ export function CapLinhKienLineEntry({ onAdd }: CapLinhKienLineEntryProps) {
   const [theoSerial, setTheoSerial] = useState(false)
   const [soLuong, setSoLuong] = useState('1')
 
-  const selectedHang = HANG_HOA_ROWS.find((h) => h.id === hangHoa?.id)
+  const searchHangHoa = useCallback(
+    (query: string) =>
+      filterLookupOptions(
+        hangHoaRows,
+        query,
+        (row) => `${row.maHH} — ${row.tenHH}`,
+        (row) => `${row.maHH} ${row.tenHH}`,
+      ),
+    [hangHoaRows],
+  )
+  const selectedHang = hangHoa?.id ? hangHoaById.get(hangHoa.id) : undefined
   const priceValue = selectedHang
     ? priceKind === 'mua'
       ? (selectedHang.giaNhap ?? 0)
@@ -79,8 +90,8 @@ export function CapLinhKienLineEntry({ onAdd }: CapLinhKienLineEntryProps) {
       return
     }
     const qty = Number(soLuong) || 0
-    const kho = NHA_KHO_ROWS[0]
-    const nganChua = NGAN_CHUA_ROWS[0]
+    const kho = nhaKhoRows[0]
+    const nganChua = nganChuaRows[0]
     onAdd({
       serial: theoSerial ? ticket.serial : '',
       soPhieuSC: ticket.soPhieu,
@@ -135,16 +146,18 @@ export function CapLinhKienLineEntry({ onAdd }: CapLinhKienLineEntryProps) {
         </div>
 
         {ticket && (
-          <div className="sm:col-span-2 lg:col-span-4 rounded-md border bg-muted/40 p-3 text-xs">
+          <div className="rounded-md border bg-muted/40 p-3 text-xs sm:col-span-2 lg:col-span-4">
             <p>
-              <span className="font-medium">Khách hàng:</span> {ticket.khachHang}{' '}
-              <span className="font-medium">— Phone:</span> {ticket.dienThoai}
+              <span className="font-medium">Khách hàng:</span>{' '}
+              {ticket.khachHang} <span className="font-medium">— Phone:</span>{' '}
+              {ticket.dienThoai}
             </p>
             <p>
               <span className="font-medium">Ngày nhận:</span> {ticket.ngayNhan}{' '}
               <span className="font-medium">— NSX:</span> {ticket.nhaSanXuat}{' '}
               <span className="font-medium">— Model:</span> {ticket.model}{' '}
-              <span className="font-medium">— Serial:</span> {ticket.serial || '—'}
+              <span className="font-medium">— Serial:</span>{' '}
+              {ticket.serial || '—'}
             </p>
           </div>
         )}

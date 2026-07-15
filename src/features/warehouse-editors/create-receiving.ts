@@ -7,13 +7,9 @@
  */
 import { RECEIVING_ROWS } from '@/domains/warehouse/list-data'
 import type { ReceivingVoucher, ReceivingLine } from '@/domains/warehouse/types'
+import { nextVoucherCode } from '@/lib/voucher-code'
 
-let receivingSeq = RECEIVING_ROWS.length
-
-function ymd(iso: string): string {
-  const d = new Date(iso)
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
-}
+let receivingIdSeq = RECEIVING_ROWS.length
 
 export interface CreateReceivingInput {
   soDatHang: string
@@ -28,12 +24,16 @@ export interface CreateReceivingInput {
 }
 
 export function createReceiving(input: CreateReceivingInput): ReceivingVoucher {
-  receivingSeq += 1
-  const now = new Date().toISOString()
+  receivingIdSeq += 1
+  const now = new Date()
   const soTien = input.lines.reduce((s, l) => s + l.thanhTien, 0)
   const voucher: ReceivingVoucher = {
-    id: `nk-new-${receivingSeq}`,
-    soPhieu: `PNK-${ymd(now)}-${receivingSeq}`,
+    id: `nk-new-${receivingIdSeq}`,
+    soPhieu: nextVoucherCode(
+      'PNK',
+      RECEIVING_ROWS.map((row) => row.soPhieu),
+      now,
+    ),
     soDatHang: input.soDatHang,
     soHoaDon: input.soHoaDon,
     nhaCungCap: input.nhaCungCap,
@@ -41,7 +41,7 @@ export function createReceiving(input: CreateReceivingInput): ReceivingVoucher {
     khoTen: input.khoTen,
     soTien,
     nguoiLap: input.nguoiLap,
-    ngayLap: now,
+    ngayLap: now.toISOString(),
     ghiChu: input.ghiChu,
     branchId: input.branchId,
     lines: input.lines,

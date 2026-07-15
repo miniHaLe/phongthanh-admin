@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BRANCHES, type BranchId } from '@/mock/seed/branches'
-import { NHA_KHO_ROWS } from '@/mock/masterdata'
+import { useLookup } from '@/hooks/use-lookup'
 
 export interface ChuyenKhoCrossHeaderValues {
   tuChiNhanhId: BranchId
@@ -55,9 +55,12 @@ export function ChuyenKhoCrossHeaderFields({
   onChange,
   errors,
 }: ChuyenKhoCrossHeaderFieldsProps) {
-  const tuKhoOptions = NHA_KHO_ROWS
-  const denChiNhanhOptions = BRANCHES.filter((b) => b.id !== values.tuChiNhanhId)
-  const denKhoOptions = NHA_KHO_ROWS
+  const { rows: nhaKhoRows } = useLookup('nha-kho')
+  const tuKhoOptions = nhaKhoRows
+  const denChiNhanhOptions = BRANCHES.filter(
+    (b) => b.id !== values.tuChiNhanhId,
+  )
+  const denKhoOptions = nhaKhoRows
 
   return (
     <section aria-labelledby="section-ckk-info">
@@ -68,7 +71,9 @@ export function ChuyenKhoCrossHeaderFields({
         <Field label="Từ chi nhánh" required error={errors.tuChiNhanhId}>
           <Select
             value={values.tuChiNhanhId}
-            onValueChange={(v) => onChange({ tuChiNhanhId: v as BranchId, denChiNhanhId: '' })}
+            onValueChange={(v) =>
+              onChange({ tuChiNhanhId: v as BranchId, denChiNhanhId: '' })
+            }
           >
             <SelectTrigger aria-label="Từ chi nhánh">
               <SelectValue />
@@ -84,7 +89,10 @@ export function ChuyenKhoCrossHeaderFields({
         </Field>
 
         <Field label="Từ nhà kho" required error={errors.tuKhoId}>
-          <Select value={values.tuKhoId} onValueChange={(v) => onChange({ tuKhoId: v })}>
+          <Select
+            value={values.tuKhoId}
+            onValueChange={(v) => onChange({ tuKhoId: v })}
+          >
             <SelectTrigger aria-label="Từ nhà kho">
               <SelectValue placeholder="Chọn nhà kho" />
             </SelectTrigger>
@@ -117,7 +125,10 @@ export function ChuyenKhoCrossHeaderFields({
         </Field>
 
         <Field label="Đến nhà kho" required error={errors.denKhoId}>
-          <Select value={values.denKhoId} onValueChange={(v) => onChange({ denKhoId: v })}>
+          <Select
+            value={values.denKhoId}
+            onValueChange={(v) => onChange({ denKhoId: v })}
+          >
             <SelectTrigger aria-label="Đến nhà kho">
               <SelectValue placeholder="Chọn nhà kho" />
             </SelectTrigger>

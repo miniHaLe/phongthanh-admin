@@ -1,12 +1,13 @@
 import type { CrudConfig } from '@/types/crud-types'
 import type { DonViTinh } from '@/types/masterdata-types'
-import { donViTinhApi } from '@/mock/masterdata/don-vi-tinh.mock'
+import { DON_VI_TINH_ROWS } from '@/mock/masterdata/don-vi-tinh.mock'
+import { apiFor } from '@/api/api-for'
 
 export const donViTinhConfig: CrudConfig<DonViTinh> = {
   resourceKey: 'don-vi-tinh',
   title: 'Đơn Vị Tính',
   pageSize: 20,
-  mockApi: donViTinhApi,
+  mockApi: apiFor('don-vi-tinh', DON_VI_TINH_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [

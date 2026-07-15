@@ -7,23 +7,26 @@
 import { formatDate } from '@/lib/format'
 import type { CrudConfig } from '@/types/crud-types'
 import type { HangHoa } from '@/types/masterdata-types'
-import { hangHoaApi } from '@/mock/masterdata/hang-hoa.mock'
-import { NHOM_HANG_HOA_ROWS } from '@/mock/masterdata/nhom-hang-hoa.mock'
-import { DON_VI_TINH_ROWS } from '@/mock/masterdata/don-vi-tinh.mock'
-import { NHA_SAN_XUAT_ROWS } from '@/mock/masterdata/nha-san-xuat.mock'
-import { MODEL_ROWS } from '@/mock/masterdata/model.mock'
+import { HANG_HOA_ROWS } from '@/mock/masterdata/hang-hoa.mock'
+import { apiFor } from '@/api/api-for'
+import { lookupLabel } from '@/components/crud/lookup-label'
+import { loadLookupOptions } from '@/hooks/use-lookup'
 
-const nsxName = (id?: string) =>
-  id ? (NHA_SAN_XUAT_ROWS.find((r) => r.id === id)?.tenNSX ?? id) : ''
-const modelName = (id?: string) =>
-  id ? (MODEL_ROWS.find((r) => r.id === id)?.tenModel ?? id) : ''
+const loadNhomHangHoaOptions = () =>
+  loadLookupOptions('nhom-hang-hoa', (row) => row.tenNhom)
+const loadDonViTinhOptions = () =>
+  loadLookupOptions('don-vi-tinh', (row) => row.tenDVT)
+const loadNhaSanXuatOptions = () =>
+  loadLookupOptions('nha-san-xuat', (row) => row.tenNSX)
+const loadModelOptions = () =>
+  loadLookupOptions('model', (row) => row.tenModel)
 
 export const hangHoaConfig: CrudConfig<HangHoa> = {
   resourceKey: 'hang-hoa',
   title: 'Hàng Hóa',
   pageSize: 20,
   defaultSort: { key: 'maHH', dir: 'asc' },
-  mockApi: hangHoaApi,
+  mockApi: apiFor('hang-hoa', HANG_HOA_ROWS),
   bulkDelete: true,
   export: true,
   addLabel: false,
@@ -38,19 +41,21 @@ export const hangHoaConfig: CrudConfig<HangHoa> = {
       header: 'Nhóm hàng hóa',
       width: 160,
       renderCell: (v) =>
-        NHOM_HANG_HOA_ROWS.find((r) => r.id === v)?.tenNhom ?? (v as string),
+        lookupLabel('nhom-hang-hoa', v as string, (row) => row.tenNhom),
     },
     {
       key: 'nhaSanXuatId',
       header: 'Nhà sản xuất',
       width: 140,
-      renderCell: (v) => nsxName(v as string | undefined),
+      renderCell: (v) =>
+        lookupLabel('nha-san-xuat', v as string | undefined, (row) => row.tenNSX),
     },
     {
       key: 'modelId',
       header: 'Tên model',
       width: 150,
-      renderCell: (v) => modelName(v as string | undefined),
+      renderCell: (v) =>
+        lookupLabel('model', v as string | undefined, (row) => row.tenModel),
     },
     {
       key: 'modelDungChungText',
@@ -63,7 +68,7 @@ export const hangHoaConfig: CrudConfig<HangHoa> = {
       header: 'Đơn vị',
       width: 90,
       renderCell: (v) =>
-        DON_VI_TINH_ROWS.find((r) => r.id === v)?.tenDVT ?? (v as string),
+        lookupLabel('don-vi-tinh', v as string, (row) => row.tenDVT),
     },
     { key: 'nguoiTao', header: 'Người tạo', width: 150 },
     {
@@ -86,10 +91,7 @@ export const hangHoaConfig: CrudConfig<HangHoa> = {
       label: 'Nhóm hàng hóa',
       type: 'select',
       required: true,
-      options: NHOM_HANG_HOA_ROWS.map((r) => ({
-        label: r.tenNhom,
-        value: r.id,
-      })),
+      loadOptions: loadNhomHangHoaOptions,
     },
     { key: 'maHH', label: 'Mã hàng hóa', type: 'text', required: true },
     { key: 'maHHPhu', label: 'Mã hàng hóa phụ', type: 'text' },
@@ -100,7 +102,7 @@ export const hangHoaConfig: CrudConfig<HangHoa> = {
       label: 'Đơn vị tính',
       type: 'select',
       required: true,
-      options: DON_VI_TINH_ROWS.map((r) => ({ label: r.tenDVT, value: r.id })),
+      loadOptions: loadDonViTinhOptions,
     },
     { key: 'coSerial', label: 'Có Serial', type: 'switch' },
     { key: 'giaMua', label: 'Giá mua', type: 'money' },
@@ -112,16 +114,13 @@ export const hangHoaConfig: CrudConfig<HangHoa> = {
       key: 'nhomHangHoaId',
       label: 'Nhóm hàng hóa',
       type: 'select',
-      options: NHOM_HANG_HOA_ROWS.map((r) => ({
-        label: r.tenNhom,
-        value: r.id,
-      })),
+      loadOptions: loadNhomHangHoaOptions,
     },
     {
       key: 'nhaSanXuatId',
       label: 'Nhà sản xuất',
       type: 'select',
-      options: NHA_SAN_XUAT_ROWS.map((r) => ({ label: r.tenNSX, value: r.id })),
+      loadOptions: loadNhaSanXuatOptions,
     },
     { key: 'maHH', label: 'Mã hàng hóa', type: 'text' },
     { key: 'tenHH', label: 'Tên hàng hóa', type: 'text' },
@@ -129,7 +128,7 @@ export const hangHoaConfig: CrudConfig<HangHoa> = {
       key: 'modelId',
       label: 'Model',
       type: 'select',
-      options: MODEL_ROWS.map((r) => ({ label: r.tenModel, value: r.id })),
+      loadOptions: loadModelOptions,
     },
   ],
 }

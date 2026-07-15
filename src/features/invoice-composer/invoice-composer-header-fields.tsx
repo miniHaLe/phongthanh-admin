@@ -3,7 +3,7 @@
  * carries a search-customer button that opens a modal matching by name/phone
  * and auto-fills Tên đơn vị + Địa chỉ (read-only labels) + hidden customerId.
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Search } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -21,10 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { searchCustomersByNameOrPhone } from './customer-tax-search'
+import {
+  searchCustomersByNameOrPhone,
+  type CustomerTaxMatch,
+} from './customer-tax-search'
 import type { HinhThucThanhToanId } from '@/types/finance-types'
 
-export const HINH_THUC_CREATE_OPTIONS: { label: string; value: HinhThucThanhToanId }[] = [
+export const HINH_THUC_CREATE_OPTIONS: {
+  label: string
+  value: HinhThucThanhToanId
+}[] = [
   { label: 'Tiền mặt', value: 1 },
   { label: 'Công nợ', value: 2 },
   { label: 'Chuyển khoản', value: 3 },
@@ -79,10 +85,46 @@ function CustomerSearchModal({
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (match: ReturnType<typeof searchCustomersByNameOrPhone>[number]) => void
+  onSelect: (match: CustomerTaxMatch) => void
 }) {
   const [query, setQuery] = useState('')
-  const results = searchCustomersByNameOrPhone(query)
+  const [results, setResults] = useState<CustomerTaxMatch[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!open || !query.trim()) {
+      setResults([])
+      setError('')
+      return
+    }
+
+    let active = true
+    const timer = window.setTimeout(async () => {
+      setIsLoading(true)
+      setError('')
+      try {
+        const matches = await searchCustomersByNameOrPhone(query)
+        if (active) setResults(matches)
+      } catch (reason) {
+        if (active) {
+          setResults([])
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : 'Không thể tìm kiếm khách hàng',
+          )
+        }
+      } finally {
+        if (active) setIsLoading(false)
+      }
+    }, 250)
+
+    return () => {
+      active = false
+      window.clearTimeout(timer)
+    }
+  }, [open, query])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,7 +139,13 @@ function CustomerSearchModal({
           onChange={(e) => setQuery(e.target.value)}
         />
         <ul className="mt-2 max-h-72 overflow-auto rounded-md border">
-          {results.length === 0 ? (
+          {isLoading ? (
+            <li className="px-3 py-2 text-sm text-muted-foreground">
+              Đang tìm kiếm…
+            </li>
+          ) : error ? (
+            <li className="px-3 py-2 text-sm text-destructive">{error}</li>
+          ) : results.length === 0 ? (
             <li className="px-3 py-2 text-sm text-muted-foreground">
               {query ? 'Không có kết quả' : 'Nhập để tìm kiếm'}
             </li>
@@ -123,16 +171,28 @@ function CustomerSearchModal({
   )
 }
 
-export function InvoiceHeaderFields({ values, onChange, errors }: InvoiceHeaderFieldsProps) {
+export function InvoiceHeaderFields({
+  values,
+  onChange,
+  errors,
+}: InvoiceHeaderFieldsProps) {
   const [searchOpen, setSearchOpen] = useState(false)
 
   return (
     <section aria-labelledby="section-invoice-customer-info">
-      <h2 id="section-invoice-customer-info" className="mb-4 text-base font-semibold">
+      <h2
+        id="section-invoice-customer-info"
+        className="mb-4 text-base font-semibold"
+      >
         Thông tin khách hàng
       </h2>
       <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Field label="Số hóa đơn" htmlFor="hd-so" required error={errors.soHoaDon}>
+        <Field
+          label="Số hóa đơn"
+          htmlFor="hd-so"
+          required
+          error={errors.soHoaDon}
+        >
           <Input
             id="hd-so"
             value={values.soHoaDon}
@@ -140,7 +200,12 @@ export function InvoiceHeaderFields({ values, onChange, errors }: InvoiceHeaderF
           />
         </Field>
 
-        <Field label="Ngày xuất" htmlFor="hd-ngayxuat" required error={errors.ngayXuat}>
+        <Field
+          label="Ngày xuất"
+          htmlFor="hd-ngayxuat"
+          required
+          error={errors.ngayXuat}
+        >
           <Input
             id="hd-ngayxuat"
             type="date"
@@ -171,7 +236,9 @@ export function InvoiceHeaderFields({ values, onChange, errors }: InvoiceHeaderF
         >
           <Select
             value={values.hinhThucId ? String(values.hinhThucId) : ''}
-            onValueChange={(v) => onChange({ hinhThucId: Number(v) as HinhThucThanhToanId })}
+            onValueChange={(v) =>
+              onChange({ hinhThucId: Number(v) as HinhThucThanhToanId })
+            }
           >
             <SelectTrigger id="hd-hinhthuc">
               <SelectValue placeholder="-- Vui lòng chọn --" />
@@ -186,7 +253,12 @@ export function InvoiceHeaderFields({ values, onChange, errors }: InvoiceHeaderF
           </Select>
         </Field>
 
-        <Field label="Mã số thuế" htmlFor="hd-mst" required error={errors.maSoThue}>
+        <Field
+          label="Mã số thuế"
+          htmlFor="hd-mst"
+          required
+          error={errors.maSoThue}
+        >
           <div className="flex gap-1.5">
             <Input
               id="hd-mst"

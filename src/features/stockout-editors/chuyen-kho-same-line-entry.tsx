@@ -3,7 +3,7 @@
  * autocomplete + Ngăn chứa select (per-line, distinguishing this editor from
  * the cross-branch one), Số lượng, "Thêm hàng" appends a row to the grid.
  */
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -14,22 +14,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ServerAutocomplete, notify, type AutocompleteOption } from '@/components/shared'
-import { HANG_HOA_ROWS, NGAN_CHUA_ROWS } from '@/mock/masterdata'
+import {
+  ServerAutocomplete,
+  notify,
+  type AutocompleteOption,
+} from '@/components/shared'
+import { filterLookupOptions, useLookup } from '@/hooks/use-lookup'
+import type { NganChua } from '@/types/masterdata-types'
 import type { ChuyenKhoSameLine } from './stockout-editor-types'
 
-async function searchHangHoa(query: string): Promise<AutocompleteOption[]> {
-  const q = query.trim().toLowerCase()
-  const list = q
-    ? HANG_HOA_ROWS.filter(
-        (h) => h.tenHH.toLowerCase().includes(q) || h.maHH.toLowerCase().includes(q),
-      )
-    : HANG_HOA_ROWS
-  return list.slice(0, 20).map((h) => ({ id: h.id, label: `${h.maHH} — ${h.tenHH}` }))
-}
-
 interface ChuyenKhoSameLineEntryProps {
-  nganChuaOptions: typeof NGAN_CHUA_ROWS
+  nganChuaOptions: NganChua[]
   onAdd: (line: ChuyenKhoSameLine) => void
 }
 
@@ -37,9 +32,20 @@ export function ChuyenKhoSameLineEntry({
   nganChuaOptions,
   onAdd,
 }: ChuyenKhoSameLineEntryProps) {
+  const { rows: hangHoaRows, byId: hangHoaById } = useLookup('hang-hoa')
   const [hangHoa, setHangHoa] = useState<AutocompleteOption | null>(null)
   const [nganChuaId, setNganChuaId] = useState('')
   const [soLuong, setSoLuong] = useState('1')
+  const searchHangHoa = useCallback(
+    (query: string) =>
+      filterLookupOptions(
+        hangHoaRows,
+        query,
+        (row) => `${row.maHH} — ${row.tenHH}`,
+        (row) => `${row.maHH} ${row.tenHH}`,
+      ),
+    [hangHoaRows],
+  )
 
   function reset() {
     setHangHoa(null)
@@ -47,7 +53,7 @@ export function ChuyenKhoSameLineEntry({
   }
 
   function handleAdd() {
-    const selected = HANG_HOA_ROWS.find((h) => h.id === hangHoa?.id)
+    const selected = hangHoa?.id ? hangHoaById.get(hangHoa.id) : undefined
     if (!selected) {
       notify.error('Vui lòng chọn hàng hóa!')
       return

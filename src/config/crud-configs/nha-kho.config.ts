@@ -1,13 +1,18 @@
 import type { CrudConfig } from '@/types/crud-types'
 import type { NhaKho } from '@/types/masterdata-types'
-import { nhaKhoApi } from '@/mock/masterdata/nha-kho.mock'
-import { CHI_NHANH_ROWS } from '@/mock/masterdata/chi-nhanh.mock'
+import { NHA_KHO_ROWS } from '@/mock/masterdata/nha-kho.mock'
+import { apiFor } from '@/api/api-for'
+import { lookupLabel } from '@/components/crud/lookup-label'
+import { loadLookupOptions } from '@/hooks/use-lookup'
+
+const loadChiNhanhOptions = () =>
+  loadLookupOptions('chi-nhanh', (row) => row.tenChiNhanh)
 
 export const nhaKhoConfig: CrudConfig<NhaKho> = {
   resourceKey: 'nha-kho',
   title: 'Nhà Kho',
   pageSize: 20,
-  mockApi: nhaKhoApi,
+  mockApi: apiFor('nha-kho', NHA_KHO_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [
@@ -18,7 +23,7 @@ export const nhaKhoConfig: CrudConfig<NhaKho> = {
       header: 'Chi nhánh',
       width: 160,
       renderCell: (v) =>
-        CHI_NHANH_ROWS.find((r) => r.id === v)?.tenChiNhanh ?? (v as string),
+        lookupLabel('chi-nhanh', v as string, (row) => row.tenChiNhanh),
     },
     {
       key: 'khoXac',
@@ -35,10 +40,7 @@ export const nhaKhoConfig: CrudConfig<NhaKho> = {
       label: 'Chi nhánh',
       type: 'select',
       required: true,
-      options: CHI_NHANH_ROWS.map((r) => ({
-        label: r.tenChiNhanh,
-        value: r.id,
-      })),
+      loadOptions: loadChiNhanhOptions,
     },
     { key: 'khoXac', label: 'Kho xác', type: 'switch' },
   ],

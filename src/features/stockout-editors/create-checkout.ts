@@ -7,14 +7,10 @@
  */
 import { CHECKOUT_ROWS } from '@/domains/warehouse/list-data'
 import type { CheckOutSlip } from '@/domains/warehouse/types'
+import { nextVoucherCode } from '@/lib/voucher-code'
 import type { CapLinhKienLine } from './stockout-editor-types'
 
-let checkoutSeq = CHECKOUT_ROWS.length
-
-function ymd(iso: string): string {
-  const d = new Date(iso)
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
-}
+let checkoutIdSeq = CHECKOUT_ROWS.length
 
 export interface CreateCheckoutInput {
   kyThuat: string
@@ -25,13 +21,17 @@ export interface CreateCheckoutInput {
 }
 
 export function createCheckout(input: CreateCheckoutInput): CheckOutSlip {
-  checkoutSeq += 1
-  const now = new Date().toISOString()
+  checkoutIdSeq += 1
+  const now = new Date()
   const soTien = input.lines.reduce((s, l) => s + l.thanhTien, 0)
   const slip: CheckOutSlip = {
-    id: `clk-new-${checkoutSeq}`,
-    soPhieuCap: `PCH-${ymd(now)}-${checkoutSeq}`,
-    ngayLap: now,
+    id: `clk-new-${checkoutIdSeq}`,
+    soPhieuCap: nextVoucherCode(
+      'PCH',
+      CHECKOUT_ROWS.map((row) => row.soPhieuCap),
+      now,
+    ),
+    ngayLap: now.toISOString(),
     kyThuat: input.kyThuat,
     soTien,
     nguoiLap: input.nguoiLap,

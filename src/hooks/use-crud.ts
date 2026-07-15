@@ -7,6 +7,7 @@ import {
   useQuery,
   useMutation,
   useQueryClient,
+  type QueryClient,
   type UseQueryResult,
 } from '@tanstack/react-query'
 import { notify } from '@/components/shared'
@@ -27,6 +28,13 @@ const DEFAULT_PARAMS: CrudParams = {
   pageSize: 20,
   search: '',
   filters: {},
+}
+
+export function invalidateCrudQueries(qc: QueryClient, resource: string) {
+  return Promise.all([
+    qc.invalidateQueries({ queryKey: [resource] }),
+    qc.invalidateQueries({ queryKey: ['lookup', resource] }),
+  ])
 }
 
 export interface UseCrudReturn<T extends { id: string }> {
@@ -78,7 +86,7 @@ export function useCrud<T extends { id: string }>(
     staleTime: 30_000,
   })
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: [key] })
+  const invalidate = () => invalidateCrudQueries(qc, key)
 
   const createMutation = useMutation<T, Error, Omit<T, 'id' | 'createdAt'>>({
     mutationFn: (data) => config.mockApi.create(data),

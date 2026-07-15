@@ -4,14 +4,18 @@
  * Giá mua mới + Cập nhật giá checkbox, and "Thêm hàng" which appends a row to
  * the line grid via `onAdd`.
  */
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DialogFooter } from '@/components/ui/dialog'
-import { ServerAutocomplete, notify, type AutocompleteOption } from '@/components/shared'
-import { HANG_HOA_ROWS, NGAN_CHUA_ROWS } from '@/mock/masterdata'
+import {
+  ServerAutocomplete,
+  notify,
+  type AutocompleteOption,
+} from '@/components/shared'
+import { filterLookupOptions, useLookup } from '@/hooks/use-lookup'
 import { MANUFACTURERS, MODELS } from '@/domains/repair/reference-data'
 import type { ReceivingLine } from '@/domains/warehouse/types'
 
@@ -20,24 +24,18 @@ let hangHoaSeq = 0
 
 async function searchNsx(query: string): Promise<AutocompleteOption[]> {
   const q = query.trim().toLowerCase()
-  const list = q ? MANUFACTURERS.filter((m) => m.ten.toLowerCase().includes(q)) : MANUFACTURERS
+  const list = q
+    ? MANUFACTURERS.filter((m) => m.ten.toLowerCase().includes(q))
+    : MANUFACTURERS
   return list.map((m) => ({ id: m.id, label: m.ten }))
 }
 
 async function searchModel(query: string): Promise<AutocompleteOption[]> {
   const q = query.trim().toLowerCase()
-  const list = q ? MODELS.filter((m) => m.ten.toLowerCase().includes(q)) : MODELS
-  return list.map((m) => ({ id: m.id, label: m.ten }))
-}
-
-async function searchHangHoa(query: string): Promise<AutocompleteOption[]> {
-  const q = query.trim().toLowerCase()
   const list = q
-    ? HANG_HOA_ROWS.filter(
-        (h) => h.tenHH.toLowerCase().includes(q) || h.maHH.toLowerCase().includes(q),
-      )
-    : HANG_HOA_ROWS
-  return list.slice(0, 20).map((h) => ({ id: h.id, label: `${h.maHH} — ${h.tenHH}` }))
+    ? MODELS.filter((m) => m.ten.toLowerCase().includes(q))
+    : MODELS
+  return list.map((m) => ({ id: m.id, label: m.ten }))
 }
 
 function QuickCreateModelForm({
@@ -52,7 +50,12 @@ function QuickCreateModelForm({
     <div className="space-y-4">
       <div className="space-y-1.5">
         <Label htmlFor="qc-model-ten">Tên model</Label>
-        <Input id="qc-model-ten" value={ten} onChange={(e) => setTen(e.target.value)} autoFocus />
+        <Input
+          id="qc-model-ten"
+          value={ten}
+          onChange={(e) => setTen(e.target.value)}
+          autoFocus
+        />
       </div>
       <DialogFooter>
         <Button type="button" variant="ghost" onClick={close}>
@@ -89,11 +92,20 @@ function QuickCreateHangHoaForm({
     <div className="space-y-4">
       <div className="space-y-1.5">
         <Label htmlFor="qc-hh-ma">Mã hàng</Label>
-        <Input id="qc-hh-ma" value={ma} onChange={(e) => setMa(e.target.value)} autoFocus />
+        <Input
+          id="qc-hh-ma"
+          value={ma}
+          onChange={(e) => setMa(e.target.value)}
+          autoFocus
+        />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="qc-hh-ten">Tên hàng</Label>
-        <Input id="qc-hh-ten" value={ten} onChange={(e) => setTen(e.target.value)} />
+        <Input
+          id="qc-hh-ten"
+          value={ten}
+          onChange={(e) => setTen(e.target.value)}
+        />
       </div>
       <DialogFooter>
         <Button type="button" variant="ghost" onClick={close}>
@@ -107,7 +119,10 @@ function QuickCreateHangHoaForm({
               return
             }
             hangHoaSeq += 1
-            select({ id: `hh-new-${hangHoaSeq}`, label: `${ma.trim()} — ${ten.trim()}` })
+            select({
+              id: `hh-new-${hangHoaSeq}`,
+              label: `${ma.trim()} — ${ten.trim()}`,
+            })
           }}
         >
           Lưu
@@ -122,6 +137,8 @@ interface NhapKhoLineEntryProps {
 }
 
 export function NhapKhoLineEntry({ onAdd }: NhapKhoLineEntryProps) {
+  const { rows: hangHoaRows } = useLookup('hang-hoa')
+  const { rows: nganChuaRows } = useLookup('ngan-chua')
   const [nsx, setNsx] = useState<AutocompleteOption | null>(null)
   const [model, setModel] = useState<AutocompleteOption | null>(null)
   const [hangHoa, setHangHoa] = useState<AutocompleteOption | null>(null)
@@ -129,6 +146,16 @@ export function NhapKhoLineEntry({ onAdd }: NhapKhoLineEntryProps) {
   const [giaMua, setGiaMua] = useState('')
   const [capNhatGia, setCapNhatGia] = useState(false)
   const [serial, setSerial] = useState('')
+  const searchHangHoa = useCallback(
+    (query: string) =>
+      filterLookupOptions(
+        hangHoaRows,
+        query,
+        (row) => `${row.maHH} — ${row.tenHH}`,
+        (row) => `${row.maHH} ${row.tenHH}`,
+      ),
+    [hangHoaRows],
+  )
 
   function reset() {
     setHangHoa(null)
@@ -149,7 +176,7 @@ export function NhapKhoLineEntry({ onAdd }: NhapKhoLineEntryProps) {
     onAdd({
       ma: maPart ?? hangHoa.label,
       ten: tenPart ?? hangHoa.label,
-      nganChua: NGAN_CHUA_ROWS[0]?.tenNgan ?? '',
+      nganChua: nganChuaRows[0]?.tenNgan ?? '',
       soLuong: qty,
       donGia,
       thanhTien: qty * donGia,
@@ -161,7 +188,10 @@ export function NhapKhoLineEntry({ onAdd }: NhapKhoLineEntryProps) {
 
   return (
     <section aria-labelledby="section-nhap-kho-chitiet" className="mt-6">
-      <h2 id="section-nhap-kho-chitiet" className="mb-4 text-base font-semibold">
+      <h2
+        id="section-nhap-kho-chitiet"
+        className="mb-4 text-base font-semibold"
+      >
         Chi tiết
       </h2>
       <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -232,7 +262,10 @@ export function NhapKhoLineEntry({ onAdd }: NhapKhoLineEntryProps) {
         </div>
         <div className="flex items-end gap-2 pb-1.5">
           <label className="flex cursor-pointer items-center gap-1.5 text-sm">
-            <Checkbox checked={capNhatGia} onCheckedChange={(c) => setCapNhatGia(!!c)} />
+            <Checkbox
+              checked={capNhatGia}
+              onCheckedChange={(c) => setCapNhatGia(!!c)}
+            />
             Cập nhật giá
           </label>
         </div>

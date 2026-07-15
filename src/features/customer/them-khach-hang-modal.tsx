@@ -4,6 +4,7 @@
  * (dealers use the separate "Thêm Đại Lý" flow which fixes the dealer type).
  */
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -25,6 +26,7 @@ import {
 import { notify } from '@/components/shared'
 import { TINH, QUAN, XA } from '@/mock/seed/tinh-quan-xa'
 import { createCustomer } from './create-customer'
+import { invalidateCrudQueries } from '@/hooks/use-crud'
 
 const KHACH_LE_ID = 1
 
@@ -63,7 +65,9 @@ export function ThemKhachHangModal({
   onClose,
   onCreated,
 }: ThemKhachHangModalProps) {
+  const queryClient = useQueryClient()
   const [form, setForm] = useState<FormState>(EMPTY)
+  const [isSaving, setIsSaving] = useState(false)
 
   function patch(p: Partial<FormState>) {
     setForm((prev) => ({ ...prev, ...p }))
@@ -74,7 +78,7 @@ export function ThemKhachHangModal({
     onClose()
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!form.tenKH.trim()) {
       notify.error('Vui lòng nhập tên khách hàng!')
       return
@@ -83,29 +87,48 @@ export function ThemKhachHangModal({
       notify.error('Vui lòng nhập số điện thoại!')
       return
     }
-    createCustomer({
-      tenKH: form.tenKH.trim(),
-      dienThoai: form.dienThoai.trim(),
-      dienThoai2: form.dienThoai2.trim() || undefined,
-      email: form.email.trim() || undefined,
-      diaChi: form.diaChi.trim() || undefined,
-      tinhId: form.tinhId || undefined,
-      quanId: form.quanId || undefined,
-      phuongXaId: form.phuongXaId || undefined,
-      loaiKhachHangId: KHACH_LE_ID,
-      ghiChu: form.ghiChu.trim() || undefined,
-    })
-    notify.success('Đã thêm khách hàng')
-    onCreated()
-    handleClose()
+    if (!form.tinhId) {
+      notify.error('Vui lòng chọn tỉnh!')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      await createCustomer({
+        tenKH: form.tenKH.trim(),
+        dienThoai: form.dienThoai.trim(),
+        dienThoai2: form.dienThoai2.trim() || undefined,
+        email: form.email.trim() || undefined,
+        diaChi: form.diaChi.trim() || undefined,
+        tinhId: form.tinhId,
+        quanId: form.quanId || undefined,
+        phuongXaId: form.phuongXaId || undefined,
+        loaiKhachHangId: KHACH_LE_ID,
+        ghiChu: form.ghiChu.trim() || undefined,
+      })
+      await invalidateCrudQueries(queryClient, 'khach-hang')
+      notify.success('Đã thêm khách hàng')
+      onCreated()
+      handleClose()
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : 'Không thể thêm khách hàng',
+      )
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const quanOptions = form.tinhId ? QUAN.filter((q) => q.tinhId === form.tinhId) : QUAN
-  const xaOptions = form.quanId ? XA.filter((x) => x.quanId === form.quanId) : XA
+  const quanOptions = form.tinhId
+    ? QUAN.filter((q) => q.tinhId === form.tinhId)
+    : QUAN
+  const xaOptions = form.quanId
+    ? XA.filter((x) => x.quanId === form.quanId)
+    : XA
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DialogContent>
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Thêm Khách Hàng</DialogTitle>
         </DialogHeader>
@@ -160,10 +183,14 @@ export function ThemKhachHangModal({
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Tỉnh</Label>
+            <Label>
+              Tỉnh <span className="text-destructive">*</span>
+            </Label>
             <Select
               value={form.tinhId}
-              onValueChange={(v) => patch({ tinhId: v, quanId: '', phuongXaId: '' })}
+              onValueChange={(v) =>
+                patch({ tinhId: v, quanId: '', phuongXaId: '' })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn tỉnh" />
@@ -179,7 +206,10 @@ export function ThemKhachHangModal({
           </div>
           <div className="space-y-1.5">
             <Label>Quận/Huyện</Label>
-            <Select value={form.quanId} onValueChange={(v) => patch({ quanId: v, phuongXaId: '' })}>
+            <Select
+              value={form.quanId}
+              onValueChange={(v) => patch({ quanId: v, phuongXaId: '' })}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn quận" />
               </SelectTrigger>
@@ -194,7 +224,10 @@ export function ThemKhachHangModal({
           </div>
           <div className="col-span-2 space-y-1.5">
             <Label>Phường/Xã</Label>
-            <Select value={form.phuongXaId} onValueChange={(v) => patch({ phuongXaId: v })}>
+            <Select
+              value={form.phuongXaId}
+              onValueChange={(v) => patch({ phuongXaId: v })}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn phường/xã" />
               </SelectTrigger>
@@ -218,11 +251,20 @@ export function ThemKhachHangModal({
           </div>
         </div>
         <DialogFooter>
-          <Button type="button" variant="ghost" onClick={handleClose}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleClose}
+            disabled={isSaving}
+          >
             Hủy
           </Button>
-          <Button type="button" onClick={handleSave}>
-            Lưu
+          <Button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Đang lưu…' : 'Lưu'}
           </Button>
         </DialogFooter>
       </DialogContent>

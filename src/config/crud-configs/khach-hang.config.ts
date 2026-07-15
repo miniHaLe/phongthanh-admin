@@ -6,13 +6,16 @@ import { KHACH_HANG_ROWS } from '@/mock/masterdata/khach-hang.mock'
 import { apiFor } from '@/api/api-for'
 import { LOAI_KHACH_HANG } from '@/mock/seed/nhom-khach-hang'
 import { TINH, QUAN, XA } from '@/mock/seed/tinh-quan-xa'
+import { lookupLabel } from '@/components/crud/lookup-label'
 
-const tinhName = (id?: string) => (id ? (TINH.find((t) => t.id === id)?.ten ?? id) : '')
-const quanName = (id?: string) => (id ? (QUAN.find((q) => q.id === id)?.ten ?? id) : '')
-const xaName = (id?: string) => (id ? (XA.find((x) => x.id === id)?.ten ?? id) : '')
-const loaiName = (id: number) => LOAI_KHACH_HANG.find((l) => l.id === id)?.ten ?? String(id)
-const daiLyName = (id?: string) =>
-  id ? (KHACH_HANG_ROWS.find((r) => r.id === id)?.tenKH ?? '') : ''
+const tinhName = (id?: string) =>
+  id ? (TINH.find((t) => t.id === id)?.ten ?? id) : ''
+const quanName = (id?: string) =>
+  id ? (QUAN.find((q) => q.id === id)?.ten ?? id) : ''
+const xaName = (id?: string) =>
+  id ? (XA.find((x) => x.id === id)?.ten ?? id) : ''
+const loaiName = (id: number) =>
+  LOAI_KHACH_HANG.find((l) => l.id === id)?.ten ?? String(id)
 
 export const khachHangConfig: CrudConfig<KhachHang> = {
   resourceKey: 'khach-hang',
@@ -29,12 +32,38 @@ export const khachHangConfig: CrudConfig<KhachHang> = {
     { key: 'dienThoai', header: 'Điện thoại', width: 120 },
     { key: 'dienThoai2', header: 'Điện thoại 2', width: 120 },
     { key: 'diaChi', header: 'Địa chỉ', width: 200 },
-    { key: 'phuongXaId', header: 'Phường/Xã', width: 150, renderCell: (v) => xaName(v as string | undefined) },
-    { key: 'quanId', header: 'Quận/Huyện', width: 150, renderCell: (v) => quanName(v as string | undefined) },
-    { key: 'tinhId', header: 'Tỉnh', width: 120, renderCell: (v) => tinhName(v as string | undefined) },
+    {
+      key: 'phuongXaId',
+      header: 'Phường/Xã',
+      width: 150,
+      renderCell: (v) => xaName(v as string | undefined),
+    },
+    {
+      key: 'quanId',
+      header: 'Quận/Huyện',
+      width: 150,
+      renderCell: (v) => quanName(v as string | undefined),
+    },
+    {
+      key: 'tinhId',
+      header: 'Tỉnh',
+      width: 120,
+      renderCell: (v) => tinhName(v as string | undefined),
+    },
     { key: 'email', header: 'Email', width: 180 },
-    { key: 'loaiKhachHangId', header: 'Loại', width: 140, renderCell: (v) => loaiName(v as number) },
-    { key: 'daiLyId', header: 'Đại lý/Trạm', width: 160, renderCell: (v) => daiLyName(v as string | undefined) },
+    {
+      key: 'loaiKhachHangId',
+      header: 'Loại',
+      width: 140,
+      renderCell: (v) => loaiName(v as number),
+    },
+    {
+      key: 'daiLyId',
+      header: 'Đại lý/Trạm',
+      width: 160,
+      renderCell: (v) =>
+        lookupLabel('khach-hang', v as string | undefined, (row) => row.tenKH),
+    },
     { key: 'nguoiTao', header: 'Người tạo', width: 150 },
     {
       key: 'createdAt',
@@ -73,7 +102,10 @@ export const khachHangConfig: CrudConfig<KhachHang> = {
       label: 'Nhóm khách hàng',
       type: 'select',
       required: true,
-      options: LOAI_KHACH_HANG.map((l) => ({ label: l.ten, value: String(l.id) })),
+      options: LOAI_KHACH_HANG.map((l) => ({
+        label: l.ten,
+        value: String(l.id),
+      })),
     },
     { key: 'ghiChu', label: 'Ghi chú', type: 'textarea', span: 2 },
   ],
@@ -94,7 +126,10 @@ export const khachHangConfig: CrudConfig<KhachHang> = {
       key: 'loaiKhachHangId',
       label: 'Nhóm khách hàng',
       type: 'select',
-      options: LOAI_KHACH_HANG.map((l) => ({ label: l.ten, value: String(l.id) })),
+      options: LOAI_KHACH_HANG.map((l) => ({
+        label: l.ten,
+        value: String(l.id),
+      })),
     },
     { key: 'tenKH', label: 'Tên khách hàng', type: 'text' },
     { key: 'dienThoai', label: 'Số điện thoại', type: 'text' },

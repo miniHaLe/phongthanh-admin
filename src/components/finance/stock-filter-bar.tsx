@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/sheet'
 import { PeriodRangePicker } from './period-range-picker'
 import { BRANCHES } from '@/mock/seed/branches'
-import { NHA_KHO_ROWS } from '@/mock/masterdata'
+import { useLookup } from '@/hooks/use-lookup'
 import type { DateRange } from '@/hooks/use-finance-kpi'
 
 const NHOM_HANG_OPTIONS = [
@@ -53,6 +53,7 @@ function FilterFields({
   value: StockFilters
   onChange: (f: StockFilters) => void
 }) {
+  const { rows: nhaKhoRows } = useLookup('nha-kho')
   return (
     <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
       <PeriodRangePicker
@@ -90,7 +91,7 @@ function FilterFields({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Tất cả kho</SelectItem>
-          {NHA_KHO_ROWS.map((k) => (
+          {nhaKhoRows.map((k) => (
             <SelectItem key={k.id} value={k.id}>
               {k.tenNhaKho}
             </SelectItem>

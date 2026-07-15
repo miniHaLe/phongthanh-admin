@@ -8,12 +8,17 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { LineItemEditor, PageHeader, notify, type LineColumn } from '@/components/shared'
+import {
+  LineItemEditor,
+  PageHeader,
+  notify,
+  type LineColumn,
+} from '@/components/shared'
 import { ROUTES } from '@/constants/routes'
 import { formatVND } from '@/lib/format'
 import { CURRENT_USER } from '@/mock/current-user-mock'
 import { BRANCHES, BRANCH_NAME, type BranchId } from '@/mock/seed/branches'
-import { NHA_KHO_ROWS } from '@/mock/masterdata'
+import { useLookup } from '@/hooks/use-lookup'
 import type { ChuyenKhoCrossLine } from './stockout-editor-types'
 import { createMoving } from './create-moving'
 import {
@@ -31,11 +36,20 @@ const EMPTY_HEADER: ChuyenKhoCrossHeaderValues = {
 }
 
 function makeEmptyLine(): ChuyenKhoCrossLine {
-  return { serial: '', ma: '', ten: '', soLuong: 0, soLuongChuyen: 1, gia: 0, thanhTien: 0 }
+  return {
+    serial: '',
+    ma: '',
+    ten: '',
+    soLuong: 0,
+    soLuongChuyen: 1,
+    gia: 0,
+    thanhTien: 0,
+  }
 }
 
 export default function ChuyenKhoCrossBranchPage() {
   const navigate = useNavigate()
+  const { byId: nhaKhoById } = useLookup('nha-kho')
   const [header, setHeader] = useState<ChuyenKhoCrossHeaderValues>(EMPTY_HEADER)
   const [lines, setLines] = useState<ChuyenKhoCrossLine[]>([])
   const [errors, setErrors] = useState<
@@ -53,9 +67,12 @@ export default function ChuyenKhoCrossBranchPage() {
   }
 
   function validate(): boolean {
-    const nextErrors: Partial<Record<keyof ChuyenKhoCrossHeaderValues, string>> = {}
+    const nextErrors: Partial<
+      Record<keyof ChuyenKhoCrossHeaderValues, string>
+    > = {}
     if (!header.tuKhoId) nextErrors.tuKhoId = 'Vui lòng chọn từ nhà kho!'
-    if (!header.denChiNhanhId) nextErrors.denChiNhanhId = 'Vui lòng chọn đến chi nhánh!'
+    if (!header.denChiNhanhId)
+      nextErrors.denChiNhanhId = 'Vui lòng chọn đến chi nhánh!'
     if (!header.denKhoId) nextErrors.denKhoId = 'Vui lòng chọn đến nhà kho!'
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
@@ -72,8 +89,8 @@ export default function ChuyenKhoCrossBranchPage() {
   function handleSave({ saveAndNew }: { saveAndNew: boolean }) {
     if (!validate()) return
 
-    const tuKho = NHA_KHO_ROWS.find((k) => k.id === header.tuKhoId)
-    const denKho = NHA_KHO_ROWS.find((k) => k.id === header.denKhoId)
+    const tuKho = nhaKhoById.get(header.tuKhoId)
+    const denKho = nhaKhoById.get(header.denKhoId)
     const slip = createMoving({
       tuChiNhanh: BRANCH_NAME[header.tuChiNhanhId],
       tuKho: tuKho?.tenNhaKho ?? '',
@@ -94,8 +111,8 @@ export default function ChuyenKhoCrossBranchPage() {
   }
 
   function handlePrint() {
-    const tuKho = NHA_KHO_ROWS.find((k) => k.id === header.tuKhoId)
-    const denKho = NHA_KHO_ROWS.find((k) => k.id === header.denKhoId)
+    const tuKho = nhaKhoById.get(header.tuKhoId)
+    const denKho = nhaKhoById.get(header.denKhoId)
     void printMovingProduct({
       id: 'preview',
       trangThai: 'Chưa xác nhận',
@@ -103,7 +120,9 @@ export default function ChuyenKhoCrossBranchPage() {
       ngayLap: new Date().toISOString(),
       tuChiNhanh: BRANCH_NAME[header.tuChiNhanhId],
       tuKho: tuKho?.tenNhaKho ?? '',
-      denChiNhanh: header.denChiNhanhId ? BRANCH_NAME[header.denChiNhanhId as BranchId] : '',
+      denChiNhanh: header.denChiNhanhId
+        ? BRANCH_NAME[header.denChiNhanhId as BranchId]
+        : '',
       denKho: denKho?.tenNhaKho ?? '',
       loai: 'Khác chi nhánh',
       nguoiChuyen: CURRENT_USER.hoVaTen,
@@ -116,12 +135,18 @@ export default function ChuyenKhoCrossBranchPage() {
     { key: 'ma', header: 'Mã', cell: (line) => line.ma },
     { key: 'ten', header: 'Tên', cell: (line) => line.ten },
     { key: 'soLuong', header: 'Số lượng', cell: (line) => line.soLuong },
-    { key: 'soLuongChuyen', header: 'Số lượng chuyển', cell: (line) => line.soLuongChuyen },
+    {
+      key: 'soLuongChuyen',
+      header: 'Số lượng chuyển',
+      cell: (line) => line.soLuongChuyen,
+    },
     { key: 'gia', header: 'Giá', cell: (line) => formatVND(line.gia) },
     {
       key: 'thanhTien',
       header: 'Thành tiền',
-      cell: (line) => <span className="tabular-nums">{formatVND(line.thanhTien)}</span>,
+      cell: (line) => (
+        <span className="tabular-nums">{formatVND(line.thanhTien)}</span>
+      ),
     },
   ]
 
@@ -135,7 +160,12 @@ export default function ChuyenKhoCrossBranchPage() {
           { label: 'Khác chi nhánh' },
         ]}
       >
-        <Button size="sm" variant="outline" className="h-8" onClick={handlePrint}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          onClick={handlePrint}
+        >
           In
         </Button>
         <Button asChild size="sm" variant="outline" className="h-8">
@@ -152,7 +182,9 @@ export default function ChuyenKhoCrossBranchPage() {
                 onChange={patchHeader}
                 errors={errors}
               />
-              <ChuyenKhoCrossLineEntry onAdd={(line) => setLines((prev) => [...prev, line])} />
+              <ChuyenKhoCrossLineEntry
+                onAdd={(line) => setLines((prev) => [...prev, line])}
+              />
               <h3 className="mb-2 mt-6 text-sm font-semibold text-muted-foreground">
                 Danh sách hàng chuyển
               </h3>

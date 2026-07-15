@@ -15,11 +15,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BRANCHES } from '@/mock/seed/branches'
-import { NHA_KHO_ROWS } from '@/mock/masterdata'
+import { toResourceBranchId, useLookup } from '@/hooks/use-lookup'
 import { MANUFACTURERS, TECHNICIANS } from '@/domains/repair/reference-data'
 import type { PartReturnXacTinhTrang } from '@/domains/warehouse/types'
 
-export const TINH_TRANG_OPTIONS: PartReturnXacTinhTrang[] = ['Chưa trả hãng', 'Đã trả hãng']
+export const TINH_TRANG_OPTIONS: PartReturnXacTinhTrang[] = [
+  'Chưa trả hãng',
+  'Đã trả hãng',
+]
 
 export interface PartReturnXacFilterValues {
   branchId?: string
@@ -55,7 +58,10 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
+      <Label
+        htmlFor={htmlFor}
+        className="text-xs font-medium text-muted-foreground"
+      >
         {label}
       </Label>
       {children}
@@ -63,11 +69,17 @@ function Field({
   )
 }
 
-export function PartReturnXacFilters({ filters, onChange }: PartReturnXacFiltersProps) {
+export function PartReturnXacFilters({
+  filters,
+  onChange,
+}: PartReturnXacFiltersProps) {
   const uid = useId()
+  const { rows: nhaKhoRows } = useLookup('nha-kho')
   const khoOptions = filters.branchId
-    ? NHA_KHO_ROWS.filter((k) => k.chiNhanhId === filters.branchId)
-    : NHA_KHO_ROWS
+    ? nhaKhoRows.filter(
+        (k) => k.chiNhanhId === toResourceBranchId(filters.branchId!),
+      )
+    : nhaKhoRows
 
   return (
     <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -75,7 +87,10 @@ export function PartReturnXacFilters({ filters, onChange }: PartReturnXacFilters
         <Select
           value={filters.branchId ?? UNSET}
           onValueChange={(v) =>
-            onChange({ branchId: v === UNSET ? undefined : v, khoId: undefined })
+            onChange({
+              branchId: v === UNSET ? undefined : v,
+              khoId: undefined,
+            })
           }
         >
           <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
@@ -95,7 +110,9 @@ export function PartReturnXacFilters({ filters, onChange }: PartReturnXacFilters
       <Field label="Nhà kho" htmlFor={`${uid}-kho`}>
         <Select
           value={filters.khoId ?? UNSET}
-          onValueChange={(v) => onChange({ khoId: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ khoId: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-kho`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả nhà kho" />
@@ -114,7 +131,9 @@ export function PartReturnXacFilters({ filters, onChange }: PartReturnXacFilters
       <Field label="Kỹ thuật" htmlFor={`${uid}-kt`}>
         <Select
           value={filters.kyThuat ?? UNSET}
-          onValueChange={(v) => onChange({ kyThuat: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ kyThuat: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-kt`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả KTV" />
@@ -135,7 +154,9 @@ export function PartReturnXacFilters({ filters, onChange }: PartReturnXacFilters
           id={`${uid}-spc`}
           className={filterControlClassName}
           value={filters.soPhieuCap ?? ''}
-          onChange={(e) => onChange({ soPhieuCap: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ soPhieuCap: e.target.value || undefined })
+          }
         />
       </Field>
 
@@ -162,7 +183,9 @@ export function PartReturnXacFilters({ filters, onChange }: PartReturnXacFilters
           id={`${uid}-sph`}
           className={filterControlClassName}
           value={filters.soPhieuHang ?? ''}
-          onChange={(e) => onChange({ soPhieuHang: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ soPhieuHang: e.target.value || undefined })
+          }
         />
       </Field>
 
@@ -171,7 +194,9 @@ export function PartReturnXacFilters({ filters, onChange }: PartReturnXacFilters
           id={`${uid}-tkh`}
           className={filterControlClassName}
           value={filters.tenKhachHang ?? ''}
-          onChange={(e) => onChange({ tenKhachHang: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ tenKhachHang: e.target.value || undefined })
+          }
         />
       </Field>
 
@@ -189,10 +214,17 @@ export function PartReturnXacFilters({ filters, onChange }: PartReturnXacFilters
         <Select
           value={filters.tinhTrang ?? UNSET}
           onValueChange={(v) =>
-            onChange({ tinhTrang: v === UNSET ? undefined : (v as PartReturnXacTinhTrang) })
+            onChange({
+              tinhTrang:
+                v === UNSET ? undefined : (v as PartReturnXacTinhTrang),
+            })
           }
         >
-          <SelectTrigger id={`${uid}-tt`} className={filterControlClassName} aria-label="Tình trạng">
+          <SelectTrigger
+            id={`${uid}-tt`}
+            className={filterControlClassName}
+            aria-label="Tình trạng"
+          >
             <SelectValue placeholder="Tất cả tình trạng" />
           </SelectTrigger>
           <SelectContent>

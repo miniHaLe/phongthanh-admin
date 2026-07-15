@@ -15,11 +15,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ServerAutocomplete, notify, type AutocompleteOption } from '@/components/shared'
-import { NHA_KHO_ROWS, NGAN_CHUA_ROWS } from '@/mock/masterdata'
+import {
+  ServerAutocomplete,
+  notify,
+  type AutocompleteOption,
+} from '@/components/shared'
+import { useLookup } from '@/hooks/use-lookup'
 import { searchSuppliers, createSupplier } from './nhap-kho-suppliers'
 
-export const HINH_THUC_THANH_TOAN_OPTIONS = ['Tiền mặt', 'Công nợ', 'Chuyển khoản'] as const
+export const HINH_THUC_THANH_TOAN_OPTIONS = [
+  'Tiền mặt',
+  'Công nợ',
+  'Chuyển khoản',
+] as const
 
 export const NHOM_KHACH_HANG_OPTIONS = [
   'Khách lẻ',
@@ -83,9 +91,11 @@ export function NhapKhoHeaderFields({
   onChange,
   errors,
 }: NhapKhoHeaderFieldsProps) {
+  const { rows: nhaKhoRows } = useLookup('nha-kho')
+  const { rows: nganChuaRows } = useLookup('ngan-chua')
   const nganChuaOptions = values.khoId
-    ? NGAN_CHUA_ROWS.filter((n) => n.nhaKhoId === values.khoId)
-    : NGAN_CHUA_ROWS
+    ? nganChuaRows.filter((n) => n.nhaKhoId === values.khoId)
+    : nganChuaRows
 
   return (
     <section aria-labelledby="section-nhap-kho-info">
@@ -111,7 +121,7 @@ export function NhapKhoHeaderFields({
               <SelectValue placeholder="Chọn nhà kho" />
             </SelectTrigger>
             <SelectContent>
-              {NHA_KHO_ROWS.map((k) => (
+              {nhaKhoRows.map((k) => (
                 <SelectItem key={k.id} value={k.id}>
                   {k.tenNhaKho}
                 </SelectItem>
@@ -120,7 +130,12 @@ export function NhapKhoHeaderFields({
           </Select>
         </Field>
 
-        <Field label="Ngăn chứa" htmlFor="nk-ngan" required error={errors.nganChuaId}>
+        <Field
+          label="Ngăn chứa"
+          htmlFor="nk-ngan"
+          required
+          error={errors.nganChuaId}
+        >
           <Select
             value={values.nganChuaId}
             onValueChange={(v) => onChange({ nganChuaId: v })}
@@ -128,7 +143,9 @@ export function NhapKhoHeaderFields({
           >
             <SelectTrigger id="nk-ngan">
               <SelectValue
-                placeholder={values.khoId ? 'Chọn ngăn chứa' : 'Chọn nhà kho trước'}
+                placeholder={
+                  values.khoId ? 'Chọn ngăn chứa' : 'Chọn nhà kho trước'
+                }
               />
             </SelectTrigger>
             <SelectContent>

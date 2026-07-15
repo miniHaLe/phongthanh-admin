@@ -2,31 +2,38 @@
  * Line-entry panel for the cross-branch Chuyển Kho editor — Hàng hóa
  * autocomplete + Số lượng chuyển, "Thêm hàng" appends a row to the line grid.
  */
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ServerAutocomplete, notify, type AutocompleteOption } from '@/components/shared'
-import { HANG_HOA_ROWS } from '@/mock/masterdata'
+import {
+  ServerAutocomplete,
+  notify,
+  type AutocompleteOption,
+} from '@/components/shared'
+import { filterLookupOptions, useLookup } from '@/hooks/use-lookup'
 import type { ChuyenKhoCrossLine } from './stockout-editor-types'
-
-async function searchHangHoa(query: string): Promise<AutocompleteOption[]> {
-  const q = query.trim().toLowerCase()
-  const list = q
-    ? HANG_HOA_ROWS.filter(
-        (h) => h.tenHH.toLowerCase().includes(q) || h.maHH.toLowerCase().includes(q),
-      )
-    : HANG_HOA_ROWS
-  return list.slice(0, 20).map((h) => ({ id: h.id, label: `${h.maHH} — ${h.tenHH}` }))
-}
 
 interface ChuyenKhoCrossLineEntryProps {
   onAdd: (line: ChuyenKhoCrossLine) => void
 }
 
-export function ChuyenKhoCrossLineEntry({ onAdd }: ChuyenKhoCrossLineEntryProps) {
+export function ChuyenKhoCrossLineEntry({
+  onAdd,
+}: ChuyenKhoCrossLineEntryProps) {
+  const { rows: hangHoaRows, byId: hangHoaById } = useLookup('hang-hoa')
   const [hangHoa, setHangHoa] = useState<AutocompleteOption | null>(null)
   const [soLuongChuyen, setSoLuongChuyen] = useState('1')
+  const searchHangHoa = useCallback(
+    (query: string) =>
+      filterLookupOptions(
+        hangHoaRows,
+        query,
+        (row) => `${row.maHH} — ${row.tenHH}`,
+        (row) => `${row.maHH} ${row.tenHH}`,
+      ),
+    [hangHoaRows],
+  )
 
   function reset() {
     setHangHoa(null)
@@ -34,7 +41,7 @@ export function ChuyenKhoCrossLineEntry({ onAdd }: ChuyenKhoCrossLineEntryProps)
   }
 
   function handleAdd() {
-    const selected = HANG_HOA_ROWS.find((h) => h.id === hangHoa?.id)
+    const selected = hangHoa?.id ? hangHoaById.get(hangHoa.id) : undefined
     if (!selected) {
       notify.error('Vui lòng chọn hàng hóa!')
       return

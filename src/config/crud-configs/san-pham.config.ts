@@ -1,15 +1,20 @@
 import { formatVND } from '@/lib/format'
 import type { CrudConfig } from '@/types/crud-types'
 import type { SanPham } from '@/types/masterdata-types'
-import { sanPhamApi } from '@/mock/masterdata/san-pham.mock'
-import { NHOM_SAN_PHAM_ROWS } from '@/mock/masterdata/nhom-san-pham.mock'
+import { SAN_PHAM_ROWS } from '@/mock/masterdata/san-pham.mock'
+import { apiFor } from '@/api/api-for'
+import { lookupLabel } from '@/components/crud/lookup-label'
+import { loadLookupOptions } from '@/hooks/use-lookup'
+
+const loadNhomSanPhamOptions = () =>
+  loadLookupOptions('nhom-san-pham', (row) => row.tenNhomSP)
 
 export const sanPhamConfig: CrudConfig<SanPham> = {
   resourceKey: 'san-pham',
   title: 'Sản Phẩm',
   pageSize: 20,
   defaultSort: { key: 'tenSP', dir: 'asc' },
-  mockApi: sanPhamApi,
+  mockApi: apiFor('san-pham', SAN_PHAM_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [
@@ -20,7 +25,7 @@ export const sanPhamConfig: CrudConfig<SanPham> = {
       header: 'Nhóm sản phẩm',
       width: 170,
       renderCell: (v) =>
-        NHOM_SAN_PHAM_ROWS.find((r) => r.id === v)?.tenNhomSP ?? (v as string),
+        lookupLabel('nhom-san-pham', v as string, (row) => row.tenNhomSP),
     },
     {
       key: 'tienKhoan',
@@ -36,10 +41,7 @@ export const sanPhamConfig: CrudConfig<SanPham> = {
       label: 'Nhóm Sản Phẩm',
       type: 'select',
       required: true,
-      options: NHOM_SAN_PHAM_ROWS.map((r) => ({
-        label: r.tenNhomSP,
-        value: r.id,
-      })),
+      loadOptions: loadNhomSanPhamOptions,
     },
     { key: 'maSP', label: 'Mã sản phẩm', type: 'text' },
     { key: 'tenSP', label: 'Tên sản phẩm', type: 'text', required: true },
@@ -51,10 +53,7 @@ export const sanPhamConfig: CrudConfig<SanPham> = {
       key: 'nhomSanPhamId',
       label: 'Nhóm sản phẩm',
       type: 'select',
-      options: NHOM_SAN_PHAM_ROWS.map((r) => ({
-        label: r.tenNhomSP,
-        value: r.id,
-      })),
+      loadOptions: loadNhomSanPhamOptions,
     },
   ],
 }

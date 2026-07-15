@@ -5,7 +5,7 @@
  * Hàng hóa autocomplete + Kho/Ngăn chứa selects + Giá/Số lượng/Số lượng trả,
  * "Thêm" appends a row to the line grid via `onAdd`.
  */
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -16,19 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ServerAutocomplete, notify, type AutocompleteOption } from '@/components/shared'
-import { HANG_HOA_ROWS, NHA_KHO_ROWS, NGAN_CHUA_ROWS } from '@/mock/masterdata'
+import {
+  ServerAutocomplete,
+  notify,
+  type AutocompleteOption,
+} from '@/components/shared'
+import { filterLookupOptions, useLookup } from '@/hooks/use-lookup'
 import type { TraHangLine } from './stockout-editor-types'
-
-async function searchHangHoa(query: string): Promise<AutocompleteOption[]> {
-  const q = query.trim().toLowerCase()
-  const list = q
-    ? HANG_HOA_ROWS.filter(
-        (h) => h.tenHH.toLowerCase().includes(q) || h.maHH.toLowerCase().includes(q),
-      )
-    : HANG_HOA_ROWS
-  return list.slice(0, 20).map((h) => ({ id: h.id, label: `${h.maHH} — ${h.tenHH}` }))
-}
 
 let lineSeq = 0
 
@@ -37,16 +31,29 @@ interface TraHangLineEntryProps {
 }
 
 export function TraHangLineEntry({ onAdd }: TraHangLineEntryProps) {
+  const { rows: hangHoaRows, byId: hangHoaById } = useLookup('hang-hoa')
+  const { rows: nhaKhoRows, byId: nhaKhoById } = useLookup('nha-kho')
+  const { rows: nganChuaRows, byId: nganChuaById } = useLookup('ngan-chua')
   const [hangHoa, setHangHoa] = useState<AutocompleteOption | null>(null)
   const [khoId, setKhoId] = useState('')
   const [nganChuaId, setNganChuaId] = useState('')
   const [gia, setGia] = useState('')
   const [soLuong, setSoLuong] = useState('1')
   const [soLuongTra, setSoLuongTra] = useState('1')
+  const searchHangHoa = useCallback(
+    (query: string) =>
+      filterLookupOptions(
+        hangHoaRows,
+        query,
+        (row) => `${row.maHH} — ${row.tenHH}`,
+        (row) => `${row.maHH} ${row.tenHH}`,
+      ),
+    [hangHoaRows],
+  )
 
   const nganChuaOptions = khoId
-    ? NGAN_CHUA_ROWS.filter((n) => n.nhaKhoId === khoId)
-    : NGAN_CHUA_ROWS
+    ? nganChuaRows.filter((n) => n.nhaKhoId === khoId)
+    : nganChuaRows
 
   function reset() {
     setHangHoa(null)
@@ -56,14 +63,14 @@ export function TraHangLineEntry({ onAdd }: TraHangLineEntryProps) {
   }
 
   function handleAdd() {
-    const selected = HANG_HOA_ROWS.find((h) => h.id === hangHoa?.id)
+    const selected = hangHoa?.id ? hangHoaById.get(hangHoa.id) : undefined
     if (!selected) {
       notify.error('Vui lòng chọn hàng hóa!')
       return
     }
     lineSeq += 1
-    const kho = NHA_KHO_ROWS.find((k) => k.id === khoId)
-    const ngan = NGAN_CHUA_ROWS.find((n) => n.id === nganChuaId)
+    const kho = nhaKhoById.get(khoId)
+    const ngan = nganChuaById.get(nganChuaId)
     const giaValue = Number(gia) || selected.giaBan || 0
     const qtyTra = Number(soLuongTra) || 0
     onAdd({
@@ -99,12 +106,18 @@ export function TraHangLineEntry({ onAdd }: TraHangLineEntryProps) {
 
         <div className="flex flex-col gap-1.5">
           <Label className="text-sm">Kho</Label>
-          <Select value={khoId} onValueChange={(v) => { setKhoId(v); setNganChuaId('') }}>
+          <Select
+            value={khoId}
+            onValueChange={(v) => {
+              setKhoId(v)
+              setNganChuaId('')
+            }}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Chọn kho" />
             </SelectTrigger>
             <SelectContent>
-              {NHA_KHO_ROWS.map((k) => (
+              {nhaKhoRows.map((k) => (
                 <SelectItem key={k.id} value={k.id}>
                   {k.tenNhaKho}
                 </SelectItem>
@@ -115,9 +128,15 @@ export function TraHangLineEntry({ onAdd }: TraHangLineEntryProps) {
 
         <div className="flex flex-col gap-1.5">
           <Label className="text-sm">Ngăn chứa</Label>
-          <Select value={nganChuaId} onValueChange={setNganChuaId} disabled={!khoId}>
+          <Select
+            value={nganChuaId}
+            onValueChange={setNganChuaId}
+            disabled={!khoId}
+          >
             <SelectTrigger>
-              <SelectValue placeholder={khoId ? 'Chọn ngăn chứa' : 'Chọn kho trước'} />
+              <SelectValue
+                placeholder={khoId ? 'Chọn ngăn chứa' : 'Chọn kho trước'}
+              />
             </SelectTrigger>
             <SelectContent>
               {nganChuaOptions.map((n) => (

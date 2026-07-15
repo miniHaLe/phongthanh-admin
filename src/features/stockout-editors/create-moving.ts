@@ -8,13 +8,9 @@
  */
 import { MOVING_ROWS } from '@/domains/warehouse/list-data'
 import type { MovingSlip } from '@/domains/warehouse/types'
+import { nextVoucherCode } from '@/lib/voucher-code'
 
-let movingSeq = MOVING_ROWS.length
-
-function ymd(iso: string): string {
-  const d = new Date(iso)
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
-}
+let movingIdSeq = MOVING_ROWS.length
 
 export interface CreateMovingInput {
   tuChiNhanh: string
@@ -27,13 +23,17 @@ export interface CreateMovingInput {
 }
 
 export function createMoving(input: CreateMovingInput): MovingSlip {
-  movingSeq += 1
-  const now = new Date().toISOString()
+  movingIdSeq += 1
+  const now = new Date()
   const slip: MovingSlip = {
-    id: `ck-new-${movingSeq}`,
+    id: `ck-new-${movingIdSeq}`,
     trangThai: 'Chưa xác nhận',
-    soPhieu: `PCK-${ymd(now)}-${movingSeq}`,
-    ngayLap: now,
+    soPhieu: nextVoucherCode(
+      'PCK',
+      MOVING_ROWS.map((row) => row.soPhieu),
+      now,
+    ),
+    ngayLap: now.toISOString(),
     tuChiNhanh: input.tuChiNhanh,
     tuKho: input.tuKho,
     denChiNhanh: input.denChiNhanh,

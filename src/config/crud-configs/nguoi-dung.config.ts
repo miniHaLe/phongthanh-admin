@@ -1,15 +1,21 @@
+import { apiFor } from '@/api/api-for'
+import { lookupLabel } from '@/components/crud/lookup-label'
+import { loadLookupOptions } from '@/hooks/use-lookup'
 import type { CrudConfig } from '@/types/crud-types'
 import type { NguoiDung } from '@/types/masterdata-types'
-import { nguoiDungApi } from '@/mock/masterdata/nguoi-dung.mock'
-import { CHI_NHANH_ROWS } from '@/mock/masterdata/chi-nhanh.mock'
-import { NHOM_QUYEN_ROWS } from '@/mock/masterdata/nhom-quyen.mock'
+import { NGUOI_DUNG_ROWS } from '@/mock/masterdata/nguoi-dung.mock'
+
+const loadChiNhanhOptions = () =>
+  loadLookupOptions('chi-nhanh', (row) => row.tenChiNhanh)
+const loadNhomQuyenOptions = () =>
+  loadLookupOptions('nhom-quyen', (row) => row.tenNhom)
 
 export const nguoiDungConfig: CrudConfig<NguoiDung> = {
   resourceKey: 'nguoi-dung',
   title: 'Người Dùng',
   pageSize: 20,
   defaultSort: { key: 'tenDangNhap', dir: 'asc' },
-  mockApi: nguoiDungApi,
+  mockApi: apiFor('nguoi-dung', NGUOI_DUNG_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   addLabel: 'Thêm người dùng',
@@ -19,7 +25,11 @@ export const nguoiDungConfig: CrudConfig<NguoiDung> = {
       header: 'Chi nhánh',
       width: 180,
       renderCell: (v) =>
-        CHI_NHANH_ROWS.find((r) => r.id === v)?.tenChiNhanh ?? (v as string),
+        lookupLabel(
+          'chi-nhanh',
+          v as string | undefined,
+          (row) => row.tenChiNhanh,
+        ),
     },
     { key: 'tenDangNhap', header: 'Tên đăng nhập', sortable: true, width: 140 },
     { key: 'hoTen', header: 'Tên đầy đủ', sortable: true, width: 180 },
@@ -30,7 +40,11 @@ export const nguoiDungConfig: CrudConfig<NguoiDung> = {
       header: 'Quyền',
       width: 160,
       renderCell: (v) =>
-        NHOM_QUYEN_ROWS.find((r) => r.id === v)?.tenNhom ?? (v as string),
+        lookupLabel(
+          'nhom-quyen',
+          v as string | undefined,
+          (row) => row.tenNhom,
+        ),
     },
     {
       key: 'locked',
@@ -62,17 +76,14 @@ export const nguoiDungConfig: CrudConfig<NguoiDung> = {
       label: 'Chi nhánh',
       type: 'select',
       required: true,
-      options: CHI_NHANH_ROWS.map((r) => ({
-        label: r.tenChiNhanh,
-        value: r.id,
-      })),
+      loadOptions: loadChiNhanhOptions,
     },
     {
       key: 'nhomQuyenId',
       label: 'Quyền',
       type: 'select',
       required: true,
-      options: NHOM_QUYEN_ROWS.map((r) => ({ label: r.tenNhom, value: r.id })),
+      loadOptions: loadNhomQuyenOptions,
     },
     { key: 'locked', label: 'Khóa tài khoản', type: 'switch' },
   ],
@@ -83,16 +94,13 @@ export const nguoiDungConfig: CrudConfig<NguoiDung> = {
       key: 'chiNhanhId',
       label: 'Chi nhánh',
       type: 'select',
-      options: CHI_NHANH_ROWS.map((r) => ({
-        label: r.tenChiNhanh,
-        value: r.id,
-      })),
+      loadOptions: loadChiNhanhOptions,
     },
     {
       key: 'nhomQuyenId',
       label: 'Nhóm quyền',
       type: 'select',
-      options: NHOM_QUYEN_ROWS.map((r) => ({ label: r.tenNhom, value: r.id })),
+      loadOptions: loadNhomQuyenOptions,
     },
   ],
 }

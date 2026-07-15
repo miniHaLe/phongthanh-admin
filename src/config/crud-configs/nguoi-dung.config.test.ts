@@ -19,4 +19,13 @@ describe('nguoiDungConfig', () => {
     expect(nguoiDungConfig.bulkDelete).toBe(true)
     expect(nguoiDungConfig.addLabel).toBe('Thêm người dùng')
   })
+
+  it('keeps password create-only for the real API contract', () => {
+    const password = nguoiDungConfig.fields.find(
+      (field) => field.key === 'password',
+    )
+    expect(password).toEqual(
+      expect.objectContaining({ required: true, createOnly: true }),
+    )
+  })
 })

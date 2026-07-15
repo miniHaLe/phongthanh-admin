@@ -1,8 +1,9 @@
 import { formatVND } from '@/lib/format'
 import type { CrudConfig } from '@/types/crud-types'
 import type { PhuongXa } from '@/types/masterdata-types'
-import { phuongXaApi } from '@/mock/masterdata/phuong-xa.mock'
+import { PHUONG_XA_ROWS } from '@/mock/masterdata/phuong-xa.mock'
 import { TINH, QUAN, TUYEN } from '@/mock/seed/tinh-quan-xa'
+import { apiFor } from '@/api/api-for'
 
 const tinhName = (id: string) => TINH.find((t) => t.id === id)?.ten ?? id
 const quanName = (id: string) => QUAN.find((q) => q.id === id)?.ten ?? id
@@ -14,7 +15,7 @@ export const phuongXaConfig: CrudConfig<PhuongXa> = {
   title: 'Phường/Xã',
   pageSize: 20,
   defaultSort: { key: 'tenPhuongXa', dir: 'asc' },
-  mockApi: phuongXaApi,
+  mockApi: apiFor('phuong-xa', PHUONG_XA_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [

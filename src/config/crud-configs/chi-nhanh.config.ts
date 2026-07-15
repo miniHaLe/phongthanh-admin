@@ -1,6 +1,7 @@
 import type { CrudConfig } from '@/types/crud-types'
 import type { ChiNhanh } from '@/types/masterdata-types'
-import { chiNhanhApi } from '@/mock/masterdata/chi-nhanh.mock'
+import { CHI_NHANH_ROWS } from '@/mock/masterdata/chi-nhanh.mock'
+import { apiFor } from '@/api/api-for'
 
 const yesNo = (v: unknown) => (v ? '✓' : '—')
 
@@ -8,7 +9,7 @@ export const chiNhanhConfig: CrudConfig<ChiNhanh> = {
   resourceKey: 'chi-nhanh',
   title: 'Chi Nhánh',
   pageSize: 20,
-  mockApi: chiNhanhApi,
+  mockApi: apiFor('chi-nhanh', CHI_NHANH_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [

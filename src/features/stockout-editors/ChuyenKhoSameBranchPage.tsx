@@ -8,12 +8,17 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { LineItemEditor, PageHeader, notify, type LineColumn } from '@/components/shared'
+import {
+  LineItemEditor,
+  PageHeader,
+  notify,
+  type LineColumn,
+} from '@/components/shared'
 import { ROUTES } from '@/constants/routes'
 import { formatVND } from '@/lib/format'
 import { CURRENT_USER } from '@/mock/current-user-mock'
 import { BRANCHES, BRANCH_NAME } from '@/mock/seed/branches'
-import { NHA_KHO_ROWS, NGAN_CHUA_ROWS } from '@/mock/masterdata'
+import { useLookup } from '@/hooks/use-lookup'
 import type { ChuyenKhoSameLine } from './stockout-editor-types'
 import { createMoving } from './create-moving'
 import {
@@ -32,11 +37,21 @@ const EMPTY_HEADER: ChuyenKhoSameHeaderValues = {
 }
 
 function makeEmptyLine(): ChuyenKhoSameLine {
-  return { serial: '', ma: '', ten: '', nganChua: '', soLuong: 1, gia: 0, thanhTien: 0 }
+  return {
+    serial: '',
+    ma: '',
+    ten: '',
+    nganChua: '',
+    soLuong: 1,
+    gia: 0,
+    thanhTien: 0,
+  }
 }
 
 export default function ChuyenKhoSameBranchPage() {
   const navigate = useNavigate()
+  const { byId: nhaKhoById } = useLookup('nha-kho')
+  const { rows: nganChuaRows } = useLookup('ngan-chua')
   const [header, setHeader] = useState<ChuyenKhoSameHeaderValues>(EMPTY_HEADER)
   const [lines, setLines] = useState<ChuyenKhoSameLine[]>([])
   const [errors, setErrors] = useState<
@@ -54,10 +69,12 @@ export default function ChuyenKhoSameBranchPage() {
   }
 
   function validate(): boolean {
-    const nextErrors: Partial<Record<keyof ChuyenKhoSameHeaderValues, string>> = {}
+    const nextErrors: Partial<Record<keyof ChuyenKhoSameHeaderValues, string>> =
+      {}
     if (!header.tuKhoId) nextErrors.tuKhoId = 'Vui lòng chọn từ nhà kho!'
     if (!header.denKhoId) nextErrors.denKhoId = 'Vui lòng chọn đến nhà kho!'
-    if (!header.denNganChuaId) nextErrors.denNganChuaId = 'Vui lòng chọn đến ngăn chứa!'
+    if (!header.denNganChuaId)
+      nextErrors.denNganChuaId = 'Vui lòng chọn đến ngăn chứa!'
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
       notify.error(Object.values(nextErrors)[0]!)
@@ -73,8 +90,8 @@ export default function ChuyenKhoSameBranchPage() {
   function handleSave({ saveAndNew }: { saveAndNew: boolean }) {
     if (!validate()) return
 
-    const tuKho = NHA_KHO_ROWS.find((k) => k.id === header.tuKhoId)
-    const denKho = NHA_KHO_ROWS.find((k) => k.id === header.denKhoId)
+    const tuKho = nhaKhoById.get(header.tuKhoId)
+    const denKho = nhaKhoById.get(header.denKhoId)
     const branchName = BRANCH_NAME[CURRENT_BRANCH_ID]
     const slip = createMoving({
       tuChiNhanh: branchName,
@@ -96,8 +113,8 @@ export default function ChuyenKhoSameBranchPage() {
   }
 
   function handlePrint() {
-    const tuKho = NHA_KHO_ROWS.find((k) => k.id === header.tuKhoId)
-    const denKho = NHA_KHO_ROWS.find((k) => k.id === header.denKhoId)
+    const tuKho = nhaKhoById.get(header.tuKhoId)
+    const denKho = nhaKhoById.get(header.denKhoId)
     const branchName = BRANCH_NAME[CURRENT_BRANCH_ID]
     void printMovingProduct({
       id: 'preview',
@@ -115,8 +132,8 @@ export default function ChuyenKhoSameBranchPage() {
   }
 
   const denNganChuaOptions = header.denKhoId
-    ? NGAN_CHUA_ROWS.filter((n) => n.nhaKhoId === header.denKhoId)
-    : NGAN_CHUA_ROWS
+    ? nganChuaRows.filter((n) => n.nhaKhoId === header.denKhoId)
+    : nganChuaRows
 
   const lineColumns: LineColumn<ChuyenKhoSameLine>[] = [
     { key: 'serial', header: 'Serial', cell: (line) => line.serial || '—' },
@@ -128,7 +145,9 @@ export default function ChuyenKhoSameBranchPage() {
     {
       key: 'thanhTien',
       header: 'Thành tiền',
-      cell: (line) => <span className="tabular-nums">{formatVND(line.thanhTien)}</span>,
+      cell: (line) => (
+        <span className="tabular-nums">{formatVND(line.thanhTien)}</span>
+      ),
     },
   ]
 
@@ -142,7 +161,12 @@ export default function ChuyenKhoSameBranchPage() {
           { label: 'Cùng chi nhánh' },
         ]}
       >
-        <Button size="sm" variant="outline" className="h-8" onClick={handlePrint}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          onClick={handlePrint}
+        >
           In
         </Button>
         <Button asChild size="sm" variant="outline" className="h-8">

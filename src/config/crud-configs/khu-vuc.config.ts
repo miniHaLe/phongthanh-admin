@@ -1,8 +1,9 @@
 import { formatVND } from '@/lib/format'
 import type { CrudConfig } from '@/types/crud-types'
 import type { KhuVuc } from '@/types/masterdata-types'
-import { khuVucApi } from '@/mock/masterdata/khu-vuc.mock'
+import { KHU_VUC_ROWS } from '@/mock/masterdata/khu-vuc.mock'
 import { TINH, QUAN, XA } from '@/mock/seed/tinh-quan-xa'
+import { apiFor } from '@/api/api-for'
 
 const tinhName = (id: string) => TINH.find((t) => t.id === id)?.ten ?? id
 const quanName = (id: string) => QUAN.find((q) => q.id === id)?.ten ?? id
@@ -13,7 +14,7 @@ export const khuVucConfig: CrudConfig<KhuVuc> = {
   title: 'Khu Vực',
   pageSize: 20,
   defaultSort: { key: 'tenKhuVuc', dir: 'asc' },
-  mockApi: khuVucApi,
+  mockApi: apiFor('khu-vuc', KHU_VUC_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [

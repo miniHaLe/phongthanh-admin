@@ -16,12 +16,59 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import type { FilterConfig } from '@/types/crud-types'
+import { useLoadedOptions } from '@/hooks/use-lookup'
 
 interface CrudFilterBarProps<T> {
   filters: FilterConfig<T>[]
   value: Record<string, unknown>
   onChange: (v: Record<string, unknown>) => void
   onClear: () => void
+}
+
+function LoadedFilterSelect<T>({
+  filter,
+  value,
+  onChange,
+}: {
+  filter: FilterConfig<T>
+  value: string
+  onChange: (value: string) => void
+}) {
+  const { options, isLoading, error } = useLoadedOptions(
+    filter.loadOptions,
+    filter.options,
+  )
+
+  return (
+    <div className="space-y-1">
+      <Label className="text-xs">{filter.label}</Label>
+      <Select
+        value={value}
+        onValueChange={onChange}
+        disabled={isLoading && options.length === 0}
+      >
+        <SelectTrigger className="h-8 text-sm" aria-busy={isLoading}>
+          <SelectValue
+            placeholder={isLoading ? 'Đang tải…' : `Tất cả ${filter.label}`}
+          />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">Tất cả</SelectItem>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {error && (
+        <p className="text-xs text-destructive">
+          Không tải được danh sách
+          {filter.options?.length ? '; đang dùng dữ liệu có sẵn.' : '.'}
+        </p>
+      )}
+    </div>
+  )
 }
 
 export function CrudFilterBar<T>({
@@ -86,27 +133,14 @@ export function CrudFilterBar<T>({
 
             if (f.type === 'select') {
               return (
-                <div key={k} className="space-y-1">
-                  <Label className="text-xs">{f.label}</Label>
-                  <Select
-                    value={v}
-                    onValueChange={(val) =>
-                      handleChange(k, val === '__all__' ? '' : val)
-                    }
-                  >
-                    <SelectTrigger className="h-8 text-sm">
-                      <SelectValue placeholder={`Tất cả ${f.label}`} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__all__">Tất cả</SelectItem>
-                      {f.options?.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>
-                          {o.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <LoadedFilterSelect
+                  key={k}
+                  filter={f}
+                  value={v}
+                  onChange={(val) =>
+                    handleChange(k, val === '__all__' ? '' : val)
+                  }
+                />
               )
             }
 

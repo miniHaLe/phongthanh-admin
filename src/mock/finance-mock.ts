@@ -12,6 +12,7 @@
 import { SeededRandom } from '@/lib/seeded-random'
 import { mockDelay } from '@/lib/mock-delay'
 import { maybeThrow } from '@/lib/mock-error'
+import { nextVoucherCode } from '@/lib/voucher-code'
 import { makeMockApi } from '@/mock/masterdata'
 import { KHACH_HANG_ROWS } from '@/mock/masterdata'
 import { BRANCHES } from '@/mock/seed/branches'
@@ -20,11 +21,6 @@ import { CONG_NO } from '@/mock/seed/cong-no'
 import { MOCK_TICKETS } from '@/domains/repair/mock-data'
 import { CURRENT_USER } from '@/mock/current-user-mock'
 import type { ThuChi, CongNo, HoaDon, HoaDonItem, FinanceKpi } from '@/types/finance-types'
-
-function ymd(iso: string): string {
-  const d = new Date(iso)
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
-}
 
 const TICKET_BY_SO_PHIEU = new Map(MOCK_TICKETS.map((t) => [t.soPhieu, t]))
 
@@ -140,13 +136,18 @@ export async function thanhToanCongNo(input: ThanhToanCongNoInput): Promise<ThuC
   row.conLai -= amount
 
   chungTuSettleSeq += 1
-  const now = new Date().toISOString()
+  const nowDate = new Date()
+  const now = nowDate.toISOString()
   // Phiếu Thu Sửa Chữa(3) for repair receivables, Phiếu Thu Bán Hàng(5) for sales.
   const loaiThuChi = row.loaiPhieu === 'Phiếu sửa chữa' ? 3 : 5
 
   const voucher: ThuChi = {
     id: `tc-settle-${chungTuSettleSeq}`,
-    soChungTu: `PTT-${ymd(now)}-${chungTuSettleSeq}`,
+    soChungTu: nextVoucherCode(
+      'PTT',
+      THU_CHI_ROWS.map((item) => item.soChungTu),
+      nowDate,
+    ),
     loaiThuChi,
     tinhTrang: 2, // Đã thu
     hinhThucId: input.hinhThucId,
@@ -185,10 +186,15 @@ export async function createPhieuThu(input: LapPhieuInput): Promise<ThuChi> {
   await mockDelay(300, 150)
   maybeThrow(0.03)
   chungTuSettleSeq += 1
-  const now = new Date().toISOString()
+  const nowDate = new Date()
+  const now = nowDate.toISOString()
   const voucher: ThuChi = {
     id: `tc-thu-${chungTuSettleSeq}`,
-    soChungTu: `PTT-${ymd(now)}-${chungTuSettleSeq}`,
+    soChungTu: nextVoucherCode(
+      'PTT',
+      THU_CHI_ROWS.map((item) => item.soChungTu),
+      nowDate,
+    ),
     loaiThuChi: input.loaiThuChi,
     tinhTrang: 2,
     hinhThucId: input.hinhThucId,
@@ -218,10 +224,15 @@ export async function createPhieuChi(input: LapPhieuInput): Promise<ThuChi> {
   await mockDelay(300, 150)
   maybeThrow(0.03)
   chungTuSettleSeq += 1
-  const now = new Date().toISOString()
+  const nowDate = new Date()
+  const now = nowDate.toISOString()
   const voucher: ThuChi = {
     id: `tc-chi-${chungTuSettleSeq}`,
-    soChungTu: `PCC-${ymd(now)}-${chungTuSettleSeq}`,
+    soChungTu: nextVoucherCode(
+      'PCC',
+      THU_CHI_ROWS.map((item) => item.soChungTu),
+      nowDate,
+    ),
     loaiThuChi: input.loaiThuChi,
     tinhTrang: 4,
     hinhThucId: input.hinhThucId,

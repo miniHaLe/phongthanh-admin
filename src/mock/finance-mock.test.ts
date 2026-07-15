@@ -4,11 +4,19 @@
  * (no due-date/overdue field) and the ChungTu determinism (no wall clock).
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import {
-  CONG_NO_ROWS,
-  THU_CHI_ROWS,
-  thanhToanCongNo,
-} from './finance-mock'
+import { CONG_NO_ROWS, THU_CHI_ROWS, thanhToanCongNo } from './finance-mock'
+
+function localMonth(date: Date): string {
+  return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
+function maxOrdinal(prefix: string, month: string): number {
+  const pattern = new RegExp(`^${prefix}-${month}-(\\d+)$`)
+  return THU_CHI_ROWS.reduce((max, row) => {
+    const match = pattern.exec(row.soChungTu)
+    return match ? Math.max(max, Number(match[1])) : max
+  }, 0)
+}
 
 describe('thanhToanCongNo', () => {
   beforeEach(() => {
@@ -33,14 +41,21 @@ describe('thanhToanCongNo', () => {
     const row = CONG_NO_ROWS[1]
     const amount = Math.min(1, row.conLai)
     const before = THU_CHI_ROWS.length
+    const month = localMonth(new Date())
+    const expectedOrdinal = maxOrdinal('PTT', month) + 1
 
-    const voucher = await thanhToanCongNo({ congNoId: row.id, soTien: amount, hinhThucId: 3 })
+    const voucher = await thanhToanCongNo({
+      congNoId: row.id,
+      soTien: amount,
+      hinhThucId: 3,
+    })
 
     expect(THU_CHI_ROWS.length).toBe(before + 1)
     expect(THU_CHI_ROWS[0].id).toBe(voucher.id)
     expect(voucher.tinhTrang).toBe(2)
     expect(voucher.soPhieuScNk).toBe(row.soPhieu)
-    expect(voucher.soChungTu).toMatch(/^PTT-\d{8}-\d+$/)
+    expect(voucher.soChungTu).toMatch(/^PTT-\d{6}-\d+$/)
+    expect(voucher.soChungTu).toBe(`PTT-${month}-${expectedOrdinal}`)
   })
 
   it('rejects a payment amount that is not positive', async () => {

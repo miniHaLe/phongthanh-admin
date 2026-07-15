@@ -1,8 +1,9 @@
 import { formatVND } from '@/lib/format'
 import type { CrudConfig } from '@/types/crud-types'
 import type { PhiGiao } from '@/types/masterdata-types'
-import { phiGiaoApi } from '@/mock/masterdata/phi-giao.mock'
+import { PHI_GIAO_ROWS } from '@/mock/masterdata/phi-giao.mock'
 import { SAN_PHAM, LOAI_PHI } from '@/mock/seed'
+import { apiFor } from '@/api/api-for'
 
 const sanPhamName = (id: string | null) =>
   id ? (SAN_PHAM.find((s) => s.id === id)?.ten ?? id) : '—'
@@ -12,7 +13,7 @@ export const phiGiaoConfig: CrudConfig<PhiGiao> = {
   resourceKey: 'phi-giao',
   title: 'Phí Giao',
   pageSize: 20,
-  mockApi: phiGiaoApi,
+  mockApi: apiFor('phi-giao', PHI_GIAO_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [

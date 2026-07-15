@@ -1,13 +1,18 @@
 import type { CrudConfig } from '@/types/crud-types'
 import type { NganChua } from '@/types/masterdata-types'
-import { nganChuaApi } from '@/mock/masterdata/ngan-chua.mock'
-import { NHA_KHO_ROWS } from '@/mock/masterdata/nha-kho.mock'
+import { NGAN_CHUA_ROWS } from '@/mock/masterdata/ngan-chua.mock'
+import { apiFor } from '@/api/api-for'
+import { lookupLabel } from '@/components/crud/lookup-label'
+import { loadLookupOptions } from '@/hooks/use-lookup'
+
+const loadNhaKhoOptions = () =>
+  loadLookupOptions('nha-kho', (row) => row.tenNhaKho)
 
 export const nganChuaConfig: CrudConfig<NganChua> = {
   resourceKey: 'ngan-chua',
   title: 'Ngăn Chứa',
   pageSize: 20,
-  mockApi: nganChuaApi,
+  mockApi: apiFor('ngan-chua', NGAN_CHUA_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [
@@ -16,7 +21,7 @@ export const nganChuaConfig: CrudConfig<NganChua> = {
       header: 'Nhà kho',
       width: 180,
       renderCell: (v) =>
-        NHA_KHO_ROWS.find((r) => r.id === v)?.tenNhaKho ?? (v as string),
+        lookupLabel('nha-kho', v as string, (row) => row.tenNhaKho),
     },
     { key: 'tenNgan', header: 'Tên ngăn chứa', sortable: true, width: 180 },
   ],
@@ -26,7 +31,7 @@ export const nganChuaConfig: CrudConfig<NganChua> = {
       label: 'Nhà kho',
       type: 'select',
       required: true,
-      options: NHA_KHO_ROWS.map((r) => ({ label: r.tenNhaKho, value: r.id })),
+      loadOptions: loadNhaKhoOptions,
     },
     { key: 'tenNgan', label: 'Tên ngăn chứa', type: 'text', required: true },
   ],
@@ -35,7 +40,7 @@ export const nganChuaConfig: CrudConfig<NganChua> = {
       key: 'nhaKhoId',
       label: 'Nhà kho',
       type: 'select',
-      options: NHA_KHO_ROWS.map((r) => ({ label: r.tenNhaKho, value: r.id })),
+      loadOptions: loadNhaKhoOptions,
     },
     { key: 'tenNgan', label: 'Tên ngăn chứa', type: 'text' },
   ],

@@ -30,6 +30,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import type { CrudConfig, FieldConfig } from '@/types/crud-types'
+import { useLoadedOptions } from '@/hooks/use-lookup'
 
 interface CrudSheetProps<T extends { id: string }> {
   config: CrudConfig<T>
@@ -39,6 +40,57 @@ interface CrudSheetProps<T extends { id: string }> {
   onClose: () => void
   onSubmit: (data: Partial<T>, saveAndNew?: boolean) => void
   isPending?: boolean
+}
+
+function LoadedSelect({
+  fieldConfig,
+  value,
+  onChange,
+  enabled,
+}: {
+  fieldConfig: FieldConfig<unknown>
+  value: unknown
+  onChange: (value: string) => void
+  enabled: boolean
+}) {
+  const { options, isLoading, error } = useLoadedOptions(
+    fieldConfig.loadOptions,
+    fieldConfig.options,
+    enabled,
+  )
+
+  return (
+    <>
+      <Select
+        value={String(value ?? '')}
+        onValueChange={onChange}
+        disabled={isLoading && options.length === 0}
+      >
+        <FormControl>
+          <SelectTrigger aria-busy={isLoading}>
+            <SelectValue
+              placeholder={
+                isLoading ? 'Đang tải…' : `Chọn ${fieldConfig.label}`
+              }
+            />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {error && (
+        <p className="text-xs text-destructive">
+          Không tải được danh sách
+          {fieldConfig.options?.length ? '; đang dùng dữ liệu có sẵn.' : '.'}
+        </p>
+      )}
+    </>
+  )
 }
 
 /** Build a Zod schema from field configs. */
@@ -251,23 +303,12 @@ export function CrudSheet<T extends { id: string }>({
                         </Label>
                       </div>
                     ) : f.type === 'select' || f.type === 'combobox' ? (
-                      <Select
-                        value={String(field.value ?? '')}
-                        onValueChange={field.onChange}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={`Chọn ${f.label}`} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {f.options?.map((o) => (
-                            <SelectItem key={o.value} value={o.value}>
-                              {o.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <LoadedSelect
+                        fieldConfig={f as FieldConfig<unknown>}
+                        value={field.value}
+                        onChange={field.onChange}
+                        enabled={open}
+                      />
                     ) : f.type === 'textarea' ? (
                       <FormControl>
                         <Textarea

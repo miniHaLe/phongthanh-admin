@@ -18,15 +18,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { LineItemEditor, PageHeader, notify, type LineColumn } from '@/components/shared'
+import {
+  LineItemEditor,
+  PageHeader,
+  notify,
+  type LineColumn,
+} from '@/components/shared'
 import { ROUTES } from '@/constants/routes'
 import { formatVND } from '@/lib/format'
-import { NHA_KHO_ROWS, NGAN_CHUA_ROWS } from '@/mock/masterdata'
+import { useLookup } from '@/hooks/use-lookup'
 import { CURRENT_USER } from '@/mock/current-user-mock'
 import { BRANCHES } from '@/mock/seed/branches'
 import type { ReceivingLine } from '@/domains/warehouse/types'
 import { createReceiving } from './create-receiving'
-import { NhapKhoHeaderFields, type NhapKhoHeaderValues } from './nhap-kho-header-fields'
+import {
+  NhapKhoHeaderFields,
+  type NhapKhoHeaderValues,
+} from './nhap-kho-header-fields'
 import { NhapKhoLineEntry } from './nhap-kho-line-entry'
 import { printReceiving } from '@/features/warehouse/prints/warehouse-prints'
 
@@ -44,11 +52,11 @@ const EMPTY_HEADER: NhapKhoHeaderValues = {
   ghiChu: '',
 }
 
-function makeEmptyLine(): ReceivingLine {
+function makeEmptyLine(defaultNganChua: string): ReceivingLine {
   return {
     ma: '',
     ten: '',
-    nganChua: NGAN_CHUA_ROWS[0]?.tenNgan ?? '',
+    nganChua: defaultNganChua,
     soLuong: 1,
     donGia: 0,
     thanhTien: 0,
@@ -59,9 +67,13 @@ function makeEmptyLine(): ReceivingLine {
 
 export default function NhapKhoCreatePage() {
   const navigate = useNavigate()
+  const { byId: nhaKhoById } = useLookup('nha-kho')
+  const { rows: nganChuaRows } = useLookup('ngan-chua')
   const [header, setHeader] = useState<NhapKhoHeaderValues>(EMPTY_HEADER)
   const [lines, setLines] = useState<ReceivingLine[]>([])
-  const [errors, setErrors] = useState<Partial<Record<keyof NhapKhoHeaderValues, string>>>({})
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof NhapKhoHeaderValues, string>>
+  >({})
 
   function patchHeader(patch: Partial<NhapKhoHeaderValues>) {
     setHeader((prev) => ({ ...prev, ...patch }))
@@ -90,7 +102,8 @@ export default function NhapKhoCreatePage() {
     if (!header.nganChuaId) nextErrors.nganChuaId = 'Vui lòng chọn ngăn chứa!'
     if (!header.hinhThucThanhToan)
       nextErrors.hinhThucThanhToan = 'Vui lòng chọn hình thức thanh toán!'
-    if (!header.nhaCungCap) nextErrors.nhaCungCap = 'Vui lòng chọn nhà cung cấp!'
+    if (!header.nhaCungCap)
+      nextErrors.nhaCungCap = 'Vui lòng chọn nhà cung cấp!'
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
       notify.error('Vui lòng chọn nhà cung cấp!')
@@ -106,7 +119,7 @@ export default function NhapKhoCreatePage() {
   function handleSave({ saveAndNew }: { saveAndNew: boolean }) {
     if (!validate()) return
 
-    const khoTen = NHA_KHO_ROWS.find((k) => k.id === header.khoId)?.tenNhaKho ?? ''
+    const khoTen = nhaKhoById.get(header.khoId)?.tenNhaKho ?? ''
     const voucher = createReceiving({
       soDatHang: header.soDatHang,
       soHoaDon: header.soHoaDon,
@@ -129,7 +142,7 @@ export default function NhapKhoCreatePage() {
   }
 
   function handlePrint() {
-    const khoTen = NHA_KHO_ROWS.find((k) => k.id === header.khoId)?.tenNhaKho ?? ''
+    const khoTen = nhaKhoById.get(header.khoId)?.tenNhaKho ?? ''
     void printReceiving({
       id: 'preview',
       soPhieu: 'Phát sinh tự động',
@@ -180,12 +193,18 @@ export default function NhapKhoCreatePage() {
       key: 'nganChua',
       header: 'Ngăn chứa',
       cell: (line, i) => (
-        <Select value={line.nganChua} onValueChange={(v) => updateLine(i, { nganChua: v })}>
-          <SelectTrigger className="h-8 w-28" aria-label={`Ngăn chứa dòng ${i + 1}`}>
+        <Select
+          value={line.nganChua}
+          onValueChange={(v) => updateLine(i, { nganChua: v })}
+        >
+          <SelectTrigger
+            className="h-8 w-28"
+            aria-label={`Ngăn chứa dòng ${i + 1}`}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {NGAN_CHUA_ROWS.map((n) => (
+            {nganChuaRows.map((n) => (
               <SelectItem key={n.id} value={n.tenNgan}>
                 {n.tenNgan}
               </SelectItem>
@@ -203,7 +222,9 @@ export default function NhapKhoCreatePage() {
           min={1}
           className="h-8 w-20"
           value={line.soLuong}
-          onChange={(e) => updateLine(i, { soLuong: Number(e.target.value) || 0 })}
+          onChange={(e) =>
+            updateLine(i, { soLuong: Number(e.target.value) || 0 })
+          }
           aria-label={`Số lượng dòng ${i + 1}`}
         />
       ),
@@ -217,7 +238,9 @@ export default function NhapKhoCreatePage() {
           min={0}
           className="h-8 w-28"
           value={line.donGia}
-          onChange={(e) => updateLine(i, { donGia: Number(e.target.value) || 0 })}
+          onChange={(e) =>
+            updateLine(i, { donGia: Number(e.target.value) || 0 })
+          }
           aria-label={`Đơn giá dòng ${i + 1}`}
         />
       ),
@@ -225,7 +248,9 @@ export default function NhapKhoCreatePage() {
     {
       key: 'thanhTien',
       header: 'Thành tiền',
-      cell: (line) => <span className="tabular-nums">{formatVND(line.thanhTien)}</span>,
+      cell: (line) => (
+        <span className="tabular-nums">{formatVND(line.thanhTien)}</span>
+      ),
     },
     {
       key: 'capNhatGia',
@@ -262,7 +287,12 @@ export default function NhapKhoCreatePage() {
           { label: 'Tạo mới' },
         ]}
       >
-        <Button size="sm" variant="outline" className="h-8" onClick={handlePrint}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          onClick={handlePrint}
+        >
           In
         </Button>
         <Button asChild size="sm" variant="outline" className="h-8">
@@ -274,8 +304,14 @@ export default function NhapKhoCreatePage() {
         <LineItemEditor
           header={
             <>
-              <NhapKhoHeaderFields values={header} onChange={patchHeader} errors={errors} />
-              <NhapKhoLineEntry onAdd={(line) => setLines((prev) => [...prev, line])} />
+              <NhapKhoHeaderFields
+                values={header}
+                onChange={patchHeader}
+                errors={errors}
+              />
+              <NhapKhoLineEntry
+                onAdd={(line) => setLines((prev) => [...prev, line])}
+              />
               <h3 className="mb-2 mt-6 text-sm font-semibold text-muted-foreground">
                 Danh sách hàng nhập
               </h3>
@@ -284,7 +320,7 @@ export default function NhapKhoCreatePage() {
           columns={lineColumns}
           lines={lines}
           onLinesChange={setLines}
-          makeEmptyLine={makeEmptyLine}
+          makeEmptyLine={() => makeEmptyLine(nganChuaRows[0]?.tenNgan ?? '')}
           totals={[
             {
               key: 'total',

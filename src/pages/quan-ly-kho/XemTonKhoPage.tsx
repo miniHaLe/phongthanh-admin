@@ -40,7 +40,7 @@ import { ROUTES } from '@/constants/routes'
 import { formatVND, formatNumber } from '@/lib/format'
 import { fetchInventory } from '@/domains/warehouse/mock-data'
 import { BRANCHES } from '@/mock/seed/branches'
-import { NHA_KHO_ROWS } from '@/mock/masterdata'
+import { useLookup } from '@/hooks/use-lookup'
 import { MANUFACTURERS, MODELS } from '@/domains/repair/reference-data'
 import type { InventoryRow } from '@/domains/warehouse/types'
 import { useInventoryCompositeColumns } from '@/features/warehouse/inventory-composite-table-columns'
@@ -86,6 +86,7 @@ function defaultFilters(): XemTonKhoFilters {
 
 export default function XemTonKhoPage() {
   const navigate = useNavigate()
+  const { rows: nhaKhoRows } = useLookup('nha-kho')
   const [filters, setFilters] = useState<XemTonKhoFilters>(defaultFilters)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
@@ -198,7 +199,7 @@ export default function XemTonKhoPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={UNSET}>Tất cả nhà kho</SelectItem>
-                {NHA_KHO_ROWS.map((k) => (
+                {nhaKhoRows.map((k) => (
                   <SelectItem key={k.id} value={k.id}>
                     {k.tenNhaKho}
                   </SelectItem>

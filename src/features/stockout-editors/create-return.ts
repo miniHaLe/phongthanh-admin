@@ -7,13 +7,9 @@
  */
 import { RETURN_ROWS } from '@/domains/warehouse/list-data'
 import type { ReturnSlip } from '@/domains/warehouse/types'
+import { nextVoucherCode } from '@/lib/voucher-code'
 
-let returnSeq = RETURN_ROWS.length
-
-function ymd(iso: string): string {
-  const d = new Date(iso)
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
-}
+let returnIdSeq = RETURN_ROWS.length
 
 export interface CreateReturnInput {
   hinhThucTra: string
@@ -22,12 +18,16 @@ export interface CreateReturnInput {
 }
 
 export function createReturn(input: CreateReturnInput): ReturnSlip {
-  returnSeq += 1
-  const now = new Date().toISOString()
+  returnIdSeq += 1
+  const now = new Date()
   const slip: ReturnSlip = {
-    id: `th-new-${returnSeq}`,
-    soPhieu: `PTH-${ymd(now)}-${returnSeq}`,
-    ngayTra: now,
+    id: `th-new-${returnIdSeq}`,
+    soPhieu: nextVoucherCode(
+      'PTH',
+      RETURN_ROWS.map((row) => row.soPhieu),
+      now,
+    ),
+    ngayTra: now.toISOString(),
     hinhThucTra: input.hinhThucTra,
     nguoiLap: input.nguoiLap,
     branchId: input.branchId,

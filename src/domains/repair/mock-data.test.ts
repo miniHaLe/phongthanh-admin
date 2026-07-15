@@ -7,7 +7,7 @@
  * Spec source: gap matrix §5b (status ids), plan §"Data-Layer Reconciliation (D5)".
  */
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { MOCK_TICKETS, fetchRepairList } from './mock-data'
+import { MOCK_TICKETS, createRepairTicket, fetchRepairList } from './mock-data'
 import { STATUS_LABEL, KT_BOARD_STATUS_IDS } from './status'
 import { TECHNICIANS, PRODUCTS, MODELS } from './reference-data'
 
@@ -32,7 +32,8 @@ describe('MOCK_TICKETS (live repair layer) — characterization', () => {
     expect(reloaded.MOCK_TICKETS.at(-1)!.id).toBe(MOCK_TICKETS.at(-1)!.id)
   })
 
-  it('every soPhieu matches /^PSC-\\d+$/', () => {
+  it('keeps all seeded soPhieu values in the legacy PSC-number format', () => {
+    expect(MOCK_TICKETS).toHaveLength(250)
     for (const t of MOCK_TICKETS) {
       expect(t.soPhieu).toMatch(/^PSC-\d+$/)
     }
@@ -61,6 +62,47 @@ describe('MOCK_TICKETS (live repair layer) — characterization', () => {
         expect(times[i]).toBeGreaterThanOrEqual(times[i - 1])
       }
       expect(t.statusHistory.at(-1)!.status).toBe(t.tinhTrang)
+    }
+  })
+})
+
+describe('createRepairTicket — voucher code format', () => {
+  it('creates PSC-yyyymm-1 then PSC-yyyymm-2 and uses the code as id', async () => {
+    const product = PRODUCTS[0]
+    const model = MODELS.find((item) => item.productId === product.id)!
+    const technician = TECHNICIANS[0]
+    const now = new Date()
+    const month = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`
+    const createdIds: string[] = []
+    const input = {
+      tenKhach: 'Khách kiểm thử',
+      sdt: '0900000000',
+      branchId: technician.branchId,
+      nhaSanXuatId: product.nhaSanXuatId,
+      sanPhamId: product.id,
+      modelId: model.id,
+      hinhThuc: 'sua_dich_vu' as const,
+      kyThuatId: technician.id,
+      ngayNhan: now.toISOString(),
+      moTaLoi: 'Kiểm thử mã phiếu',
+      chiPhiDuKien: 0,
+    }
+
+    try {
+      const first = await createRepairTicket(input)
+      createdIds.push(first.id)
+      const second = await createRepairTicket(input)
+      createdIds.push(second.id)
+
+      expect(first.soPhieu).toBe(`PSC-${month}-1`)
+      expect(first.id).toBe(first.soPhieu)
+      expect(second.soPhieu).toBe(`PSC-${month}-2`)
+      expect(second.id).toBe(second.soPhieu)
+    } finally {
+      for (const id of createdIds) {
+        const index = MOCK_TICKETS.findIndex((ticket) => ticket.id === id)
+        if (index >= 0) MOCK_TICKETS.splice(index, 1)
+      }
     }
   })
 })

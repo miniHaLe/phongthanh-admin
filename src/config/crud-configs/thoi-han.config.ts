@@ -1,12 +1,13 @@
 import type { CrudConfig } from '@/types/crud-types'
 import type { ThoiHan } from '@/types/masterdata-types'
-import { thoiHanApi } from '@/mock/masterdata/thoi-han.mock'
+import { THOI_HAN_ROWS } from '@/mock/masterdata/thoi-han.mock'
+import { apiFor } from '@/api/api-for'
 
 export const thoiHanConfig: CrudConfig<ThoiHan> = {
   resourceKey: 'thoi-han',
   title: 'Thời Gian Bảo Hành',
   pageSize: 20,
-  mockApi: thoiHanApi,
+  mockApi: apiFor('thoi-han', THOI_HAN_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   columns: [

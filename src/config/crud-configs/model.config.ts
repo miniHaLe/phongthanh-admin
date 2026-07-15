@@ -1,16 +1,22 @@
 import { formatDate } from '@/lib/format'
 import type { CrudConfig } from '@/types/crud-types'
 import type { Model } from '@/types/masterdata-types'
-import { modelApi } from '@/mock/masterdata/model.mock'
-import { NHA_SAN_XUAT_ROWS } from '@/mock/masterdata/nha-san-xuat.mock'
-import { SAN_PHAM_ROWS } from '@/mock/masterdata/san-pham.mock'
+import { MODEL_ROWS } from '@/mock/masterdata/model.mock'
+import { apiFor } from '@/api/api-for'
+import { lookupLabel } from '@/components/crud/lookup-label'
+import { loadLookupOptions } from '@/hooks/use-lookup'
+
+const loadNhaSanXuatOptions = () =>
+  loadLookupOptions('nha-san-xuat', (row) => row.tenNSX)
+const loadSanPhamOptions = () =>
+  loadLookupOptions('san-pham', (row) => row.tenSP)
 
 export const modelConfig: CrudConfig<Model> = {
   resourceKey: 'model',
   title: 'Model',
   pageSize: 20,
   defaultSort: { key: 'tenModel', dir: 'asc' },
-  mockApi: modelApi,
+  mockApi: apiFor('model', MODEL_ROWS),
   bulkDelete: true,
   saveAndNew: true,
   export: true,
@@ -22,14 +28,14 @@ export const modelConfig: CrudConfig<Model> = {
       header: 'Nhà sản xuất',
       width: 150,
       renderCell: (v) =>
-        NHA_SAN_XUAT_ROWS.find((r) => r.id === v)?.tenNSX ?? (v as string),
+        lookupLabel('nha-san-xuat', v as string, (row) => row.tenNSX),
     },
     {
       key: 'sanPhamId',
       header: 'Sản phẩm',
       width: 160,
       renderCell: (v) =>
-        SAN_PHAM_ROWS.find((r) => r.id === v)?.tenSP ?? (v as string),
+        lookupLabel('san-pham', v as string, (row) => row.tenSP),
     },
     { key: 'nguoiTao', header: 'Người tạo', width: 150 },
     {
@@ -47,14 +53,14 @@ export const modelConfig: CrudConfig<Model> = {
       label: 'Sản phẩm',
       type: 'select',
       required: true,
-      options: SAN_PHAM_ROWS.map((r) => ({ label: r.tenSP, value: r.id })),
+      loadOptions: loadSanPhamOptions,
     },
     {
       key: 'nhaSanXuatId',
       label: 'Nhà sản xuất',
       type: 'select',
       required: true,
-      options: NHA_SAN_XUAT_ROWS.map((r) => ({ label: r.tenNSX, value: r.id })),
+      loadOptions: loadNhaSanXuatOptions,
     },
     { key: 'maModel', label: 'Model Code', type: 'text' },
     { key: 'tenModel', label: 'Tên model', type: 'text', required: true },
@@ -65,13 +71,13 @@ export const modelConfig: CrudConfig<Model> = {
       key: 'sanPhamId',
       label: 'Sản phẩm',
       type: 'select',
-      options: SAN_PHAM_ROWS.map((r) => ({ label: r.tenSP, value: r.id })),
+      loadOptions: loadSanPhamOptions,
     },
     {
       key: 'nhaSanXuatId',
       label: 'Nhà sản xuất',
       type: 'select',
-      options: NHA_SAN_XUAT_ROWS.map((r) => ({ label: r.tenNSX, value: r.id })),
+      loadOptions: loadNhaSanXuatOptions,
     },
     { key: 'tenModel', label: 'Tên model', type: 'text' },
   ],

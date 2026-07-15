@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BRANCHES } from '@/mock/seed/branches'
-import { NHA_KHO_ROWS } from '@/mock/masterdata'
+import { useLookup } from '@/hooks/use-lookup'
 
 const HINH_THUC_THU_CHI_OPTIONS = ['Tiền mặt', 'Công nợ', 'Chuyển khoản']
 
@@ -51,7 +51,10 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
+      <Label
+        htmlFor={htmlFor}
+        className="text-xs font-medium text-muted-foreground"
+      >
         {label}
       </Label>
       {children}
@@ -61,13 +64,16 @@ function Field({
 
 export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
   const uid = useId()
+  const { rows: nhaKhoRows } = useLookup('nha-kho')
 
   return (
     <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
       <Field label="Chi nhánh" htmlFor={`${uid}-cn`}>
         <Select
           value={filters.branchId ?? UNSET}
-          onValueChange={(v) => onChange({ branchId: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ branchId: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả chi nhánh" />
@@ -86,14 +92,16 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
       <Field label="Nhà kho" htmlFor={`${uid}-kho`}>
         <Select
           value={filters.khoId ?? UNSET}
-          onValueChange={(v) => onChange({ khoId: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ khoId: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-kho`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả nhà kho" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={UNSET}>Tất cả nhà kho</SelectItem>
-            {NHA_KHO_ROWS.map((k) => (
+            {nhaKhoRows.map((k) => (
               <SelectItem key={k.id} value={k.id}>
                 {k.tenNhaKho}
               </SelectItem>
@@ -105,7 +113,9 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
       <Field label="Hình thức thu chi" htmlFor={`${uid}-httc`}>
         <Select
           value={filters.hinhThucThuChi ?? UNSET}
-          onValueChange={(v) => onChange({ hinhThucThuChi: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ hinhThucThuChi: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-httc`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả" />
@@ -135,7 +145,9 @@ export function BanHangFilters({ filters, onChange }: BanHangFiltersProps) {
           id={`${uid}-kh`}
           className={filterControlClassName}
           value={filters.tenKhachHang ?? ''}
-          onChange={(e) => onChange({ tenKhachHang: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ tenKhachHang: e.target.value || undefined })
+          }
         />
       </Field>
 
