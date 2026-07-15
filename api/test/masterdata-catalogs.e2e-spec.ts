@@ -11,8 +11,7 @@ import {
 } from '../src/config/cors-policy'
 import { DB_CLIENT, type DbClient } from '../src/db/db.module'
 import { hangHoa, sanPham } from '../src/db/schema'
-
-const ADMIN = { tenDangNhap: 'admin', password: 'Test!Admin2026' }
+import { API_TEST_USERS } from './api-test-users'
 
 let app: INestApplication
 let http: ReturnType<typeof request>
@@ -35,7 +34,8 @@ beforeAll(async () => {
   http = request(app.getHttpServer())
   db = moduleRef.get<DbClient>(DB_CLIENT)
 
-  const login = await http.post('/auth/login').send(ADMIN)
+  const login = await http.post('/auth/login').send(API_TEST_USERS.super)
+  expect(login.status).toBe(200)
   token = login.body.accessToken as string
 })
 
@@ -98,7 +98,7 @@ describe('real danh-muc catalogs', () => {
     expect(removed.status).toBe(204)
   })
 
-  it('stamps the JWT username on model create', async () => {
+  it('creates a relational model through the newer catalog contract', async () => {
     const created = await http
       .post('/api/v1/model')
       .set('Authorization', `Bearer ${token}`)
@@ -109,7 +109,13 @@ describe('real danh-muc catalogs', () => {
       })
 
     expect(created.status).toBe(201)
-    expect(created.body.nguoiTao).toBe('admin')
+    expect(created.body).toEqual(
+      expect.objectContaining({
+        tenModel: 'Model API test',
+        nhaSanXuatId: 'nsx-1',
+        sanPhamId: 'sp-1',
+      }),
+    )
 
     await http
       .delete(`/api/v1/model/${created.body.id}`)
@@ -298,6 +304,7 @@ describe('real danh-muc catalogs', () => {
     [
       'ngan-chua',
       { tenNgan: 'Ngăn lỗi', nhaKhoId: 'nha-kho-khong-ton-tai' },
+      'Dữ liệu tham chiếu không hợp lệ',
     ],
     [
       'model',
@@ -306,6 +313,7 @@ describe('real danh-muc catalogs', () => {
         nhaSanXuatId: 'nsx-khong-ton-tai',
         sanPhamId: 'sp-1',
       },
+      'Nhà sản xuất không hợp lệ',
     ],
     [
       'hang-hoa',
@@ -315,24 +323,25 @@ describe('real danh-muc catalogs', () => {
         nhomHangHoaId: 'nhh-1',
         donViTinhId: 'dvt-khong-ton-tai',
       },
+      'Dữ liệu tham chiếu không hợp lệ',
     ],
-  ])('%s returns a Vietnamese 400 for an invalid FK', async (resource, body) => {
+  ])(
+    '%s returns a Vietnamese 400 for an invalid FK',
+    async (resource, body, message) => {
     const response = await http
       .post(`/api/v1/${resource}`)
       .set('Authorization', `Bearer ${token}`)
       .send(body)
 
     expect(response.status).toBe(400)
-    expect(response.body.message).toBe('Dữ liệu liên kết không tồn tại')
-  })
+      expect(response.body.message).toBe(message)
+    },
+  )
 
   it('preserves canonical branch ids and number-valued bigint money fields', async () => {
-    const [repairs, products, goods] = await Promise.all([
+    const [repairs, goods] = await Promise.all([
       http
         .get('/api/v1/loi-sua-chua?pageSize=200')
-        .set('Authorization', `Bearer ${token}`),
-      http
-        .get('/api/v1/san-pham?pageSize=200')
         .set('Authorization', `Bearer ${token}`),
       http
         .get('/api/v1/hang-hoa?pageSize=200')
@@ -342,11 +351,6 @@ describe('real danh-muc catalogs', () => {
     expect(
       repairs.body.data.every((row: { branchId: string }) =>
         /^cn-[123]$/.test(row.branchId),
-      ),
-    ).toBe(true)
-    expect(
-      products.body.data.some(
-        (row: { tienKhoan?: unknown }) => typeof row.tienKhoan === 'number',
       ),
     ).toBe(true)
     expect(

@@ -4,15 +4,18 @@ import { APP_GUARD } from '@nestjs/core'
 import { AuthModule } from './auth/auth.module'
 import { ChiNhanhModule } from './chi-nhanh/chi-nhanh.module'
 import { JwtAuthGuard } from './auth/jwt-auth.guard'
+import { MustChangePasswordGuard } from './auth/must-change-password.guard'
 import { loadEnv } from './config/env'
 import { DbModule } from './db/db.module'
 import { DonViTinhModule } from './don-vi-tinh/don-vi-tinh.module'
 import { HangHoaModule } from './hang-hoa/hang-hoa.module'
 import { HealthModule } from './health/health.module'
 import { KhachHangModule } from './khach-hang/khach-hang.module'
+import { DiaLyModule } from './dia-ly/dia-ly.module'
 import { KhuVucModule } from './khu-vuc/khu-vuc.module'
 import { LoiSuaChuaModule } from './loi-sua-chua/loi-sua-chua.module'
 import { ModelModule } from './model/model.module'
+import { NganHangModule } from './ngan-hang/ngan-hang.module'
 import { NganChuaModule } from './ngan-chua/ngan-chua.module'
 import { NguoiDungModule } from './nguoi-dung/nguoi-dung.module'
 import { NhaKhoModule } from './nha-kho/nha-kho.module'
@@ -34,6 +37,7 @@ import { ThoiHanModule } from './thoi-han/thoi-han.module'
     DbModule,
     AuthModule,
     HealthModule,
+    DiaLyModule,
     KhachHangModule,
     NguoiDungModule,
     NhomQuyenModule,
@@ -52,11 +56,16 @@ import { ThoiHanModule } from './thoi-han/thoi-han.module'
     HangHoaModule,
     ModelModule,
     PhiGiaoModule,
+    NganHangModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: MustChangePasswordGuard,
     },
   ],
 })

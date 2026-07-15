@@ -31,7 +31,20 @@ export function ReceiveInfoSection({ errors }: ReceiveInfoSectionProps) {
           <Label htmlFor="ngayHenGiao" className="mb-1.5 block text-sm">
             Ngày hẹn giao
           </Label>
-          <Input id="ngayHenGiao" type="date" {...register('ngayHenGiao')} />
+          <Input
+            id="ngayHenGiao"
+            type="date"
+            {...register('ngayHenGiao')}
+            aria-invalid={!!errors.ngayHenGiao}
+            aria-describedby={
+              errors.ngayHenGiao ? 'ngayhengiao-err' : undefined
+            }
+          />
+          {errors.ngayHenGiao && (
+            <p id="ngayhengiao-err" className="mt-1 text-xs text-destructive">
+              {errors.ngayHenGiao.message}
+            </p>
+          )}
         </div>
 
         <div>
@@ -56,7 +69,12 @@ export function ReceiveInfoSection({ errors }: ReceiveInfoSectionProps) {
           <Label htmlFor="nguoiNhan" className="mb-1.5 block text-sm">
             Người nhận
           </Label>
-          <Input id="nguoiNhan" value={CURRENT_USER.hoVaTen} readOnly disabled />
+          <Input
+            id="nguoiNhan"
+            value={CURRENT_USER.hoVaTen}
+            readOnly
+            disabled
+          />
         </div>
       </div>
 

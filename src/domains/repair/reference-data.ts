@@ -248,11 +248,140 @@ const MODEL_DEFS: Array<{ id: string; ten: string; productId: string }> = [
   },
 ]
 
-export const MODELS: Model[] = MODEL_DEFS
+export const MODELS: Model[] = MODEL_DEFS.map((model) => {
+  const product = PRODUCTS.find((item) => item.id === model.productId)
+  if (!product?.nhaSanXuatId) {
+    throw new Error(`Model ${model.id} khong co nha san xuat tuong ung`)
+  }
+  return {
+    ...model,
+    sanPhamId: model.productId,
+    nhaSanXuatId: product.nhaSanXuatId,
+  }
+})
+
+const SEEDED_MANUFACTURER_IDS = new Set(MANUFACTURERS.map((item) => item.id))
+const SEEDED_PRODUCT_IDS = new Set(PRODUCTS.map((item) => item.id))
+const SEEDED_MODEL_IDS = new Set(MODELS.map((item) => item.id))
+const REGISTERED_MANUFACTURER_IDS = new Set<string>()
+const REGISTERED_PRODUCT_IDS = new Set<string>()
+const REGISTERED_MODEL_IDS = new Set<string>()
 
 /** Get models for a given product. */
 export function getModelsByProduct(productId: string): Model[] {
-  return MODELS.filter((m) => m.productId === productId)
+  return MODELS.filter((m) => m.sanPhamId === productId)
+}
+
+interface CatalogManufacturerRow {
+  id: string
+  tenNSX: string
+}
+
+interface CatalogProductRow {
+  id: string
+  tenSP: string
+}
+
+interface CatalogModelRow {
+  id: string
+  tenModel: string
+  nhaSanXuatId: string
+  sanPhamId: string
+  ghiChu?: string
+}
+
+/**
+ * Adds rows loaded from the shared catalog to the repair compatibility store.
+ * Existing seeded IDs stay untouched, while newly persisted models become valid
+ * inputs for the still-mock repair mutation.
+ */
+export function registerCatalogRows(
+  manufacturers: readonly CatalogManufacturerRow[],
+  products: readonly CatalogProductRow[],
+  models: readonly CatalogModelRow[],
+): void {
+  for (const row of manufacturers) {
+    const existing = MANUFACTURERS.find((item) => item.id === row.id)
+    if (existing) existing.ten = row.tenNSX
+    else MANUFACTURERS.push({ id: row.id, ten: row.tenNSX })
+    if (!SEEDED_MANUFACTURER_IDS.has(row.id)) {
+      REGISTERED_MANUFACTURER_IDS.add(row.id)
+    }
+  }
+
+  for (const row of products) {
+    const existing = PRODUCTS.find((item) => item.id === row.id)
+    if (existing) existing.ten = row.tenSP
+    else PRODUCTS.push({ id: row.id, ten: row.tenSP })
+    if (!SEEDED_PRODUCT_IDS.has(row.id)) REGISTERED_PRODUCT_IDS.add(row.id)
+  }
+
+  for (const row of models) {
+    const existing = MODELS.find((item) => item.id === row.id)
+    const next: Model = {
+      id: row.id,
+      ten: row.tenModel,
+      nhaSanXuatId: row.nhaSanXuatId,
+      sanPhamId: row.sanPhamId,
+      productId: row.sanPhamId,
+      ghiChu: row.ghiChu,
+    }
+    if (existing) Object.assign(existing, next)
+    else MODELS.push(next)
+    if (!SEEDED_MODEL_IDS.has(row.id)) REGISTERED_MODEL_IDS.add(row.id)
+  }
+}
+
+function removeMissingRegisteredRows<T extends { id: string }>(
+  rows: T[],
+  registeredIds: Set<string>,
+  incomingIds: Set<string>,
+): void {
+  for (let index = rows.length - 1; index >= 0; index -= 1) {
+    const id = rows[index].id
+    if (registeredIds.has(id) && !incomingIds.has(id)) rows.splice(index, 1)
+  }
+  for (const id of registeredIds) {
+    if (!incomingIds.has(id)) registeredIds.delete(id)
+  }
+}
+
+/** Reconciles the compatibility store with a complete catalog snapshot. */
+export function replaceCatalogRows(
+  manufacturers: readonly CatalogManufacturerRow[],
+  products: readonly CatalogProductRow[],
+  models: readonly CatalogModelRow[],
+): void {
+  removeMissingRegisteredRows(
+    MANUFACTURERS,
+    REGISTERED_MANUFACTURER_IDS,
+    new Set(manufacturers.map((row) => row.id)),
+  )
+  removeMissingRegisteredRows(
+    PRODUCTS,
+    REGISTERED_PRODUCT_IDS,
+    new Set(products.map((row) => row.id)),
+  )
+  removeMissingRegisteredRows(
+    MODELS,
+    REGISTERED_MODEL_IDS,
+    new Set(models.map((row) => row.id)),
+  )
+  registerCatalogRows(manufacturers, products, models)
+}
+
+export function isCompatibleModelSelection(
+  nhaSanXuatId: string,
+  sanPhamId: string,
+  modelId: string,
+): boolean {
+  const model = MODELS.find((item) => item.id === modelId)
+  return Boolean(
+    MANUFACTURERS.some((item) => item.id === nhaSanXuatId) &&
+    PRODUCTS.some((item) => item.id === sanPhamId) &&
+    model?.nhaSanXuatId === nhaSanXuatId &&
+    model.sanPhamId === sanPhamId,
+  )
 }
 
 // ── Technicians ───────────────────────────────────────────────────────────
@@ -348,8 +477,20 @@ export function createSanPham(ten: string, nhaSanXuatId: string): Product {
   return item
 }
 
-export function createModel(ten: string, productId: string): Model {
-  const item = { id: nextQcId('mdl'), ten, productId }
+export function createModel(
+  ten: string,
+  sanPhamId: string,
+  nhaSanXuatId: string,
+  ghiChu?: string,
+): Model {
+  const item = {
+    id: nextQcId('mdl'),
+    ten,
+    nhaSanXuatId,
+    sanPhamId,
+    productId: sanPhamId,
+    ghiChu,
+  }
   MODELS.push(item)
   return item
 }

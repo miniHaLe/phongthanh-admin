@@ -43,6 +43,8 @@ export interface PagedResult<T> {
 export interface ListParams {
   page: number
   pageSize: number
+  /** Dedicated server-owned branch scope; never serialize inside filters. */
+  branchId?: string
   sort?: string
   dir?: 'asc' | 'desc'
   search?: string

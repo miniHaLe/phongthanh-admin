@@ -1,16 +1,9 @@
-/**
- * "Thêm khách hàng" quick-create modal body. There is no khách-hàng mutator
- * on the repair reference-data layer, so this fabricates a selectable option
- * via a module-level counter (never Date.now()/Math.random()). The `select`
- * callback carries the full contact detail (not just {id,label}) so the
- * caller can render the post-pick info panel without a second lookup.
- */
 import { useState } from 'react'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { DialogFooter } from '@/components/ui/dialog'
+import { useQueryClient } from '@tanstack/react-query'
 import { notify, type AutocompleteOption } from '@/components/shared'
+import { CustomerForm } from '@/features/customer/customer-form'
+import { persistCustomer } from '@/features/customer/create-customer'
+import { useCustomerReferenceData } from '@/features/customer/use-customer-reference-data'
 
 export interface CreatedKhachHang extends AutocompleteOption {
   ten: string
@@ -23,74 +16,69 @@ interface QuickCreateKhachHangProps {
   select: (opt: CreatedKhachHang) => void
 }
 
-let khachHangSeq = 0
-
 export function QuickCreateKhachHang({
   close,
   select,
 }: QuickCreateKhachHangProps) {
-  const [ten, setTen] = useState('')
-  const [sdt, setSdt] = useState('')
-  const [diaChi, setDiaChi] = useState('')
+  const references = useCustomerReferenceData()
+  const queryClient = useQueryClient()
+  const [isPending, setIsPending] = useState(false)
 
-  function handleSave() {
-    if (!ten.trim()) {
-      notify.error('Vui lòng nhập tên khách hàng!')
-      return
+  async function handleSave(data: Parameters<typeof persistCustomer>[0]) {
+    setIsPending(true)
+    try {
+      const customer = await persistCustomer(data)
+      await queryClient.invalidateQueries({ queryKey: ['khach-hang'] })
+      notify.success('Đã thêm khách hàng')
+      select({
+        id: customer.id,
+        label: customer.tenKH,
+        ten: customer.tenKH,
+        sdt: customer.dienThoai,
+        diaChi: customer.diaChi ?? '',
+      })
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : 'Không thể thêm khách hàng',
+      )
+    } finally {
+      setIsPending(false)
     }
-    if (!sdt.trim()) {
-      notify.error('Vui lòng nhập số điện thoại!')
-      return
-    }
-    khachHangSeq += 1
-    select({
-      id: `kh-new-${khachHangSeq}`,
-      label: ten.trim(),
-      ten: ten.trim(),
-      sdt: sdt.trim(),
-      diaChi: diaChi.trim(),
-    })
+  }
+
+  if (references.loading) {
+    return (
+      <p
+        role="status"
+        className="py-8 text-center text-sm text-muted-foreground"
+      >
+        Đang tải danh mục…
+      </p>
+    )
+  }
+
+  if (references.error || !references.geography) {
+    return (
+      <p
+        role="alert"
+        className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
+      >
+        {references.error ?? 'Không thể tải danh mục địa chỉ.'}
+      </p>
+    )
   }
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-1.5">
-        <Label htmlFor="qc-kh-ten">Họ tên</Label>
-        <Input
-          id="qc-kh-ten"
-          value={ten}
-          onChange={(e) => setTen(e.target.value)}
-          placeholder="Họ tên khách hàng"
-          autoFocus
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="qc-kh-sdt">Điện thoại</Label>
-        <Input
-          id="qc-kh-sdt"
-          value={sdt}
-          onChange={(e) => setSdt(e.target.value)}
-          placeholder="Số điện thoại"
-          inputMode="tel"
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="qc-kh-diachi">Địa chỉ</Label>
-        <Input
-          id="qc-kh-diachi"
-          value={diaChi}
-          onChange={(e) => setDiaChi(e.target.value)}
-          placeholder="Địa chỉ"
-        />
-      </div>
-      <DialogFooter>
-        <Button type="button" variant="ghost" onClick={close}>
-          Hủy
-        </Button>
-        <Button type="button" onClick={handleSave}>
-          Lưu
-        </Button>
-      </DialogFooter>
+    <div className="max-h-[calc(100dvh-8rem)] overflow-y-auto overflow-x-hidden pr-1">
+      <CustomerForm
+        idPrefix="quick-create-customer"
+        provinces={references.geography.provinces}
+        communes={references.geography.communes}
+        banks={references.banks}
+        isPending={isPending}
+        onCancel={close}
+        onSubmit={handleSave}
+      />
     </div>
   )
 }

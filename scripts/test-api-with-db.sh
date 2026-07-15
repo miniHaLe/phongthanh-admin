@@ -2,6 +2,14 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Jest provisions one fixed database and terminates its existing connections.
+# Serialize wrapper runs on Linux so concurrent validation cannot kill another
+# suite; macOS lacks flock by default and continues with the prior behavior.
+if command -v flock >/dev/null 2>&1; then
+  LOCK_FILE="${TMPDIR:-/tmp}/phongthanh-admin-test-api.lock"
+  exec 9>"$LOCK_FILE"
+  flock 9
+fi
 
 cd "$ROOT_DIR"
 if docker inspect phongthanh-db >/dev/null 2>&1; then

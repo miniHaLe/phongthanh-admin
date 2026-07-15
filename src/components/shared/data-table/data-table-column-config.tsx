@@ -16,6 +16,7 @@ import type { ColumnPresentation } from './data-table'
 export interface ColumnDescriptor {
   id: string
   label: string
+  initiallyHidden?: boolean
   presentation?: ColumnPresentation
 }
 
@@ -45,14 +46,14 @@ export function DataTableColumnConfig({
    * A column is considered visible unless `columnVisibility[id]` is explicitly
    * `false` (matching TanStack Table convention).
    */
-  function isVisible(colId: string): boolean {
-    return columnVisibility[colId] !== false
+  function isVisible(column: ColumnDescriptor): boolean {
+    return columnVisibility[column.id] ?? !column.initiallyHidden
   }
 
-  function toggleColumn(colId: string) {
+  function toggleColumn(column: ColumnDescriptor) {
     setColumnVisibility(tableId, {
       ...columnVisibility,
-      [colId]: !isVisible(colId),
+      [column.id]: !isVisible(column),
     })
   }
 
@@ -85,8 +86,8 @@ export function DataTableColumnConfig({
             <li key={col.id} className="flex items-center gap-2">
               <Checkbox
                 id={`col-vis-${tableId}-${col.id}`}
-                checked={isVisible(col.id)}
-                onCheckedChange={() => toggleColumn(col.id)}
+                checked={isVisible(col)}
+                onCheckedChange={() => toggleColumn(col)}
               />
               <label
                 htmlFor={`col-vis-${tableId}-${col.id}`}

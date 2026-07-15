@@ -1,6 +1,7 @@
 /** Spec: Kỳ carry-forward invariants + bulk warehouse mutations. */
 import { describe, it, expect } from 'vitest'
 import { fetchInventory, inventoryMath } from './mock-data'
+import { HANG_HOA_ROWS } from '@/mock/masterdata'
 import { duyetTraLK, traHang } from './mock-mutations'
 import { fetchPartReturnList, fetchPartReturnXacList } from './list-fetchers'
 
@@ -21,13 +22,29 @@ describe('inventory Kỳ carry-forward (Finding 10 math)', () => {
     }
   })
 
-  it('KPI trio sums the same rows and can go negative (no clamp)', async () => {
+  it('caps every period flow by availability so stock never goes negative', () => {
+    const { tonDauKy, deltaFor, kyAsc, productCount } = inventoryMath
+    for (let product = 0; product < productCount; product += 1) {
+      for (let period = 0; period < kyAsc.length; period += 1) {
+        const opening = tonDauKy(product, period)
+        const delta = deltaFor(product, period)
+        expect(opening).toBeGreaterThanOrEqual(0)
+        expect(delta.xuat).toBeLessThanOrEqual(opening + delta.nhap)
+        expect(opening + delta.nhap - delta.xuat).toBeGreaterThanOrEqual(0)
+      }
+    }
+  })
+
+  it('KPI trio sums the same rows and current stock matches sales availability', async () => {
     const res = await fetchInventory({ kind: 'ton-kho', pageSize: 300 })
     const sumClosing = res.rows.reduce((s, r) => s + r.tonCuoiKy, 0)
     expect(res.kpi.tongTon).toBe(sumClosing)
-    // Over enough stock-out-heavy periods, at least one row is negative.
-    const anyNegative = res.rows.some((r) => r.tonCuoiKy < 0)
-    expect(anyNegative).toBe(true)
+    const salesAvailability = new Map(
+      HANG_HOA_ROWS.map((row) => [row.maHH, row.tonKho ?? 0]),
+    )
+    for (const row of res.rows) {
+      expect(row.tonCuoiKy).toBe(salesAvailability.get(row.maHang))
+    }
   })
 
   it('the technician view carries a Kỹ thuật axis', async () => {
@@ -38,7 +55,10 @@ describe('inventory Kỳ carry-forward (Finding 10 math)', () => {
 
 describe('warehouse bulk mutations', () => {
   it('duyetTraLK flips Chờ duyệt → Đã duyệt', async () => {
-    const before = await fetchPartReturnList({ tinhTrang: 'Chờ duyệt', pageSize: 300 })
+    const before = await fetchPartReturnList({
+      tinhTrang: 'Chờ duyệt',
+      pageSize: 300,
+    })
     const target = before.data[0]
     expect(target.tinhTrang).toBe('Chờ duyệt')
     const n = duyetTraLK([target.id])
@@ -47,7 +67,10 @@ describe('warehouse bulk mutations', () => {
   })
 
   it('traHang sets Đã trả hãng + stores the vận đơn', async () => {
-    const before = await fetchPartReturnXacList({ tinhTrang: 'Chưa trả hãng', pageSize: 300 })
+    const before = await fetchPartReturnXacList({
+      tinhTrang: 'Chưa trả hãng',
+      pageSize: 300,
+    })
     const target = before.data[0]
     const n = traHang([target.id], 'VD-TEST-1')
     expect(n).toBe(1)

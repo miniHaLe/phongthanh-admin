@@ -1,9 +1,7 @@
 /**
  * Mã số thuế customer search-modal lookup for the invoice composer. The live
- * KhachHang store has no maSoThue field (see masterdata-types.ts), so this
- * matches by name/phone (mirroring the reference's "Nhập tên hoặc số điện
- * thoại" tooltip on the invoice's customer field) and auto-fills Tên đơn vị +
- * Địa chỉ from the matched row.
+ * Uses the selected real-or-mock customer API, then maps name/phone/tax data
+ * for the invoice picker.
  */
 import { khachHangConfig } from '@/config/crud-configs/khach-hang.config'
 
@@ -26,7 +24,7 @@ export async function searchCustomersByNameOrPhone(
   })
   return result.data.map((k) => ({
     id: k.id,
-    label: `${k.tenKH} — ${k.dienThoai}`,
+    label: `${k.tenKH} — ${k.maSoThue || k.dienThoai}`,
     tenDonVi: k.tenKH,
     diaChi: k.diaChi ?? '',
   }))

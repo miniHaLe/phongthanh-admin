@@ -15,8 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ServerAutocomplete, type AutocompleteOption } from '@/components/shared'
+import {
+  ServerAutocomplete,
+  type AutocompleteOption,
+} from '@/components/shared'
 import { BRANCHES } from '@/mock/seed/branches'
+import { KHU_VUC_ROWS } from '@/mock/masterdata/khu-vuc.mock'
 import type { CreateRepairFormValues } from '../RepairCreateForm'
 import { QuickCreateKhuVuc } from '../quick-create/QuickCreateKhuVuc'
 
@@ -31,12 +35,24 @@ const LOAI_BAO_HANH_OPTIONS = [
   { value: 'tai_nha', label: 'Tại Nhà' },
 ] as const
 
-/**
- * No khu-vực search API on the repair layer — the [+] quick-create is the
- * only way to add an option; typing filters nothing (empty result set).
- */
-async function searchKhuVuc(): Promise<AutocompleteOption[]> {
-  return []
+function normalizeSearchValue(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+}
+
+async function searchKhuVuc(query: string): Promise<AutocompleteOption[]> {
+  const normalizedQuery = normalizeSearchValue(query)
+  return KHU_VUC_ROWS.filter(
+    (row) =>
+      row.active &&
+      (!normalizedQuery ||
+        normalizeSearchValue(row.tenKhuVuc).includes(normalizedQuery)),
+  )
+    .slice(0, 20)
+    .map((row) => ({ id: row.id, label: row.tenKhuVuc }))
 }
 
 const UNSET = '__none__'
@@ -68,9 +84,7 @@ export function TicketInfoSection({ errors }: TicketInfoSectionProps) {
           </Label>
           <Select
             value={branchId || UNSET}
-            onValueChange={(v) =>
-              setValue('branchId', v === UNSET ? '' : v)
-            }
+            onValueChange={(v) => setValue('branchId', v === UNSET ? '' : v)}
           >
             <SelectTrigger id="branchId">
               <SelectValue placeholder="Chọn chi nhánh…" />
@@ -90,12 +104,7 @@ export function TicketInfoSection({ errors }: TicketInfoSectionProps) {
           <Label htmlFor="soPhieu" className="mb-1.5 block text-sm">
             Số phiếu
           </Label>
-          <Input
-            id="soPhieu"
-            value="<<Phát sinh tự động>>"
-            readOnly
-            disabled
-          />
+          <Input id="soPhieu" value="<<Phát sinh tự động>>" readOnly disabled />
         </div>
 
         {/* Số phiếu hãng */}

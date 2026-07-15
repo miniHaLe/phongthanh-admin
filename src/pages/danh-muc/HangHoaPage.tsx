@@ -2,10 +2,9 @@
  * Hàng Hóa (C5) — full-width list (not master-detail). Create/edit route to
  * the dedicated full-page editor (C5b, /danh-muc/hang-hoa/tao-moi|:id/sua)
  * rather than the generic Sheet; row actions are edit + In Barcode (opens a
- * print window). Reuses the shared CrudTablePage primitives (useCrud,
- * DataTable, CrudFilterBar, bulk-delete, selection column) directly so it
- * stays consistent with every other catalog list without touching
- * components/crud/**.
+ * print window). Reuses the shared CRUD primitives (useCrud, DataTable,
+ * FilterPanel, bulk-delete, selection column) while retaining its page-level
+ * editor and barcode actions.
  */
 import { useMemo, useState, type ReactElement } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -18,21 +17,24 @@ import {
   DataTablePagination,
   DataTableColumnConfig,
   BulkActionsBar,
+  FilterPanel,
   buildSelectionColumn,
   notify,
 } from '@/components/shared'
-import { CrudFilterBar } from '@/components/crud/CrudFilterBar'
+import { CrudFilterFields } from '@/components/crud/crud-filter-fields'
+import { countActiveFilterValues } from '@/components/crud/crud-filter-values'
 import { CrudDeleteDialog } from '@/components/crud/CrudDeleteDialog'
 import { useCrud } from '@/hooks/use-crud'
 import { hangHoaConfig } from '@/config/crud-configs/hang-hoa.config'
 import { ROUTES } from '@/constants/routes'
-import { exportToXlsx } from '@/lib/export-xlsx'
+import { exportListXlsx } from '@/lib/export-list-xlsx'
 import type { HangHoa } from '@/types/masterdata-types'
 import type { ColumnConfig } from '@/types/crud-types'
 import { openPrintWindow } from '@/components/print/print-window'
 import { PrintLayout } from '@/components/print/print-layout'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 
 function printBarcode(row: HangHoa): void {
   void openPrintWindow(
@@ -82,24 +84,29 @@ export default function HangHoaPage(): ReactElement {
       {
         id: 'stt',
         header: 'STT',
-        cell: ({ row }) => (params.page - 1) * params.pageSize + row.index + 1,
+        cell: ({ row, table }) =>
+          getVisibleRowNumber(table, row, (params.page - 1) * params.pageSize),
         enableSorting: false,
         size: 56,
       },
-      ...config.columns.map((col: ColumnConfig<HangHoa>): ColumnDef<HangHoa, unknown> => ({
-        id: String(col.key),
-        accessorKey: col.key as string,
-        header: col.header,
-        enableSorting: col.sortable ?? false,
-        size: col.width,
-        cell: col.renderCell
-          ? ({ row }) =>
-              col.renderCell!(
-                (row.original as unknown as Record<string, unknown>)[String(col.key)] as HangHoa[keyof HangHoa],
-                row.original,
-              )
-          : undefined,
-      })),
+      ...config.columns.map(
+        (col: ColumnConfig<HangHoa>): ColumnDef<HangHoa, unknown> => ({
+          id: String(col.key),
+          accessorKey: col.key as string,
+          header: col.header,
+          enableSorting: col.sortable ?? false,
+          size: col.width,
+          cell: col.renderCell
+            ? ({ row }) =>
+                col.renderCell!(
+                  (row.original as unknown as Record<string, unknown>)[
+                    String(col.key)
+                  ] as HangHoa[keyof HangHoa],
+                  row.original,
+                )
+            : undefined,
+        }),
+      ),
       {
         id: '_actions',
         header: '',
@@ -152,12 +159,15 @@ export default function HangHoaPage(): ReactElement {
 
   function handleExport() {
     const rows = result?.data ?? []
-    void exportToXlsx({
+    void exportListXlsx({
       filename: config.resourceKey,
       sheetName: config.title,
       columns: config.columns.map((c) => ({
         header: c.header,
-        accessor: (row: HangHoa) => String((row as unknown as Record<string, unknown>)[String(c.key)] ?? ''),
+        accessor: (row: HangHoa) =>
+          String(
+            (row as unknown as Record<string, unknown>)[String(c.key)] ?? '',
+          ),
       })),
       rows,
     })
@@ -170,12 +180,25 @@ export default function HangHoaPage(): ReactElement {
       searchPlaceholder="Tìm trong Hàng Hóa…"
       right={
         <div className="flex items-center gap-2">
-          <DataTableColumnConfig tableId={config.resourceKey} columns={columnDescriptors} />
-          <Button variant="outline" size="sm" className="h-8 gap-1" onClick={handleExport} title="Xuất ra Excel">
+          <DataTableColumnConfig
+            tableId={config.resourceKey}
+            columns={columnDescriptors}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1"
+            onClick={handleExport}
+            title="Xuất Excel"
+          >
             <FileSpreadsheet className="h-4 w-4" />
-            <span className="hidden sm:inline">Xuất ra Excel</span>
+            <span className="hidden sm:inline">Xuất Excel</span>
           </Button>
-          <Button size="sm" className="h-8 gap-1" onClick={() => navigate(ROUTES.catalogGoodsCreate)}>
+          <Button
+            size="sm"
+            className="h-8 gap-1"
+            onClick={() => navigate(ROUTES.catalogGoodsCreate)}
+          >
             <Plus className="h-4 w-4" />
             Thêm hàng hóa
           </Button>
@@ -189,12 +212,16 @@ export default function HangHoaPage(): ReactElement {
       <h1 className="text-lg font-semibold">{config.title}</h1>
 
       {config.filters && (
-        <CrudFilterBar
-          filters={config.filters}
-          value={params.filters}
-          onChange={setFilters}
+        <FilterPanel
+          filterCount={countActiveFilterValues(params.filters)}
           onClear={() => setFilters({})}
-        />
+        >
+          <CrudFilterFields
+            filters={config.filters}
+            value={params.filters}
+            onChange={setFilters}
+          />
+        </FilterPanel>
       )}
 
       <BulkActionsBar count={selectedIds.length}>
@@ -222,22 +249,35 @@ export default function HangHoaPage(): ReactElement {
         getRowId={(row) => row.id}
         emptyMessage="Chưa có Hàng Hóa"
         emptyAction={
-          <Button size="sm" variant="outline" onClick={() => navigate(ROUTES.catalogGoodsCreate)}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate(ROUTES.catalogGoodsCreate)}
+          >
             <Plus className="mr-1 h-4 w-4" />
             Thêm hàng hóa
           </Button>
         }
-        sorting={params.sort ? [{ id: params.sort, desc: params.dir === 'desc' }] : []}
+        sorting={
+          params.sort ? [{ id: params.sort, desc: params.dir === 'desc' }] : []
+        }
         onSortingChange={(updater) => {
           const next =
             typeof updater === 'function'
-              ? updater(params.sort ? [{ id: params.sort, desc: params.dir === 'desc' }] : [])
+              ? updater(
+                  params.sort
+                    ? [{ id: params.sort, desc: params.dir === 'desc' }]
+                    : [],
+                )
               : updater
-          if (next.length > 0) setSort(next[0].id, next[0].desc ? 'desc' : 'asc')
+          if (next.length > 0)
+            setSort(next[0].id, next[0].desc ? 'desc' : 'asc')
         }}
         manualPagination
         pagination={{ pageIndex: params.page - 1, pageSize: params.pageSize }}
-        pageCount={result ? Math.ceil(result.total / result.pageSize) : undefined}
+        pageCount={
+          result ? Math.ceil(result.total / result.pageSize) : undefined
+        }
         toolbar={toolbar}
       />
 
@@ -257,7 +297,9 @@ export default function HangHoaPage(): ReactElement {
         onClose={() => setDeleteRow(undefined)}
         onConfirm={() => {
           if (!deleteRow) return
-          deleteMutation.mutate(deleteRow.id, { onSuccess: () => setDeleteRow(undefined) })
+          deleteMutation.mutate(deleteRow.id, {
+            onSuccess: () => setDeleteRow(undefined),
+          })
         }}
         entityLabel={deleteRow?.tenHH ?? ''}
         isPending={deleteMutation.isPending}

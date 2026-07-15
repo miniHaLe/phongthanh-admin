@@ -10,12 +10,10 @@ import { DB_CLIENT, type DbClient } from '../src/db/db.module'
 import { nguoiDung } from '../src/db/schema'
 import { NguoiDungModule } from '../src/nguoi-dung/nguoi-dung.module'
 import { NhomQuyenModule } from '../src/nhom-quyen/nhom-quyen.module'
+import { API_TEST_USERS } from './api-test-users'
 
-const ADMIN = { tenDangNhap: 'admin', password: 'Test!Admin2026' }
-const REGULAR_USER = {
-  tenDangNhap: 'tiepnhan1',
-  password: 'Test!Admin2026',
-}
+const ADMIN = API_TEST_USERS.super
+const REGULAR_USER = API_TEST_USERS.branchCn1
 const CREATED_USER = {
   tenDangNhap: 'phase2_api_user',
   password: 'S3cret!2026',
@@ -118,7 +116,7 @@ describe('nguoi-dung real CRUD API', () => {
       })
 
     expect(response.status).toBe(400)
-    expect(response.body.message).toBe('Dữ liệu liên kết không tồn tại')
+    expect(response.body.message).toBe('Dữ liệu tham chiếu không hợp lệ')
   })
 
   it('creates a login-ready user with a bcrypt-12 hash and no secret response', async () => {
@@ -160,14 +158,14 @@ describe('nguoi-dung real CRUD API', () => {
     expect(response.body.mustChangePassword).toBe(false)
   })
 
-  it('maps a referenced-user delete foreign key to a Vietnamese 400', async () => {
+  it('maps a referenced-user delete foreign key to a Vietnamese 409', async () => {
     const response = await http
       .delete(`/api/v1/nguoi-dung/${createdUserId}`)
       .set('Authorization', `Bearer ${adminToken}`)
 
-    expect(response.status).toBe(400)
+    expect(response.status).toBe(409)
     expect(response.body.message).toBe(
-      'Không thể xóa vì dữ liệu đang được sử dụng',
+      'Không thể xóa vì dữ liệu đang được tham chiếu',
     )
   })
 

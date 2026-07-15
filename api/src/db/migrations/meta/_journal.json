@@ -12,8 +12,22 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1784105183889,
-      "tag": "0001_masterdata_catalogs",
+      "when": 1783789694313,
+      "tag": "0001_cool_sunspot",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783965531305,
+      "tag": "0002_backfill-khach-hang-address-codes",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784116759002,
+      "tag": "0003_masterdata_catalogs",
       "breakpoints": true
     }
   ]

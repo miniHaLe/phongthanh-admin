@@ -4,18 +4,23 @@
  * Registers Cmd-K entries: "Trang chủ" + "Lập phiếu mới".
  */
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Home, PlusCircle } from 'lucide-react'
+import { CalendarDays, Home, PlusCircle } from 'lucide-react'
 import { useAppStore } from '@/store/app-store'
 import { ROUTES } from '@/constants/routes'
 import { PageHeader } from '@/components/shared'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 import {
   useDashboardSummary,
@@ -38,6 +43,7 @@ import { PlanCalendar } from '@/components/dashboard/PlanCalendar'
 export default function DashboardPage() {
   const navigate = useNavigate()
   const activeBranch = useAppStore((s) => s.activeBranch)
+  const [calendarOpen, setCalendarOpen] = useState(false)
 
   const summaryQuery = useDashboardSummary(activeBranch)
   const lowStockQuery = useLowStock()
@@ -75,167 +81,168 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div
-        className="mx-auto w-full max-w-[1800px]"
-        data-dashboard-main=""
-      >
-      {/* ── Page header ─────────────────────────────────────────────────── */}
-      <PageHeader title="Trang chủ" breadcrumbs={[{ label: 'Trang chủ' }]}>
-        {/* Inline "Lập phiếu" button — hidden on mobile (FAB shows instead) */}
-        <div className="hidden md:block">
-          <QuickLapPhieuButton variant="inline" />
-        </div>
-      </PageHeader>
-
-      <Tabs defaultValue="tong-quan" className="p-4 md:p-6 2xl:p-8">
-        <TabsList className="mb-4">
-          <TabsTrigger value="tong-quan">Tổng quan</TabsTrigger>
-          <TabsTrigger value="ke-hoach">Kế hoạch của bạn</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="tong-quan" className="space-y-5 2xl:space-y-6">
-        {/* ── Greeting banner ─────────────────────────────────────────── */}
-        <GreetingBanner activeBranch={activeBranch} />
-
-        {/* ── Summary error ───────────────────────────────────────────── */}
-        {summaryQuery.isError && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between gap-4">
-              <span>Không thể tải dữ liệu tổng quan. Vui lòng thử lại.</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => summaryQuery.refetch()}
-              >
-                Thử lại
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* ── KPI tile row: 4 queue tiles + today receipts ────────────── */}
-        {summaryQuery.data && (
-          <div className="space-y-3">
-            <WorkQueueTiles summary={summaryQuery.data} />
-            <div className="grid grid-cols-1 xl:grid-cols-4">
-              <TodayReceiptsTile
-                count={summaryQuery.data.todayReceipts}
-                trend={summaryQuery.data.todayReceiptsTrend}
-              />
-            </div>
+      <div className="mx-auto w-full max-w-[1800px]" data-dashboard-main="">
+        {/* ── Page header ─────────────────────────────────────────────────── */}
+        <PageHeader title="Trang chủ" breadcrumbs={[{ label: 'Trang chủ' }]}>
+          {/* Inline "Lập phiếu" button — hidden on mobile (FAB shows instead) */}
+          <div className="hidden md:block">
+            <QuickLapPhieuButton variant="inline" />
           </div>
-        )}
+        </PageHeader>
 
-        {/* ── Middle row: status chart + low-stock alert ───────────────── */}
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)] 2xl:gap-6">
-          {/* Status distribution chart */}
-          <Card className="min-h-[360px]">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">
-                Phân bổ trạng thái phiếu
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <StatusDistributionChart
-                data={statusDistQuery.data ?? []}
-                isLoading={statusDistQuery.isLoading}
-                isError={statusDistQuery.isError}
-                onRetry={() => statusDistQuery.refetch()}
-              />
-            </CardContent>
-          </Card>
+        <div className="space-y-5 p-4 md:p-6 2xl:space-y-6 2xl:p-8">
+          {/* ── Greeting banner ─────────────────────────────────────────── */}
+          <GreetingBanner activeBranch={activeBranch} />
 
-          {/* Low stock alert */}
-          <Card className="min-h-[360px]">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">
-                Linh kiện sắp hết hàng
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {lowStockQuery.isLoading ? (
-                <div className="flex flex-col gap-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-8 animate-pulse rounded-md bg-muted"
-                    />
-                  ))}
+          {/* ── Summary error ───────────────────────────────────────────── */}
+          {summaryQuery.isError && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between gap-4">
+                <span>Không thể tải dữ liệu tổng quan. Vui lòng thử lại.</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => summaryQuery.refetch()}
+                >
+                  Thử lại
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* ── KPI tile row: 4 queue tiles + today receipts ────────────── */}
+          {summaryQuery.data && (
+            <div className="space-y-3">
+              <WorkQueueTiles summary={summaryQuery.data} />
+              <div className="grid grid-cols-1 xl:grid-cols-4">
+                <div className="xl:col-span-4" data-dashboard-today-receipts="">
+                  <TodayReceiptsTile
+                    count={summaryQuery.data.todayReceipts}
+                    trend={summaryQuery.data.todayReceiptsTrend}
+                  />
                 </div>
-              ) : lowStockQuery.isError ? (
-                <div className="flex flex-col items-center gap-2 py-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Không thể tải dữ liệu. Thử lại.
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => lowStockQuery.refetch()}
-                  >
-                    Thử lại
-                  </Button>
-                </div>
-              ) : (
-                <LowStockAlert items={lowStockQuery.data ?? []} />
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              </div>
+            </div>
+          )}
 
-        {/* ── Bottom row: branch counts + (spacer on desktop) ─────────── */}
-        {summaryQuery.data && (
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(380px,0.8fr)_minmax(0,1.2fr)] 2xl:gap-6">
-            <Card className="hidden min-h-[260px] xl:block">
+          {/* ── Middle row: status chart + low-stock alert ───────────────── */}
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)] 2xl:gap-6">
+            {/* Status distribution chart */}
+            <Card className="min-h-[360px]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">
-                  Tình hình theo chi nhánh
+                  Phân bổ trạng thái phiếu
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <BranchCountsTable branches={summaryQuery.data.branches} />
+                <StatusDistributionChart
+                  data={statusDistQuery.data ?? []}
+                  isLoading={statusDistQuery.isLoading}
+                  isError={statusDistQuery.isError}
+                  onRetry={() => statusDistQuery.refetch()}
+                />
               </CardContent>
             </Card>
 
-            <Card className="min-h-[260px]">
+            {/* Low stock alert */}
+            <Card className="min-h-[360px]">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">Kế hoạch nhanh</CardTitle>
+                <CardTitle className="text-base">
+                  Linh kiện sắp hết hàng
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <PlanCalendar />
+                {lowStockQuery.isLoading ? (
+                  <div className="flex flex-col gap-2">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-8 animate-pulse rounded-md bg-muted"
+                      />
+                    ))}
+                  </div>
+                ) : lowStockQuery.isError ? (
+                  <div className="flex flex-col items-center gap-2 py-4 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Không thể tải dữ liệu. Thử lại.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => lowStockQuery.refetch()}
+                    >
+                      Thử lại
+                    </Button>
+                  </div>
+                ) : (
+                  <LowStockAlert items={lowStockQuery.data ?? []} />
+                )}
               </CardContent>
             </Card>
           </div>
-        )}
 
-        {/* ── Recent tickets table ─────────────────────────────────────── */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Phiếu sửa chữa gần đây</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 pb-2">
-            <RecentTicketsTable
-              tickets={recentTicketsQuery.data ?? []}
-              isLoading={recentTicketsQuery.isLoading}
-              isError={recentTicketsQuery.isError}
-              onRetry={() => recentTicketsQuery.refetch()}
-            />
-          </CardContent>
-        </Card>
-        </TabsContent>
+          {/* ── Bottom row: branch counts + (spacer on desktop) ─────────── */}
+          {summaryQuery.data && (
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(380px,0.8fr)_minmax(0,1.2fr)] 2xl:gap-6">
+              <Card className="hidden min-h-[260px] xl:block">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">
+                    Tình hình theo chi nhánh
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <BranchCountsTable branches={summaryQuery.data.branches} />
+                </CardContent>
+              </Card>
 
-        <TabsContent value="ke-hoach">
+              <Card className="min-h-[260px]">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Kế hoạch nhanh</CardTitle>
+                </CardHeader>
+                <CardContent className="flex min-h-[180px] flex-col items-center justify-center gap-3 text-center">
+                  <CalendarDays
+                    className="size-10 text-primary"
+                    aria-hidden="true"
+                  />
+                  <p className="max-w-sm text-sm text-muted-foreground">
+                    Xem lịch công việc, lịch hẹn và kế hoạch trong tháng.
+                  </p>
+                  <Button onClick={() => setCalendarOpen(true)}>
+                    Mở lịch kế hoạch
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* ── Recent tickets table ─────────────────────────────────────── */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Kế hoạch của bạn</CardTitle>
+              <CardTitle className="text-base">
+                Phiếu sửa chữa gần đây
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <PlanCalendar />
+            <CardContent className="p-0 pb-2">
+              <RecentTicketsTable
+                tickets={recentTicketsQuery.data ?? []}
+                isLoading={recentTicketsQuery.isLoading}
+                isError={recentTicketsQuery.isError}
+                onRetry={() => recentTicketsQuery.refetch()}
+              />
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
       </div>
+
+      <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
+        <DialogContent className="max-h-[90dvh] max-w-6xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Kế hoạch của bạn</DialogTitle>
+          </DialogHeader>
+          <PlanCalendar />
+        </DialogContent>
+      </Dialog>
 
       {/* ── Mobile FAB ──────────────────────────────────────────────────── */}
       <QuickLapPhieuButton variant="fab" />

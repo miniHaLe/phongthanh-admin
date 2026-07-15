@@ -2,6 +2,7 @@ import type {
   HangHoaFixture,
   KhachHangFixture,
   KhuVucFixture,
+  LegacyPhuongXaFixture,
   LoiSuaChuaFixture,
   ModelFixture,
   NganChuaFixture,
@@ -9,15 +10,13 @@ import type {
   NguoiDungFixture,
   PhuongXaFixture,
   QuanFixture,
-  SanPhamFixture,
-  SeedFixtures,
+  TinhThanhFixture,
   XaFixture,
+  SeedFixtures,
 } from './load-fixtures'
 
-/** Fails loud if any khach_hang row references a missing xa/quan/tinh, or any
- * nguoi_dung row references a missing chi_nhanh/nhom_quyen. The mock's
- * fixtures are frozen and pre-validated, but a seed script must never
- * silently insert an orphan (plan requirement: "fail loud"). */
+/** Fails loud when a fixture references a missing parent. Seed data must never
+ * silently insert orphaned business or administrative records. */
 export function validateFkClosure(fixtures: {
   tinhIds: Set<string>
   quan: QuanFixture[]
@@ -27,26 +26,81 @@ export function validateFkClosure(fixtures: {
   loaiKhachHangIds: Set<number>
   nguoiDung: NguoiDungFixture[]
   khachHang: KhachHangFixture[]
-  nhomSanPhamIds: Set<string>
-  nhomHangHoaIds: Set<string>
   nhaSanXuatIds: Set<string>
+  sanPhamIds: Set<string>
+  nganHangIds: Set<string>
+  model: ModelFixture[]
+  tinhThanh: TinhThanhFixture[]
+  phuongXa: PhuongXaFixture[]
+  expectedProvinceCount: number
+  expectedCommuneCount: number
+  nhomHangHoaIds: Set<string>
   donViTinhIds: Set<string>
   nhaKho: NhaKhoFixture[]
-  phuongXa: PhuongXaFixture[]
+  legacyPhuongXa: LegacyPhuongXaFixture[]
   khuVuc: KhuVucFixture[]
   loiSuaChua: LoiSuaChuaFixture[]
   nganChua: NganChuaFixture[]
-  sanPham: SanPhamFixture[]
-  model: ModelFixture[]
   hangHoa: HangHoaFixture[]
 }): void {
   const errors: string[] = []
   const quanIds = new Set(fixtures.quan.map((q) => q.id))
   const xaIds = new Set(fixtures.xa.map((x) => x.id))
   const khachHangIds = new Set(fixtures.khachHang.map((k) => k.id))
+  const provinceCodes = new Set(fixtures.tinhThanh.map((p) => p.code))
+  const communeCodes = new Set(fixtures.phuongXa.map((p) => p.code))
   const nhaKhoIds = new Set(fixtures.nhaKho.map((row) => row.id))
-  const sanPhamIds = new Set(fixtures.sanPham.map((row) => row.id))
   const modelIds = new Set(fixtures.model.map((row) => row.id))
+
+  if (fixtures.tinhThanh.length !== fixtures.expectedProvinceCount) {
+    errors.push(
+      `official province count ${fixtures.tinhThanh.length}, expected ${fixtures.expectedProvinceCount}`,
+    )
+  }
+  if (fixtures.phuongXa.length !== fixtures.expectedCommuneCount) {
+    errors.push(
+      `official commune count ${fixtures.phuongXa.length}, expected ${fixtures.expectedCommuneCount}`,
+    )
+  }
+  if (provinceCodes.size !== fixtures.tinhThanh.length) {
+    errors.push('official province codes are not unique')
+  }
+  if (communeCodes.size !== fixtures.phuongXa.length) {
+    errors.push('official commune codes are not unique')
+  }
+  for (const province of fixtures.tinhThanh) {
+    if (!/^\d{2}$/.test(province.code)) {
+      errors.push(`invalid province code "${province.code}"`)
+    }
+    if (!['city', 'province'].includes(province.type)) {
+      errors.push(`invalid province type "${province.type}"`)
+    }
+  }
+  for (const commune of fixtures.phuongXa) {
+    if (!/^\d{5}$/.test(commune.code)) {
+      errors.push(`invalid commune code "${commune.code}"`)
+    }
+    if (!provinceCodes.has(commune.provinceCode)) {
+      errors.push(
+        `phuong_xa "${commune.code}" references missing province "${commune.provinceCode}"`,
+      )
+    }
+    if (!['ward', 'commune', 'special_zone'].includes(commune.type)) {
+      errors.push(`invalid commune type "${commune.type}"`)
+    }
+  }
+  for (const model of fixtures.model) {
+    if (!fixtures.nhaSanXuatIds.has(model.nhaSanXuatId)) {
+      errors.push(
+        `model "${model.id}" references missing nha_san_xuat "${model.nhaSanXuatId}"`,
+      )
+    }
+    if (!fixtures.sanPhamIds.has(model.sanPhamId)) {
+      errors.push(
+        `model "${model.id}" references missing san_pham "${model.sanPhamId}"`,
+      )
+    }
+  }
 
   for (const q of fixtures.quan) {
     if (!fixtures.tinhIds.has(q.tinhId)) {
@@ -114,28 +168,24 @@ export function validateFkClosure(fixtures: {
       )
     }
   }
-  for (const row of fixtures.phuongXa) {
+  for (const row of fixtures.legacyPhuongXa) {
     if (!fixtures.tinhIds.has(row.tinhId)) {
       errors.push(
-        `phuong_xa "${row.id}" references missing tinh "${row.tinhId}"`,
+        `phuong_xa_legacy "${row.id}" references missing tinh "${row.tinhId}"`,
       )
     }
     if (!quanIds.has(row.quanId)) {
       errors.push(
-        `phuong_xa "${row.id}" references missing quan "${row.quanId}"`,
+        `phuong_xa_legacy "${row.id}" references missing quan "${row.quanId}"`,
       )
     }
   }
   for (const row of fixtures.khuVuc) {
     if (!fixtures.tinhIds.has(row.tinhId)) {
-      errors.push(
-        `khu_vuc "${row.id}" references missing tinh "${row.tinhId}"`,
-      )
+      errors.push(`khu_vuc "${row.id}" references missing tinh "${row.tinhId}"`)
     }
     if (!quanIds.has(row.quanId)) {
-      errors.push(
-        `khu_vuc "${row.id}" references missing quan "${row.quanId}"`,
-      )
+      errors.push(`khu_vuc "${row.id}" references missing quan "${row.quanId}"`)
     }
     if (!xaIds.has(row.xaId)) {
       errors.push(`khu_vuc "${row.id}" references missing xa "${row.xaId}"`)
@@ -152,25 +202,6 @@ export function validateFkClosure(fixtures: {
     if (!nhaKhoIds.has(row.nhaKhoId)) {
       errors.push(
         `ngan_chua "${row.id}" references missing nha_kho "${row.nhaKhoId}"`,
-      )
-    }
-  }
-  for (const row of fixtures.sanPham) {
-    if (!fixtures.nhomSanPhamIds.has(row.nhomSanPhamId)) {
-      errors.push(
-        `san_pham "${row.id}" references missing nhom_san_pham "${row.nhomSanPhamId}"`,
-      )
-    }
-  }
-  for (const row of fixtures.model) {
-    if (!fixtures.nhaSanXuatIds.has(row.nhaSanXuatId)) {
-      errors.push(
-        `model "${row.id}" references missing nha_san_xuat "${row.nhaSanXuatId}"`,
-      )
-    }
-    if (!sanPhamIds.has(row.sanPhamId)) {
-      errors.push(
-        `model "${row.id}" references missing san_pham "${row.sanPhamId}"`,
       )
     }
   }
@@ -214,17 +245,21 @@ export function validateSeedFixtureClosure(fixtures: SeedFixtures): void {
     loaiKhachHangIds: new Set(fixtures.loaiKhachHang.map((row) => row.id)),
     nguoiDung: fixtures.nguoiDung,
     khachHang: fixtures.khachHang,
-    nhomSanPhamIds: new Set(fixtures.nhomSanPham.map((row) => row.id)),
-    nhomHangHoaIds: new Set(fixtures.nhomHangHoa.map((row) => row.id)),
     nhaSanXuatIds: new Set(fixtures.nhaSanXuat.map((row) => row.id)),
+    sanPhamIds: new Set(fixtures.sanPham.map((row) => row.id)),
+    nganHangIds: new Set(fixtures.nganHang.map((row) => row.id)),
+    model: fixtures.model,
+    tinhThanh: fixtures.tinhThanh,
+    phuongXa: fixtures.phuongXa,
+    expectedProvinceCount: fixtures.diaLyMetadata.counts.provinces,
+    expectedCommuneCount: fixtures.diaLyMetadata.counts.communes,
+    nhomHangHoaIds: new Set(fixtures.nhomHangHoa.map((row) => row.id)),
     donViTinhIds: new Set(fixtures.donViTinh.map((row) => row.id)),
     nhaKho: fixtures.nhaKho,
-    phuongXa: fixtures.phuongXa,
+    legacyPhuongXa: fixtures.legacyPhuongXa,
     khuVuc: fixtures.khuVuc,
     loiSuaChua: fixtures.loiSuaChua,
     nganChua: fixtures.nganChua,
-    sanPham: fixtures.sanPham,
-    model: fixtures.model,
     hangHoa: fixtures.hangHoa,
   })
 }

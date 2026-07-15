@@ -21,12 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { DataTable, DataTableToolbar, notify } from '@/components/shared'
 import { formatVND } from '@/lib/format'
 import { mockDelay } from '@/lib/mock-delay'
@@ -45,6 +40,7 @@ import {
 } from '@/domains/hr/bang-luong.mock'
 import { printBangLuong } from '@/domains/hr/hr-prints'
 import type { BangLuong } from '@/domains/hr/types'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
 const KY_DESC = [...KY].reverse()
 
@@ -63,7 +59,10 @@ interface BangLuongRow {
 function buildRows(kyId: string, hoTenFilter: string, phongBanId: string) {
   return NHAN_VIEN_ROWS.filter((nv) => {
     if (phongBanId && nv.phongBanId !== phongBanId) return false
-    if (hoTenFilter && !nv.hoTen.toLowerCase().includes(hoTenFilter.toLowerCase()))
+    if (
+      hoTenFilter &&
+      !nv.hoTen.toLowerCase().includes(hoTenFilter.toLowerCase())
+    )
       return false
     return true
   }).map((nv): BangLuongRow => {
@@ -153,14 +152,20 @@ export default function BangLuongPage() {
 
   const columns = useMemo<ColumnDef<BangLuongRow, unknown>[]>(
     () => [
-      { id: 'stt', header: 'STT', cell: ({ row }) => row.index + 1, size: 50 },
+      {
+        id: 'stt',
+        header: 'STT',
+        cell: ({ row, table }) => getVisibleRowNumber(table, row),
+        size: 50,
+      },
       {
         id: 'ky',
         header: 'Kỳ',
         size: 90,
         cell: ({ row }) => (
           <span className="font-bold text-blue-600 dark:text-blue-400">
-            {KY.find((k) => k.id === row.original.kyId)?.ten ?? row.original.kyId}
+            {KY.find((k) => k.id === row.original.kyId)?.ten ??
+              row.original.kyId}
           </span>
         ),
       },
@@ -168,7 +173,9 @@ export default function BangLuongPage() {
         id: 'tenNV',
         header: 'Tên NV',
         size: 200,
-        cell: ({ row }) => <span className="font-semibold">{row.original.hoTen}</span>,
+        cell: ({ row }) => (
+          <span className="font-semibold">{row.original.hoTen}</span>
+        ),
       },
       { accessorKey: 'phongBan', header: 'Phòng', size: 130 },
       { accessorKey: 'chucVu', header: 'Chức vụ', size: 170 },
@@ -429,7 +436,12 @@ export default function BangLuongPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" variant="outline" className="h-8" onClick={() => refetch()}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          onClick={() => refetch()}
+        >
           Tìm kiếm
         </Button>
         <Button

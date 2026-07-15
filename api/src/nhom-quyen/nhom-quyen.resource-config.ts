@@ -16,7 +16,7 @@ export const nhomQuyenResourceConfig: CrudResourceConfig = {
   filterableColumns: {
     active: {
       column: nhomQuyen.active,
-      parse: (raw) => raw === 'true' || raw === true,
+      valueType: 'boolean',
     },
   },
   searchColumns: [nhomQuyen.maNhom, nhomQuyen.tenNhom, nhomQuyen.moTa],

@@ -1,22 +1,42 @@
 import { describe, it, expect } from 'vitest'
 import { khachHangConfig } from './khach-hang.config'
+import type { CrudLookups } from '@/types/crud-types'
+import type { KhachHang } from '@/types/masterdata-types'
+
+function renderColumn(
+  key: keyof KhachHang,
+  row: Partial<KhachHang>,
+  lookups?: CrudLookups,
+) {
+  const column = khachHangConfig.columns.find((item) => item.key === key)
+  return column?.renderCell?.(row[key], row as KhachHang, lookups)
+}
 
 describe('khachHangConfig', () => {
-  it('renders the exact verified 12 data-column header order (STT/checkbox/Chọn added by the page)', () => {
+  it('renders current two-level address and finance columns without district', () => {
     expect(khachHangConfig.columns.map((c) => c.header)).toEqual([
       'Tên khách hàng',
       'Điện thoại',
       'Điện thoại 2',
       'Địa chỉ',
       'Phường/Xã',
-      'Quận/Huyện',
-      'Tỉnh',
+      'Tỉnh/Thành phố',
       'Email',
+      'Mã số thuế',
+      'Ngân hàng',
+      'Số tài khoản',
       'Loại',
       'Đại lý/Trạm',
       'Người tạo',
       'Ngày tạo',
     ])
+    expect(khachHangConfig.columns.map((c) => c.header)).not.toContain(
+      'Quận/Huyện',
+    )
+  })
+
+  it('does not retain dead CrudSheet fields behind the bespoke customer form', () => {
+    expect(khachHangConfig.fields).toEqual([])
   })
 
   it('has no invented Mã KH / Tổng phiếu / Trạng thái columns', () => {
@@ -27,7 +47,9 @@ describe('khachHangConfig', () => {
   })
 
   it('Nhóm khách hàng filter has exactly 9 options', () => {
-    const filter = khachHangConfig.filters?.find((f) => f.key === 'loaiKhachHangId')
+    const filter = khachHangConfig.filters?.find(
+      (f) => f.key === 'loaiKhachHangId',
+    )
     expect(filter?.options).toHaveLength(9)
   })
 
@@ -38,6 +60,60 @@ describe('khachHangConfig', () => {
   })
 
   it('defaults to newest-first sort', () => {
-    expect(khachHangConfig.defaultSort).toEqual({ key: 'createdAt', dir: 'desc' })
+    expect(khachHangConfig.defaultSort).toEqual({
+      key: 'createdAt',
+      dir: 'desc',
+    })
+  })
+
+  it('renders modern geography, then legacy names, then an em dash', () => {
+    const lookups: CrudLookups = {
+      customerProvinceNames: new Map([['66', 'Tên tỉnh từ API']]),
+      customerCommuneNames: new Map([['00004', 'Tên phường từ API']]),
+    }
+
+    expect(
+      renderColumn(
+        'tinhThanhCode',
+        {
+          tinhThanhCode: '66',
+          tinhId: 'tinh-dak-nong',
+        },
+        lookups,
+      ),
+    ).toBe('Tên tỉnh từ API')
+    expect(renderColumn('tinhThanhCode', { tinhId: 'tinh-dak-nong' })).toBe(
+      'ĐẮK NÔNG',
+    )
+    expect(renderColumn('tinhThanhCode', {})).toBe('—')
+
+    expect(
+      renderColumn(
+        'phuongXaCode',
+        {
+          phuongXaCode: '00004',
+          phuongXaId: 'xa-tan-loi',
+        },
+        lookups,
+      ),
+    ).toBe('Tên phường từ API')
+    expect(renderColumn('phuongXaCode', { phuongXaId: 'xa-tan-loi' })).toBe(
+      'Phường Tân Lợi',
+    )
+    expect(renderColumn('phuongXaCode', {})).toBe('—')
+  })
+
+  it('uses the API-enriched dealer name without a mock lookup', () => {
+    expect(
+      renderColumn('daiLyId', { daiLyId: 'kh-1', daiLyTen: 'Đại lý A' }),
+    ).toBe('Đại lý A')
+    expect(renderColumn('daiLyId', { daiLyId: 'kh-1' })).toBe('—')
+  })
+
+  it('leaves geography filter options for the page-level query', () => {
+    const filter = khachHangConfig.filters?.find(
+      (item) => item.key === 'tinhThanhCode',
+    )
+    expect(filter?.options).toBeUndefined()
   })
 })

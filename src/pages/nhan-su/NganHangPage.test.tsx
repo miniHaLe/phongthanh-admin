@@ -7,10 +7,13 @@ import NganHangPage from './NganHangPage'
 
 describe('NganHangPage', () => {
   it('renders the verified column headers + Thêm button', async () => {
-    renderWithProviders(<NganHangPage />, { route: ROUTES.hrBanks })
+    renderWithProviders(<NganHangPage />, { route: ROUTES.catalogBanks })
     expect(await screen.findByText('Mã Ngân Hàng')).toBeInTheDocument()
     expect(await screen.findByText('Tên Ngân Hàng')).toBeInTheDocument()
     expect(await screen.findByText('Địa chỉ')).toBeInTheDocument()
-    expect(await screen.findByRole('button', { name: /Thêm/ })).toBeInTheDocument()
+    expect(await screen.findByText('Vietcombank')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: /Thêm/ }),
+    ).toBeInTheDocument()
   })
 })

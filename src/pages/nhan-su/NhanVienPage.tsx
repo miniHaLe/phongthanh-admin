@@ -22,17 +22,20 @@ import {
   DataTable,
   DataTableToolbar,
   DataTablePagination,
+  FilterPanel,
   buildSelectionColumn,
 } from '@/components/shared'
 import { formatDate } from '@/lib/format'
 import { useCrud } from '@/hooks/use-crud'
-import { CrudFilterBar } from '@/components/crud/CrudFilterBar'
+import { CrudFilterFields } from '@/components/crud/crud-filter-fields'
+import { countActiveFilterValues } from '@/components/crud/crud-filter-values'
 import { nhanVienConfig } from '@/config/crud-configs/nhan-vien.config'
 import { ROUTES } from '@/constants/routes'
 import type { NhanVien } from '@/types/masterdata-types'
 import { PHONG_BAN_ROWS } from '@/mock/masterdata/phong-ban.mock'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 
 export default function NhanVienPage() {
   const navigate = useNavigate()
@@ -58,7 +61,8 @@ export default function NhanVienPage() {
       {
         id: 'stt',
         header: 'STT',
-        cell: ({ row }) => (params.page - 1) * params.pageSize + row.index + 1,
+        cell: ({ row, table }) =>
+          getVisibleRowNumber(table, row, (params.page - 1) * params.pageSize),
         size: 56,
       },
       {
@@ -163,12 +167,16 @@ export default function NhanVienPage() {
     <div className="space-y-3 p-4 md:p-6">
       <h1 className="text-lg font-semibold">Nhân Viên</h1>
 
-      <CrudFilterBar
-        filters={nhanVienConfig.filters ?? []}
-        value={params.filters}
-        onChange={setFilters}
+      <FilterPanel
+        filterCount={countActiveFilterValues(params.filters)}
         onClear={() => setFilters({})}
-      />
+      >
+        <CrudFilterFields
+          filters={nhanVienConfig.filters ?? []}
+          value={params.filters}
+          onChange={setFilters}
+        />
+      </FilterPanel>
 
       <DataTable
         tableId="nhan-vien"

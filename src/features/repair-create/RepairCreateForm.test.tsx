@@ -4,16 +4,20 @@
  * customer autocomplete placeholder, and legacy required-field messages on
  * an empty submit.
  */
-import { describe, it, expect } from 'vitest'
-import { screen } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { notify } from '@/components/shared'
 import { renderWithProviders } from '@/test/render-with-providers'
+import { KHU_VUC_ROWS } from '@/mock/masterdata/khu-vuc.mock'
 import { RepairCreateForm } from './RepairCreateForm'
 
 describe('RepairCreateForm', () => {
   it('shows the auto-generated Số phiếu placeholder', () => {
     renderWithProviders(<RepairCreateForm />)
-    expect(screen.getByDisplayValue('<<Phát sinh tự động>>')).toBeInTheDocument()
+    expect(
+      screen.getByDisplayValue('<<Phát sinh tự động>>'),
+    ).toBeInTheDocument()
   })
 
   it('renders exactly the 3 submit buttons', () => {
@@ -63,13 +67,9 @@ describe('RepairCreateForm', () => {
 
     await user.click(screen.getByRole('button', { name: 'Lưu' }))
 
-    expect(
-      await screen.findByText('Vui lòng chọn Model!'),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('Vui lòng chọn Model!')).toBeInTheDocument()
     expect(screen.getByText('Vui lòng nhập số serial!')).toBeInTheDocument()
-    expect(
-      screen.getByText('Vui lòng nhập mô tả hư hỏng!'),
-    ).toBeInTheDocument()
+    expect(screen.getByText('Vui lòng nhập mô tả hư hỏng!')).toBeInTheDocument()
     expect(
       screen.getByText('Vui lòng chọn hình thức bảo hành!'),
     ).toBeInTheDocument()
@@ -79,6 +79,40 @@ describe('RepairCreateForm', () => {
     expect(screen.getByText('Vui lòng chọn khu vực!')).toBeInTheDocument()
   })
 
+  it('toasts the error count and scrolls/focuses the first invalid field', async () => {
+    const user = userEvent.setup()
+    const errorToast = vi.spyOn(notify, 'error')
+    const scrollIntoView = vi.fn()
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    })
+
+    try {
+      renderWithProviders(<RepairCreateForm />)
+      await user.click(screen.getByRole('button', { name: 'Lưu' }))
+
+      expect(errorToast).toHaveBeenCalledWith('6 lỗi cần sửa')
+      const firstInvalid = screen.getByRole('combobox', { name: 'Tên model' })
+      await waitFor(() => expect(firstInvalid).toHaveFocus())
+      expect(scrollIntoView).toHaveBeenCalledWith({
+        behavior: 'smooth',
+        block: 'center',
+      })
+    } finally {
+      if (originalScrollIntoView) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+          configurable: true,
+          value: originalScrollIntoView,
+        })
+      } else {
+        Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView')
+      }
+      errorToast.mockRestore()
+    }
+  })
+
   it('renders the image upload input and Tải tất cả hình button', () => {
     renderWithProviders(<RepairCreateForm />)
     expect(
@@ -86,6 +120,39 @@ describe('RepairCreateForm', () => {
     ).toHaveAttribute('accept', 'image/*')
     expect(
       screen.getByRole('button', { name: 'Tải tất cả hình' }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows an inline error when the promised delivery date is before receipt', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<RepairCreateForm />)
+
+    fireEvent.change(screen.getByLabelText('Ngày nhận *'), {
+      target: { value: '2026-07-14' },
+    })
+    fireEvent.change(screen.getByLabelText('Ngày hẹn giao'), {
+      target: { value: '2026-07-13' },
+    })
+    await user.click(screen.getByRole('button', { name: 'Lưu' }))
+
+    expect(
+      await screen.findByText('Ngày hẹn giao không được trước ngày nhận'),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Ngày hẹn giao')).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    )
+  })
+
+  it('searches the same active Khu Vực catalog used by master data', async () => {
+    const user = userEvent.setup()
+    const catalogRow = KHU_VUC_ROWS.find((row) => row.active)!
+    renderWithProviders(<RepairCreateForm />)
+
+    await user.click(screen.getByRole('combobox', { name: 'Tên khu vực' }))
+
+    expect(
+      await screen.findByRole('option', { name: catalogRow.tenKhuVuc }),
     ).toBeInTheDocument()
   })
 })

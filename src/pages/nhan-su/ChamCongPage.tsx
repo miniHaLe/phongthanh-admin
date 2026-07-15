@@ -16,13 +16,15 @@ import {
   DataTableToolbar,
   DataTablePagination,
   BulkActionsBar,
+  FilterPanel,
   buildSelectionColumn,
   notify,
 } from '@/components/shared'
 import { useCrud } from '@/hooks/use-crud'
 import { CrudSheet } from '@/components/crud/CrudSheet'
 import { CrudDeleteDialog } from '@/components/crud/CrudDeleteDialog'
-import { CrudFilterBar } from '@/components/crud/CrudFilterBar'
+import { CrudFilterFields } from '@/components/crud/crud-filter-fields'
+import { countActiveFilterValues } from '@/components/crud/crud-filter-values'
 import { formatDate } from '@/lib/format'
 import { chamCongConfig } from '@/config/crud-configs/cham-cong.config'
 import { NHAN_VIEN_ROWS } from '@/mock/masterdata'
@@ -30,9 +32,10 @@ import { CHUC_VU_ROWS } from '@/mock/masterdata/chuc-vu.mock'
 import { KY } from '@/mock/seed/ky'
 import { LOAI_CHAM, LOAI_TRU } from '@/mock/seed/cham-cong'
 import type { ChamCongRecord } from '@/domains/hr/types'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 import { useLookup } from '@/hooks/use-lookup'
 
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 
 function nv(id: string) {
   return NHAN_VIEN_ROWS.find((r) => r.id === id)
@@ -73,7 +76,8 @@ export default function ChamCongPage() {
       {
         id: 'stt',
         header: 'STT',
-        cell: ({ row }) => (params.page - 1) * params.pageSize + row.index + 1,
+        cell: ({ row, table }) =>
+          getVisibleRowNumber(table, row, (params.page - 1) * params.pageSize),
         size: 56,
       },
       {
@@ -210,12 +214,16 @@ export default function ChamCongPage() {
     <div className="space-y-3 p-4 md:p-6">
       <h1 className="text-lg font-semibold">Chấm Công</h1>
 
-      <CrudFilterBar
-        filters={chamCongConfig.filters ?? []}
-        value={params.filters}
-        onChange={setFilters}
+      <FilterPanel
+        filterCount={countActiveFilterValues(params.filters)}
         onClear={() => setFilters({})}
-      />
+      >
+        <CrudFilterFields
+          filters={chamCongConfig.filters ?? []}
+          value={params.filters}
+          onChange={setFilters}
+        />
+      </FilterPanel>
 
       <BulkActionsBar count={selectedIds.length}>
         <Button

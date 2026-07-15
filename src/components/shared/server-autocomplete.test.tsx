@@ -1,80 +1,81 @@
-/** Spec: ServerAutocomplete debounced fetch, {id,label} binding, [+] quick-create. */
-import { describe, it, expect, vi, afterEach } from 'vitest'
-import { useState } from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import {
-  ServerAutocomplete,
-  type AutocompleteOption,
-} from './server-autocomplete'
-
-const OPTIONS: AutocompleteOption[] = [
-  { id: '1', label: 'Samsung' },
-  { id: '2', label: 'LG' },
-]
-
-function Harness({
-  fetchOptions,
-  withQuickCreate,
-}: {
-  fetchOptions: (q: string) => Promise<AutocompleteOption[]>
-  withQuickCreate?: boolean
-}) {
-  const [value, setValue] = useState<AutocompleteOption | null>(null)
-  return (
-    <>
-      <div data-testid="value">{value?.label ?? '—'}</div>
-      <ServerAutocomplete
-        value={value}
-        onChange={setValue}
-        fetchOptions={fetchOptions}
-        placeholder="Chọn NSX"
-        debounceMs={10}
-        quickCreate={
-          withQuickCreate
-            ? {
-                title: 'Thêm NSX',
-                renderForm: (_close, select) => (
-                  <button onClick={() => select({ id: '9', label: 'Mới' })}>
-                    Tạo
-                  </button>
-                ),
-              }
-            : undefined
-        }
-      />
-    </>
-  )
-}
+import { ServerAutocomplete } from './server-autocomplete'
 
 describe('ServerAutocomplete', () => {
-  afterEach(() => vi.restoreAllMocks())
+  it('supports an explicit label, input id, and required contract', () => {
+    render(
+      <>
+        <label htmlFor="customer-picker">Khách hàng</label>
+        <ServerAutocomplete
+          inputId="customer-picker"
+          ariaLabel="Khách hàng"
+          required
+          value={null}
+          onChange={vi.fn()}
+          fetchOptions={async () => []}
+        />
+      </>,
+    )
 
-  it('fetches options on typing and binds the selected {id,label}', async () => {
-    const user = userEvent.setup()
-    const fetchOptions = vi.fn(async () => OPTIONS)
-    render(<Harness fetchOptions={fetchOptions} />)
-
-    await user.click(screen.getByLabelText('Chọn NSX'))
-    await user.type(screen.getByLabelText('Chọn NSX'), 'sam')
-    await waitFor(() => expect(fetchOptions).toHaveBeenCalled())
-
-    await user.click(await screen.findByRole('option', { name: 'Samsung' }))
-    expect(screen.getByTestId('value').textContent).toBe('Samsung')
+    const input = screen.getByRole('combobox', { name: 'Khách hàng' })
+    expect(input).toHaveAttribute('id', 'customer-picker')
+    expect(input).toBeRequired()
+    expect(input).toHaveAttribute('aria-required', 'true')
+    expect(screen.getByLabelText('Khách hàng')).toBe(input)
   })
 
-  it('shows the [+] button only with quickCreate and creates+selects', async () => {
+  it('supports keyboard selection and contextual quick-create labels', async () => {
     const user = userEvent.setup()
-    const fetchOptions = vi.fn(async () => OPTIONS)
-    render(<Harness fetchOptions={fetchOptions} withQuickCreate />)
+    const onChange = vi.fn()
+    render(
+      <ServerAutocomplete
+        value={null}
+        onChange={onChange}
+        debounceMs={0}
+        fetchOptions={async () => [
+          { id: 'one', label: 'Một' },
+          { id: 'two', label: 'Hai' },
+        ]}
+        placeholder="Chọn giá trị"
+        quickCreate={{
+          title: 'Thêm model',
+          renderForm: () => null,
+        }}
+      />,
+    )
 
-    await user.click(screen.getByLabelText('Thêm mới'))
-    await user.click(await screen.findByRole('button', { name: 'Tạo' }))
-    expect(screen.getByTestId('value').textContent).toBe('Mới')
+    const input = screen.getByRole('combobox', { name: 'Chọn giá trị' })
+    await user.click(input)
+    expect(
+      await screen.findByRole('option', { name: 'Một' }),
+    ).toBeInTheDocument()
+
+    await user.keyboard('{ArrowDown}{Enter}')
+    expect(onChange).toHaveBeenLastCalledWith({ id: 'two', label: 'Hai' })
+    expect(
+      screen.getByRole('button', { name: 'Thêm model' }),
+    ).toBeInTheDocument()
   })
 
-  it('hides the [+] button when quickCreate is absent', () => {
-    render(<Harness fetchOptions={async () => OPTIONS} />)
-    expect(screen.queryByLabelText('Thêm mới')).not.toBeInTheDocument()
+  it('shows a recoverable error instead of rejecting when option loading fails', async () => {
+    const user = userEvent.setup()
+    render(
+      <ServerAutocomplete
+        value={null}
+        onChange={vi.fn()}
+        debounceMs={0}
+        fetchOptions={async () => {
+          throw new Error('offline')
+        }}
+        placeholder="Tìm lỗi"
+      />,
+    )
+
+    await user.click(screen.getByRole('combobox', { name: 'Tìm lỗi' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Không thể tải dữ liệu. Vui lòng thử lại.',
+    )
   })
 })

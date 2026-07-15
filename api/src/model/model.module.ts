@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common'
-import { DB_CLIENT, type DbClient } from '../db/db.module'
 import { createCrudController } from '../crud/crud-controller.factory'
-import { CrudService } from '../crud/crud.service'
+import { DB_CLIENT, type DbClient } from '../db/db.module'
 import { createModelSchema, updateModelSchema } from './model.dto'
-import { modelResourceConfig } from './model.resource-config'
+import { ModelService } from './model.service'
 
-export const MODEL_SERVICE = Symbol('MODEL_SERVICE')
-
+const MODEL_SERVICE = Symbol('MODEL_SERVICE')
 const ModelController = createCrudController({
   path: 'api/v1/model',
   serviceToken: MODEL_SERVICE,
@@ -20,8 +18,7 @@ const ModelController = createCrudController({
     {
       provide: MODEL_SERVICE,
       inject: [DB_CLIENT],
-      useFactory: (db: DbClient) =>
-        new CrudService(db, modelResourceConfig),
+      useFactory: (db: DbClient) => new ModelService(db),
     },
   ],
 })

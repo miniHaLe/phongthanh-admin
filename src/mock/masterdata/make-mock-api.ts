@@ -18,6 +18,20 @@ import type { MockApi } from '@/types/crud-types'
 
 let _idCounter = 90000
 
+interface MakeMockApiOptions {
+  listErrorRate?: number
+}
+
+export function resolveMockListErrorRate(
+  injectedRate: number | undefined,
+  isDevelopment = import.meta.env.DEV,
+): number {
+  if (injectedRate !== undefined) {
+    return Math.min(1, Math.max(0, injectedRate))
+  }
+  return isDevelopment ? 0.05 : 0
+}
+
 function genId(): string {
   return String(++_idCounter)
 }
@@ -73,11 +87,14 @@ function applyParams<T extends BaseEntity>(
 }
 
 /** Wrap a mutable in-memory rows array with list/get/create/update/remove. */
-export function makeMockApi<T extends BaseEntity>(rows: T[]): MockApi<T> {
+export function makeMockApi<T extends BaseEntity>(
+  rows: T[],
+  options: MakeMockApiOptions = {},
+): MockApi<T> {
   return {
     async list(params: ListParams): Promise<PagedResult<T>> {
       await mockDelay(300, 200)
-      maybeThrow(0.05)
+      maybeThrow(resolveMockListErrorRate(options.listErrorRate))
       return applyParams(rows, params)
     },
 

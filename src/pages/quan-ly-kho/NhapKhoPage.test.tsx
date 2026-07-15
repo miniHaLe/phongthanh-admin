@@ -32,14 +32,20 @@ describe('NhapKhoPage', () => {
   it('does not render a Trạng thái column', async () => {
     renderWithProviders(<NhapKhoPage />)
     await screen.findAllByRole('columnheader')
-    expect(screen.queryByRole('columnheader', { name: 'Trạng thái' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('columnheader', { name: 'Trạng thái' }),
+    ).not.toBeInTheDocument()
   })
 
-  it('renders Thêm mới, Tải lại trang, Xuất ra Excel buttons', () => {
+  it('renders Thêm mới, Tải lại trang, Xuất Excel buttons', () => {
     renderWithProviders(<NhapKhoPage />)
     expect(screen.getByRole('button', { name: /Thêm mới/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Tải lại trang' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Xuất ra Excel' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Tải lại trang' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Xuất Excel' }),
+    ).toBeInTheDocument()
   })
 
   it('renders the Tổng tiền info box', async () => {

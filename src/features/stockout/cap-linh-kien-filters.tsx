@@ -7,8 +7,11 @@
  */
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
+import {
+  FilterField,
+  filterFieldsGridClassName,
+} from '@/components/shared/filter-panel/filter-field'
 import {
   Select,
   SelectContent,
@@ -34,34 +37,20 @@ interface CapLinhKienFiltersProps {
 
 const UNSET = '__all__'
 
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string
-  htmlFor?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
-        {label}
-      </Label>
-      {children}
-    </div>
-  )
-}
-
-export function CapLinhKienFilters({ filters, onChange }: CapLinhKienFiltersProps) {
+export function CapLinhKienFilters({
+  filters,
+  onChange,
+}: CapLinhKienFiltersProps) {
   const uid = useId()
 
   return (
-    <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Field label="Chi nhánh" htmlFor={`${uid}-cn`}>
+    <div className={filterFieldsGridClassName}>
+      <FilterField label="Chi nhánh" htmlFor={`${uid}-cn`}>
         <Select
           value={filters.branchId ?? UNSET}
-          onValueChange={(v) => onChange({ branchId: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ branchId: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả chi nhánh" />
@@ -75,12 +64,14 @@ export function CapLinhKienFilters({ filters, onChange }: CapLinhKienFiltersProp
             ))}
           </SelectContent>
         </Select>
-      </Field>
+      </FilterField>
 
-      <Field label="Kỹ thuật" htmlFor={`${uid}-kt`}>
+      <FilterField label="Kỹ thuật viên" htmlFor={`${uid}-kt`}>
         <Select
           value={filters.kyThuat ?? UNSET}
-          onValueChange={(v) => onChange({ kyThuat: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ kyThuat: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-kt`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả kỹ thuật" />
@@ -94,18 +85,20 @@ export function CapLinhKienFilters({ filters, onChange }: CapLinhKienFiltersProp
             ))}
           </SelectContent>
         </Select>
-      </Field>
+      </FilterField>
 
-      <Field label="Số phiếu cấp" htmlFor={`${uid}-spc`}>
+      <FilterField label="Số phiếu cấp" htmlFor={`${uid}-spc`}>
         <Input
           id={`${uid}-spc`}
           className={filterControlClassName}
           value={filters.soPhieuCap ?? ''}
-          onChange={(e) => onChange({ soPhieuCap: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ soPhieuCap: e.target.value || undefined })
+          }
         />
-      </Field>
+      </FilterField>
 
-      <Field label="Từ ngày" htmlFor={`${uid}-df`}>
+      <FilterField label="Từ ngày" htmlFor={`${uid}-df`}>
         <Input
           id={`${uid}-df`}
           type="date"
@@ -113,8 +106,8 @@ export function CapLinhKienFilters({ filters, onChange }: CapLinhKienFiltersProp
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
-      </Field>
-      <Field label="Đến ngày" htmlFor={`${uid}-dt`}>
+      </FilterField>
+      <FilterField label="Đến ngày" htmlFor={`${uid}-dt`}>
         <Input
           id={`${uid}-dt`}
           type="date"
@@ -122,7 +115,7 @@ export function CapLinhKienFilters({ filters, onChange }: CapLinhKienFiltersProp
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />
-      </Field>
+      </FilterField>
     </div>
   )
 }

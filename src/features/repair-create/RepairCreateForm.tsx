@@ -14,8 +14,8 @@
  * kyThuatId and chiPhiDuKien are no longer collected by this form (legacy
  * assigns technician + real cost later) — safe defaults are supplied.
  */
-import { useCallback, useEffect, useState } from 'react'
-import { useForm, FormProvider } from 'react-hook-form'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useForm, FormProvider, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
@@ -33,6 +33,10 @@ import { TicketInfoSection } from './sections/TicketInfoSection'
 import { ReceiveInfoSection } from './sections/ReceiveInfoSection'
 import { ImageUploadSection } from './sections/ImageUploadSection'
 import { SerialHistoryPanel } from '@/features/repair-detail/sections/SerialHistoryPanel'
+import {
+  countRepairFormErrors,
+  focusFirstInvalidRepairField,
+} from './repair-create-validation-feedback'
 
 // ── Zod schema ───────────────────────────────────────────────────────────
 
@@ -55,47 +59,57 @@ function requiredNullable<T extends z.ZodTypeAny>(schema: T, message: string) {
   return schema.nullable().refine((v): boolean => v !== null, { message })
 }
 
-const createRepairSchema = z.object({
-  // Thông tin sản phẩm — Sản phẩm/Nhà sản xuất optional & independent (no
-  // cascade); Model/Serial/Mô tả hư hỏng required per legacy validation.
-  sanPham: optionSchema.nullable().default(null),
-  nhaSanXuat: optionSchema.nullable().default(null),
-  model: requiredNullable(optionSchema, 'Vui lòng chọn Model!'),
-  soSerial: z.string().min(1, 'Vui lòng nhập số serial!'),
-  moTaHuHong: z.string().min(1, 'Vui lòng nhập mô tả hư hỏng!'),
-  phuKienKemTheo: z.string().optional(),
-  ngayMua: z.string().optional(),
-  noiMua: z.string().optional(),
-  ghiChu: z.string().optional(),
+const createRepairSchema = z
+  .object({
+    // Thông tin sản phẩm — Sản phẩm/Nhà sản xuất optional & independent (no
+    // cascade); Model/Serial/Mô tả hư hỏng required per legacy validation.
+    sanPham: optionSchema.nullable().default(null),
+    nhaSanXuat: optionSchema.nullable().default(null),
+    model: requiredNullable(optionSchema, 'Vui lòng chọn Model!'),
+    soSerial: z.string().min(1, 'Vui lòng nhập số serial!'),
+    moTaHuHong: z.string().min(1, 'Vui lòng nhập mô tả hư hỏng!'),
+    phuKienKemTheo: z.string().optional(),
+    ngayMua: z.string().optional(),
+    noiMua: z.string().optional(),
+    ghiChu: z.string().optional(),
 
-  // Thông tin phiếu
-  branchId: z.string().optional(),
-  soPhieuHang: z.string().optional(),
-  soPhieuDaiLy: z.string().optional(),
-  hinhThuc: z
-    .union([
-      z.literal(''),
-      z.literal('bao_hanh'),
-      z.literal('bh_sua_chua'),
-      z.literal('sua_dich_vu'),
-    ])
-    .refine((v): boolean => v !== '', {
-      message: 'Vui lòng chọn hình thức bảo hành!',
-    }),
-  loaiBaoHanh: z.enum(['tai_ttbh', 'tai_nha']).default('tai_nha'),
-  suaGap: z.boolean().default(false),
-  khuVuc: requiredNullable(optionSchema, 'Vui lòng chọn khu vực!'),
+    // Thông tin phiếu
+    branchId: z.string().optional(),
+    soPhieuHang: z.string().optional(),
+    soPhieuDaiLy: z.string().optional(),
+    hinhThuc: z
+      .union([
+        z.literal(''),
+        z.literal('bao_hanh'),
+        z.literal('bh_sua_chua'),
+        z.literal('sua_dich_vu'),
+      ])
+      .refine((v): boolean => v !== '', {
+        message: 'Vui lòng chọn hình thức bảo hành!',
+      }),
+    loaiBaoHanh: z.enum(['tai_ttbh', 'tai_nha']).default('tai_nha'),
+    suaGap: z.boolean().default(false),
+    khuVuc: requiredNullable(optionSchema, 'Vui lòng chọn khu vực!'),
 
-  // Thông tin khách hàng — existing customer only, no inline new-customer mode.
-  khachHang: requiredNullable(
-    customerOptionSchema,
-    'Vui lòng nhập khách hàng!',
-  ),
+    // Thông tin khách hàng — existing customer only, no inline new-customer mode.
+    khachHang: requiredNullable(
+      customerOptionSchema,
+      'Vui lòng nhập khách hàng!',
+    ),
 
-  // Thông tin nhận
-  ngayHenGiao: z.string().optional(),
-  ngayNhan: z.string().min(1, 'Vui lòng chọn ngày nhận'),
-})
+    // Thông tin nhận
+    ngayHenGiao: z.string().optional(),
+    ngayNhan: z.string().min(1, 'Vui lòng chọn ngày nhận'),
+  })
+  .superRefine((data, context) => {
+    if (data.ngayNhan && data.ngayHenGiao && data.ngayHenGiao < data.ngayNhan) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['ngayHenGiao'],
+        message: 'Ngày hẹn giao không được trước ngày nhận',
+      })
+    }
+  })
 
 export type CreateRepairFormValues = z.infer<typeof createRepairSchema>
 
@@ -126,6 +140,7 @@ function buildCreateInput(data: CreateRepairFormValues): CreateRepairInput {
 
 export function RepairCreateForm() {
   const navigate = useNavigate()
+  const formRef = useRef<HTMLFormElement>(null)
   const activeBranch = useAppStore((s) => s.activeBranch)
   const defaultBranchId = activeBranch === 'all' ? 'dak-lak' : activeBranch
 
@@ -157,6 +172,7 @@ export function RepairCreateForm() {
     resolver: zodResolver(createRepairSchema),
     defaultValues,
     mode: 'onBlur',
+    shouldFocusError: false,
   })
 
   const {
@@ -167,6 +183,17 @@ export function RepairCreateForm() {
   const { mutate, isPending } = useMutation({
     mutationFn: createRepairTicket,
   })
+
+  const handleInvalidSubmit = useCallback(
+    (invalidErrors: FieldErrors<CreateRepairFormValues>) => {
+      notify.error(`${countRepairFormErrors(invalidErrors)} lỗi cần sửa`)
+      window.setTimeout(
+        () => focusFirstInvalidRepairField(formRef.current, invalidErrors),
+        0,
+      )
+    },
+    [],
+  )
 
   const submitWithMode = useCallback(
     (mode: SubmitMode) => {
@@ -188,10 +215,10 @@ export function RepairCreateForm() {
             notify.error('Không thể tạo phiếu. Vui lòng thử lại.')
           },
         })
-      })()
+      }, handleInvalidSubmit)()
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [handleSubmit, mutate, navigate],
+    [handleSubmit, handleInvalidSubmit, mutate, navigate],
   )
 
   // Keyboard shortcut: Ctrl/Cmd+Enter submits as plain "Lưu".
@@ -208,6 +235,7 @@ export function RepairCreateForm() {
   return (
     <FormProvider {...methods}>
       <form
+        ref={formRef}
         onSubmit={(e) => e.preventDefault()}
         noValidate
         aria-label="Biểu mẫu tạo phiếu sửa chữa"

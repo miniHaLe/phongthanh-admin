@@ -1,6 +1,6 @@
-import { randomBytes } from 'node:crypto'
-import { sanPham } from '../db/schema'
 import type { CrudResourceConfig } from '../crud/crud-resource-config'
+import { sanPham } from '../db/schema'
+import { generateCatalogId } from '../shared/catalog-id'
 
 export const sanPhamResourceConfig: CrudResourceConfig = {
   table: sanPham,
@@ -12,12 +12,17 @@ export const sanPhamResourceConfig: CrudResourceConfig = {
     tenSP: sanPham.tenSP,
     maSP: sanPham.maSP,
     tienKhoan: sanPham.tienKhoan,
+    createdAt: sanPham.createdAt,
   },
   filterableColumns: {
-    tenSP: { column: sanPham.tenSP },
-    nhomSanPhamId: { column: sanPham.nhomSanPhamId },
+    tenSP: { column: sanPham.tenSP, valueType: 'string' },
+    nhomSanPhamId: { column: sanPham.nhomSanPhamId, valueType: 'string' },
+    active: {
+      column: sanPham.active,
+      valueType: 'boolean',
+    },
   },
-  searchColumns: [sanPham.maSP, sanPham.tenSP],
+  searchColumns: [sanPham.tenSP, sanPham.maSP],
   notFoundMessage: (id) => `Không tìm thấy sản phẩm id=${id}`,
-  genId: () => `sp-${randomBytes(6).toString('hex')}`,
+  genId: () => generateCatalogId('sp'),
 }

@@ -6,7 +6,9 @@ import type { RowSelectionState } from '@tanstack/react-table'
 import { DataTable } from '@/components/shared'
 import { useTableState } from '@/components/shared/data-table/use-table-state'
 import { MOCK_TICKETS } from '@/domains/repair/mock-data'
+import { STATUS_HEX, STATUS_LABEL } from '@/domains/repair/status'
 import type { RepairTicket } from '@/domains/repair/types'
+import { REPAIR_COLUMN_LABELS as SHARED_REPAIR_COLUMN_LABELS } from '@/features/repair-shared/repair-table-constants'
 import { formatDate, formatDateTime, formatVND } from '@/lib/format'
 import { renderWithProviders } from '@/test/render-with-providers'
 import { RepairMobileCards } from '../RepairListPage'
@@ -48,13 +50,13 @@ const ticket: RepairTicket = {
   nguoiNhan: 'Nhân viên composite',
 }
 
-function TableHarness() {
+function TableHarness({ row = ticket }: { row?: RepairTicket }) {
   const { columns } = useRepairTableColumns()
   return (
     <DataTable
       tableId="repair-list"
       columns={columns}
-      data={[ticket]}
+      data={[row]}
       enableRowSelection
       rowSelection={{}}
       onRowSelectionChange={() => {}}
@@ -82,6 +84,7 @@ describe('useRepairTableColumns', () => {
   })
 
   it('exposes only the approved composite group IDs to column configuration', () => {
+    expect(REPAIR_COLUMN_LABELS).toBe(SHARED_REPAIR_COLUMN_LABELS)
     expect(REPAIR_COLUMN_LABELS.map(({ id }) => id)).toEqual([
       'status',
       'actions',
@@ -94,6 +97,13 @@ describe('useRepairTableColumns', () => {
       'notes',
       'receiver',
     ])
+
+    const { result } = renderHook(() => useRepairTableColumns())
+    expect(
+      result.current.columns
+        .filter((column) => column.meta?.presentation !== 'sort-only')
+        .map((column) => column.id),
+    ).toEqual(['select', ...REPAIR_COLUMN_LABELS.map(({ id }) => id)])
   })
 
   it('keeps every legacy sort ID as sort-only metadata and groups timeline sorting', () => {
@@ -139,6 +149,12 @@ describe('useRepairTableColumns', () => {
     ]) {
       expect(screen.getAllByText(value).length).toBeGreaterThan(0)
     }
+
+    const statusBadge = document.querySelector('[data-status-variant="table"]')
+    expect(statusBadge).toHaveStyle({
+      backgroundColor: STATUS_HEX[ticket.tinhTrang],
+    })
+    expect(screen.getByText(STATUS_LABEL[ticket.tinhTrang])).toBeInTheDocument()
 
     expect(screen.getByText('Bản đồ')).toBeInTheDocument()
     expect(screen.getByText('Định vị')).toBeInTheDocument()
@@ -197,5 +213,23 @@ describe('useRepairTableColumns', () => {
       'h-11',
       'w-11',
     )
+  })
+
+  it('shows a non-zero dwell value that stays stable within the session', () => {
+    const pendingTicket: RepairTicket = {
+      ...ticket,
+      ngayNhan: '2024-06-01T08:30:00.000Z',
+      ngayHoanThanh: undefined,
+      ngaySuaXong: undefined,
+      ngayGiao: undefined,
+    }
+    const { rerender } = renderWithProviders(
+      <TableHarness row={pendingTicket} />,
+    )
+    const firstDwell = screen.getByText(/^\d+ ngày \d+:\d+'$/).textContent
+
+    expect(firstDwell).not.toMatch(/^0 ngày/)
+    rerender(<TableHarness row={pendingTicket} />)
+    expect(screen.getByText(firstDwell!)).toBeInTheDocument()
   })
 })

@@ -78,7 +78,7 @@ describe('createRepairTicket — voucher code format', () => {
       tenKhach: 'Khách kiểm thử',
       sdt: '0900000000',
       branchId: technician.branchId,
-      nhaSanXuatId: product.nhaSanXuatId,
+      nhaSanXuatId: model.nhaSanXuatId,
       sanPhamId: product.id,
       modelId: model.id,
       hinhThuc: 'sua_dich_vu' as const,

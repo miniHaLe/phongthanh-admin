@@ -5,22 +5,24 @@
  * the Từ Kỳ/Đến Kỳ picker + KPI slot this view needs). Read-only view: no
  * create/delete, only per-row Cập nhật / Xem chi tiết + Kỳ-range filtering.
  */
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { Boxes } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import {
   DataTable,
   DataTablePagination,
+  FilterPanel,
   PageHeader,
-  KyPicker,
   KY_OPTIONS,
   notify,
 } from '@/components/shared'
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
+import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
+import { FilterField } from '@/components/shared/filter-panel/filter-field'
 import { KpiTrio } from '@/components/finance/inventory-kpi-strip'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -56,7 +58,6 @@ const NHOM_HANG_OPTIONS = [
   'Nhà vệ sinh',
 ]
 
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
 const UNSET = '__all__'
 
 interface XemTonKhoFilters {
@@ -84,10 +85,21 @@ function defaultFilters(): XemTonKhoFilters {
   }
 }
 
+const DEFAULT_FILTERS = defaultFilters()
+
+function countChangedFilters(filters: XemTonKhoFilters): number {
+  return (Object.keys(DEFAULT_FILTERS) as (keyof XemTonKhoFilters)[]).filter(
+    (key) => filters[key] !== DEFAULT_FILTERS[key],
+  ).length
+}
+
 export default function XemTonKhoPage() {
   const navigate = useNavigate()
   const { rows: nhaKhoRows } = useLookup('nha-kho')
-  const [filters, setFilters] = useState<XemTonKhoFilters>(defaultFilters)
+  const filterId = useId()
+  const [filters, setFilters] = useState<XemTonKhoFilters>(() => ({
+    ...DEFAULT_FILTERS,
+  }))
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
   const [updateRow, setUpdateRow] = useState<InventoryRow | null>(null)
@@ -139,6 +151,11 @@ export default function XemTonKhoPage() {
     setPage(1)
   }
 
+  function clearFilters() {
+    setFilters({ ...DEFAULT_FILTERS })
+    setPage(1)
+  }
+
   const columns = useInventoryCompositeColumns({
     page,
     pageSize,
@@ -163,16 +180,23 @@ export default function XemTonKhoPage() {
           isLoading={isLoading}
         />
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="flex flex-col gap-1.5">
-            <Label>Chi nhánh</Label>
+        <FilterPanel
+          defaultExpanded
+          filterCount={countChangedFilters(filters)}
+          onClear={clearFilters}
+          contentClassName="lg:grid-cols-4"
+        >
+          <FilterField label="Chi nhánh" htmlFor={`${filterId}-branch`}>
             <Select
               value={filters.branchId ?? UNSET}
               onValueChange={(v) =>
                 handleFilterChange({ branchId: v === UNSET ? null : v })
               }
             >
-              <SelectTrigger className="h-9">
+              <SelectTrigger
+                id={`${filterId}-branch`}
+                className={filterControlClassName}
+              >
                 <SelectValue placeholder="Tất cả chi nhánh" />
               </SelectTrigger>
               <SelectContent>
@@ -184,17 +208,19 @@ export default function XemTonKhoPage() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FilterField>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Nhà kho</Label>
+          <FilterField label="Nhà kho" htmlFor={`${filterId}-warehouse`}>
             <Select
               value={filters.khoId ?? UNSET}
               onValueChange={(v) =>
                 handleFilterChange({ khoId: v === UNSET ? null : v })
               }
             >
-              <SelectTrigger className="h-9">
+              <SelectTrigger
+                id={`${filterId}-warehouse`}
+                className={filterControlClassName}
+              >
                 <SelectValue placeholder="Tất cả nhà kho" />
               </SelectTrigger>
               <SelectContent>
@@ -206,17 +232,19 @@ export default function XemTonKhoPage() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FilterField>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Nhóm hàng hóa</Label>
+          <FilterField label="Nhóm hàng hóa" htmlFor={`${filterId}-group`}>
             <Select
               value={filters.nhomHang ?? UNSET}
               onValueChange={(v) =>
                 handleFilterChange({ nhomHang: v === UNSET ? null : v })
               }
             >
-              <SelectTrigger className="h-9">
+              <SelectTrigger
+                id={`${filterId}-group`}
+                className={filterControlClassName}
+              >
                 <SelectValue placeholder="Tất cả nhóm hàng" />
               </SelectTrigger>
               <SelectContent>
@@ -228,17 +256,22 @@ export default function XemTonKhoPage() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FilterField>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Nhà sản xuất</Label>
+          <FilterField
+            label="Nhà sản xuất"
+            htmlFor={`${filterId}-manufacturer`}
+          >
             <Select
               value={filters.nhaSanXuat ?? UNSET}
               onValueChange={(v) =>
                 handleFilterChange({ nhaSanXuat: v === UNSET ? null : v })
               }
             >
-              <SelectTrigger className="h-9">
+              <SelectTrigger
+                id={`${filterId}-manufacturer`}
+                className={filterControlClassName}
+              >
                 <SelectValue placeholder="Tất cả NSX" />
               </SelectTrigger>
               <SelectContent>
@@ -250,17 +283,19 @@ export default function XemTonKhoPage() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FilterField>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Model</Label>
+          <FilterField label="Model" htmlFor={`${filterId}-model`}>
             <Select
               value={filters.model ?? UNSET}
               onValueChange={(v) =>
                 handleFilterChange({ model: v === UNSET ? null : v })
               }
             >
-              <SelectTrigger className="h-9">
+              <SelectTrigger
+                id={`${filterId}-model`}
+                className={filterControlClassName}
+              >
                 <SelectValue placeholder="Tất cả model" />
               </SelectTrigger>
               <SelectContent>
@@ -272,30 +307,60 @@ export default function XemTonKhoPage() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FilterField>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="xtk-manhang">Mã/tên hàng hóa</Label>
+          <FilterField label="Mã/tên hàng hóa" htmlFor={`${filterId}-product`}>
             <Input
-              id="xtk-manhang"
-              className="h-9"
+              id={`${filterId}-product`}
+              className={filterControlClassName}
               placeholder="Nhập mã hoặc tên hàng…"
               value={filters.maHang}
               onChange={(e) => handleFilterChange({ maHang: e.target.value })}
             />
-          </div>
+          </FilterField>
 
-          <KyPicker
-            label="Từ Kỳ"
-            value={filters.tuKy ?? undefined}
-            onChange={(kyId) => handleFilterChange({ tuKy: kyId })}
-          />
-          <KyPicker
-            label="Đến Kỳ"
-            value={filters.denKy ?? undefined}
-            onChange={(kyId) => handleFilterChange({ denKy: kyId })}
-          />
-        </div>
+          <FilterField label="Từ Kỳ" htmlFor={`${filterId}-from-period`}>
+            <Select
+              value={filters.tuKy ?? undefined}
+              onValueChange={(kyId) => handleFilterChange({ tuKy: kyId })}
+            >
+              <SelectTrigger
+                id={`${filterId}-from-period`}
+                className={filterControlClassName}
+              >
+                <SelectValue placeholder="Chọn kỳ" />
+              </SelectTrigger>
+              <SelectContent>
+                {KY_OPTIONS.map((ky) => (
+                  <SelectItem key={ky.id} value={ky.id}>
+                    {ky.ten}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterField>
+
+          <FilterField label="Đến Kỳ" htmlFor={`${filterId}-to-period`}>
+            <Select
+              value={filters.denKy ?? undefined}
+              onValueChange={(kyId) => handleFilterChange({ denKy: kyId })}
+            >
+              <SelectTrigger
+                id={`${filterId}-to-period`}
+                className={filterControlClassName}
+              >
+                <SelectValue placeholder="Chọn kỳ" />
+              </SelectTrigger>
+              <SelectContent>
+                {KY_OPTIONS.map((ky) => (
+                  <SelectItem key={ky.id} value={ky.id}>
+                    {ky.ten}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterField>
+        </FilterPanel>
 
         <DataTable
           tableId="xem-ton-kho"

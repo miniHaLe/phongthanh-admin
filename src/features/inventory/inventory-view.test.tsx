@@ -4,7 +4,9 @@
  */
 import { describe, it, expect } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/test/render-with-providers'
+import { StatCard } from '@/components/shared/stat-card'
 import XemTonKhoPage from '@/pages/quan-ly-kho/XemTonKhoPage'
 import TonKhoLKXacPage from '@/pages/quan-ly-kho/TonKhoLKXacPage'
 import TonKhoKyThuatPage from '@/pages/quan-ly-kho/TonKhoKyThuatPage'
@@ -54,9 +56,7 @@ function expectKpiLabel(label: string) {
 }
 
 function queryKpiLabel(label: string): boolean {
-  return screen
-    .queryAllByText(label)
-    .some((el) => el.tagName === 'P')
+  return screen.queryAllByText(label).some((el) => el.tagName === 'P')
 }
 
 describe('XemTonKhoPage (W2)', () => {
@@ -74,16 +74,31 @@ describe('XemTonKhoPage (W2)', () => {
     expectKpiLabel('Tổng tồn')
   })
 
-  it('renders a negative Tổng tồn KPI with a minus sign (no clamp)', async () => {
+  it('renders an explicit negative Tổng tồn KPI without clamping it', () => {
+    renderWithProviders(<StatCard label="Tổng tồn" value="-2.572" />)
+
+    const card = screen.getByText('Tổng tồn').closest('[data-negative]')
+    expect(card).toHaveAttribute('data-negative')
+    expect(screen.getByLabelText('-2.572')).toHaveTextContent('-2.572')
+  })
+
+  it('keeps the shared filter panel expanded and resets changed filters', async () => {
+    const user = userEvent.setup()
     renderWithProviders(<XemTonKhoPage />)
-    await waitFor(() => expectKpiLabel('Tổng tồn'))
-    await waitFor(() => {
-      const kpiLabel = screen
-        .getAllByText('Tổng tồn')
-        .find((el) => el.tagName === 'P') as HTMLElement
-      const card = kpiLabel.closest('div')?.parentElement as HTMLElement
-      expect(within(card).getByText(/^-/)).toBeInTheDocument()
-    })
+
+    const toggle = screen.getByRole('button', { name: 'Bộ lọc' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+
+    const clearButton = screen.getByRole('button', { name: 'Xóa bộ lọc' })
+    expect(clearButton).toBeDisabled()
+
+    const productInput = screen.getByLabelText('Mã/tên hàng hóa')
+    await user.type(productInput, 'pin')
+    expect(clearButton).toBeEnabled()
+
+    await user.click(clearButton)
+    expect(productInput).toHaveValue('')
+    expect(clearButton).toBeDisabled()
   })
 })
 

@@ -3,8 +3,11 @@
  */
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { filterControlClassName } from '@/components/shared/filter-panel/filter-control-classes'
+import {
+  FilterField,
+  filterFieldsGridClassName,
+} from '@/components/shared/filter-panel/filter-field'
 import {
   Select,
   SelectContent,
@@ -36,34 +39,17 @@ interface TraHangFiltersProps {
 
 const UNSET = '__all__'
 
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string
-  htmlFor?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
-        {label}
-      </Label>
-      {children}
-    </div>
-  )
-}
-
 export function TraHangFilters({ filters, onChange }: TraHangFiltersProps) {
   const uid = useId()
 
   return (
-    <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Field label="Chi nhánh" htmlFor={`${uid}-cn`}>
+    <div className={filterFieldsGridClassName}>
+      <FilterField label="Chi nhánh" htmlFor={`${uid}-cn`}>
         <Select
           value={filters.branchId ?? UNSET}
-          onValueChange={(v) => onChange({ branchId: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ branchId: v === UNSET ? undefined : v })
+          }
         >
           <SelectTrigger id={`${uid}-cn`} className={filterControlClassName}>
             <SelectValue placeholder="Tất cả chi nhánh" />
@@ -77,14 +63,20 @@ export function TraHangFilters({ filters, onChange }: TraHangFiltersProps) {
             ))}
           </SelectContent>
         </Select>
-      </Field>
+      </FilterField>
 
-      <Field label="Hình thức trả" htmlFor={`${uid}-httr`}>
+      <FilterField label="Hình thức trả" htmlFor={`${uid}-httr`}>
         <Select
           value={filters.hinhThucTra ?? UNSET}
-          onValueChange={(v) => onChange({ hinhThucTra: v === UNSET ? undefined : v })}
+          onValueChange={(v) =>
+            onChange({ hinhThucTra: v === UNSET ? undefined : v })
+          }
         >
-          <SelectTrigger id={`${uid}-httr`} className={filterControlClassName} aria-label="Hình thức trả">
+          <SelectTrigger
+            id={`${uid}-httr`}
+            className={filterControlClassName}
+            aria-label="Hình thức trả"
+          >
             <SelectValue placeholder="Tất cả hình thức" />
           </SelectTrigger>
           <SelectContent>
@@ -96,18 +88,18 @@ export function TraHangFilters({ filters, onChange }: TraHangFiltersProps) {
             ))}
           </SelectContent>
         </Select>
-      </Field>
+      </FilterField>
 
-      <Field label="Số phiếu" htmlFor={`${uid}-sp`}>
+      <FilterField label="Số phiếu" htmlFor={`${uid}-sp`}>
         <Input
           id={`${uid}-sp`}
           className={filterControlClassName}
           value={filters.soPhieu ?? ''}
           onChange={(e) => onChange({ soPhieu: e.target.value || undefined })}
         />
-      </Field>
+      </FilterField>
 
-      <Field label="Từ ngày" htmlFor={`${uid}-df`}>
+      <FilterField label="Từ ngày" htmlFor={`${uid}-df`}>
         <Input
           id={`${uid}-df`}
           type="date"
@@ -115,8 +107,8 @@ export function TraHangFilters({ filters, onChange }: TraHangFiltersProps) {
           value={filters.dateFrom ?? ''}
           onChange={(e) => onChange({ dateFrom: e.target.value || undefined })}
         />
-      </Field>
-      <Field label="Đến ngày" htmlFor={`${uid}-dt`}>
+      </FilterField>
+      <FilterField label="Đến ngày" htmlFor={`${uid}-dt`}>
         <Input
           id={`${uid}-dt`}
           type="date"
@@ -124,7 +116,7 @@ export function TraHangFilters({ filters, onChange }: TraHangFiltersProps) {
           value={filters.dateTo ?? ''}
           onChange={(e) => onChange({ dateTo: e.target.value || undefined })}
         />
-      </Field>
+      </FilterField>
     </div>
   )
 }

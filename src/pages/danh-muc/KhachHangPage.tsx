@@ -2,13 +2,18 @@
  * Khách Hàng (CU1) — bespoke list (not the generic CrudTablePage) because the
  * reference has two distinct header create-flows (Thêm Khách Hàng / Thêm Đại
  * Lý) and an edit-only row action (no per-row delete — bulk-delete only).
- * Reuses the shared CrudTablePage primitives directly (useCrud, DataTable,
- * CrudFilterBar, bulk-delete, selection column) for consistency with every
- * other catalog list without touching components/crud/**.
+ * Reuses the shared CRUD primitives directly (useCrud, DataTable, FilterPanel,
+ * bulk-delete, selection column) while retaining both customer create flows.
  */
 import { useMemo, useState, type ReactElement } from 'react'
-import { UserPlus, Building2, Pencil, Trash2, FileSpreadsheet } from 'lucide-react'
-import type { ColumnDef, RowSelectionState } from '@tanstack/react-table'
+import {
+  UserPlus,
+  Building2,
+  Trash2,
+  FileSpreadsheet,
+  RefreshCw,
+} from 'lucide-react'
+import type { RowSelectionState } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import {
   DataTable,
@@ -16,25 +21,59 @@ import {
   DataTablePagination,
   DataTableColumnConfig,
   BulkActionsBar,
-  buildSelectionColumn,
-  notify,
+  FilterPanel,
+  API_PAGE_SIZE_OPTIONS,
 } from '@/components/shared'
-import { CrudFilterBar } from '@/components/crud/CrudFilterBar'
+import { CrudFilterFields } from '@/components/crud/crud-filter-fields'
+import { countActiveFilterValues } from '@/components/crud/crud-filter-values'
 import { CrudDeleteDialog } from '@/components/crud/CrudDeleteDialog'
-import { CrudSheet } from '@/components/crud/CrudSheet'
-import { useCrud } from '@/hooks/use-crud'
+import {
+  failedBulkDeleteSelection,
+  notifyBulkDeleteResult,
+  selectedRowIds,
+  useCrud,
+} from '@/hooks/use-crud'
 import { khachHangConfig } from '@/config/crud-configs/khach-hang.config'
-import { exportToXlsx } from '@/lib/export-xlsx'
 import type { KhachHang } from '@/types/masterdata-types'
-import type { ColumnConfig } from '@/types/crud-types'
 import { ThemKhachHangModal } from '@/features/customer/them-khach-hang-modal'
 import { ThemDaiLyModal } from '@/features/customer/them-dai-ly-modal'
-
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
+import { CustomerEditorDialog } from '@/features/customer/customer-editor-dialog'
+import { useGeographyLookup } from '@/features/customer/use-geography-lookup'
+import {
+  buildCrudColumnDescriptors,
+  buildCrudColumns,
+} from '@/components/crud/build-crud-columns'
+import { exportCurrentCrudPage } from '@/components/crud/export-crud-rows'
+import { CustomerMobileCards } from '@/features/customer/customer-mobile-cards'
+import {
+  activeBranchApiId,
+  useAppStore,
+  type ActiveBranch,
+} from '@/store/app-store'
+import { branchLabel } from '@/mock/seed/branches'
+import { cn } from '@/lib/utils'
 
 export default function KhachHangPage(): ReactElement {
+  const activeBranch = useAppStore((state) => state.activeBranch)
+
+  return (
+    <BranchScopedCustomerPage key={activeBranch} activeBranch={activeBranch} />
+  )
+}
+
+function BranchScopedCustomerPage({
+  activeBranch,
+}: {
+  activeBranch: ActiveBranch
+}): ReactElement {
   const config = khachHangConfig
-  const crud = useCrud(config, true)
+  const geography = useGeographyLookup()
+  const crud = useCrud(
+    config,
+    true,
+    { branchId: activeBranchApiId(activeBranch) },
+    { refetchOnMount: 'always' },
+  )
   const {
     params,
     setSearch,
@@ -43,8 +82,8 @@ export default function KhachHangPage(): ReactElement {
     setSort,
     setFilters,
     listQuery,
-    updateMutation,
-    deleteMutation,
+    bulkDelete,
+    isBulkDeleting,
   } = crud
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
@@ -54,79 +93,43 @@ export default function KhachHangPage(): ReactElement {
   const [themDaiLyOpen, setThemDaiLyOpen] = useState(false)
 
   const result = listQuery.data
-  const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id])
+  const selectedIds = selectedRowIds(rowSelection)
 
-  const columns = useMemo<ColumnDef<KhachHang, unknown>[]>(() => {
-    const cols: ColumnDef<KhachHang, unknown>[] = [
-      {
-        id: 'stt',
-        header: 'STT',
-        cell: ({ row }) => (params.page - 1) * params.pageSize + row.index + 1,
-        enableSorting: false,
-        size: 56,
-      },
-      buildSelectionColumn<KhachHang>(),
-      ...config.columns.map((col: ColumnConfig<KhachHang>): ColumnDef<KhachHang, unknown> => ({
-        id: String(col.key),
-        accessorKey: col.key as string,
-        header: col.header,
-        enableSorting: col.sortable ?? false,
-        size: col.width,
-        cell: col.renderCell
-          ? ({ row }) =>
-              col.renderCell!(
-                (row.original as unknown as Record<string, unknown>)[String(col.key)] as KhachHang[keyof KhachHang],
-                row.original,
-              )
-          : undefined,
-      })),
-      {
-        id: '_actions',
-        header: '',
-        enableSorting: false,
-        size: 60,
-        cell: ({ row }) => (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            title="Chỉnh sửa"
-            onClick={(e) => {
-              e.stopPropagation()
-              setEditRow(row.original)
-            }}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-        ),
-      },
-    ]
-    return cols
-  }, [config.columns, params.page, params.pageSize])
-
-  const columnDescriptors = useMemo(
-    () => config.columns.map((c) => ({ id: String(c.key), label: c.header })),
-    [config.columns],
+  const columns = useMemo(
+    () =>
+      buildCrudColumns(
+        config,
+        params,
+        { onEdit: setEditRow },
+        geography.lookups,
+      ),
+    [config, geography.lookups, params],
   )
 
-  function handleBulkDeleteConfirm() {
-    for (const id of selectedIds) deleteMutation.mutate(id)
+  const filters = useMemo(
+    () =>
+      (config.filters ?? []).map((filter) =>
+        filter.key === 'tinhThanhCode'
+          ? { ...filter, options: geography.provinceOptions }
+          : filter,
+      ),
+    [config, geography.provinceOptions],
+  )
+
+  const columnDescriptors = useMemo(
+    () => buildCrudColumnDescriptors(config),
+    [config],
+  )
+
+  async function handleBulkDeleteConfirm() {
+    const result = await bulkDelete(selectedIds)
     setBulkDeleteOpen(false)
-    setRowSelection({})
-    notify.success(`Đã xóa ${selectedIds.length} dòng`)
+    setRowSelection(failedBulkDeleteSelection(result))
+    notifyBulkDeleteResult(result)
   }
 
   function handleExport() {
-    const rows = result?.data ?? []
-    void exportToXlsx({
-      filename: config.resourceKey,
-      sheetName: config.title,
-      columns: config.columns.map((c) => ({
-        header: c.header,
-        accessor: (row: KhachHang) => String((row as unknown as Record<string, unknown>)[String(c.key)] ?? ''),
-      })),
-      rows,
-    })
+    void exportCurrentCrudPage(config, result?.data ?? [], geography.lookups)
   }
 
   const toolbar = (
@@ -135,11 +138,25 @@ export default function KhachHangPage(): ReactElement {
       onSearchChange={setSearch}
       searchPlaceholder="Tìm trong Khách Hàng…"
       right={
-        <div className="flex items-center gap-2">
-          <DataTableColumnConfig tableId={config.resourceKey} columns={columnDescriptors} />
-          <Button variant="outline" size="sm" className="h-8 gap-1" onClick={handleExport} title="Xuất Excel File">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <DataTableColumnConfig
+            tableId={config.resourceKey}
+            columns={columnDescriptors}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1"
+            onClick={handleExport}
+            disabled={!geography.isReady}
+            title={
+              geography.isReady
+                ? 'Xuất Excel (trang hiện tại)'
+                : 'Đang tải danh mục địa chỉ'
+            }
+          >
             <FileSpreadsheet className="h-4 w-4" />
-            <span className="hidden sm:inline">Xuất Excel File</span>
+            <span className="hidden sm:inline">Xuất Excel</span>
           </Button>
         </div>
       }
@@ -149,9 +166,31 @@ export default function KhachHangPage(): ReactElement {
   return (
     <div className="space-y-3 p-4 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-lg font-semibold">{config.title}</h1>
-        <div className="flex items-center gap-2">
-          <Button size="sm" className="h-8 gap-1" onClick={() => setThemKhachHangOpen(true)}>
+        <div>
+          <h1 className="text-lg font-semibold">{config.title}</h1>
+          <p className="text-sm text-muted-foreground">
+            Phạm vi: {branchLabel(activeBranch)}
+          </p>
+          <span className="sr-only" aria-live="polite">
+            {listQuery.isFetching
+              ? listQuery.isLoading
+                ? 'Đang tải danh sách khách hàng'
+                : 'Đang cập nhật danh sách khách hàng'
+              : 'Danh sách khách hàng đã cập nhật'}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {listQuery.isFetching && (
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <RefreshCw className="size-3.5 animate-spin" />
+              {listQuery.isLoading ? 'Đang tải…' : 'Đang cập nhật…'}
+            </span>
+          )}
+          <Button
+            size="sm"
+            className="h-8 gap-1"
+            onClick={() => setThemKhachHangOpen(true)}
+          >
             <UserPlus className="h-4 w-4" />
             Thêm Khách Hàng
           </Button>
@@ -167,13 +206,17 @@ export default function KhachHangPage(): ReactElement {
         </div>
       </div>
 
-      {config.filters && (
-        <CrudFilterBar
-          filters={config.filters}
-          value={params.filters}
-          onChange={setFilters}
+      {filters.length > 0 && (
+        <FilterPanel
+          filterCount={countActiveFilterValues(params.filters)}
           onClear={() => setFilters({})}
-        />
+        >
+          <CrudFilterFields
+            filters={filters}
+            value={params.filters}
+            onChange={setFilters}
+          />
+        </FilterPanel>
       )}
 
       <BulkActionsBar count={selectedIds.length}>
@@ -182,37 +225,70 @@ export default function KhachHangPage(): ReactElement {
           size="sm"
           className="h-8 gap-1"
           onClick={() => setBulkDeleteOpen(true)}
+          disabled={isBulkDeleting}
         >
           <Trash2 className="h-4 w-4" />
           Xóa
         </Button>
       </BulkActionsBar>
 
-      <DataTable
-        tableId={config.resourceKey}
-        columns={columns}
-        data={result?.data ?? []}
-        isLoading={listQuery.isLoading}
-        isError={listQuery.isError}
-        onRetry={() => listQuery.refetch()}
-        enableRowSelection
-        rowSelection={rowSelection}
-        onRowSelectionChange={setRowSelection}
-        getRowId={(row) => row.id}
-        emptyMessage="Chưa có Khách Hàng"
-        sorting={params.sort ? [{ id: params.sort, desc: params.dir === 'desc' }] : []}
-        onSortingChange={(updater) => {
-          const next =
-            typeof updater === 'function'
-              ? updater(params.sort ? [{ id: params.sort, desc: params.dir === 'desc' }] : [])
-              : updater
-          if (next.length > 0) setSort(next[0].id, next[0].desc ? 'desc' : 'asc')
-        }}
-        manualPagination
-        pagination={{ pageIndex: params.page - 1, pageSize: params.pageSize }}
-        pageCount={result ? Math.ceil(result.total / result.pageSize) : undefined}
-        toolbar={toolbar}
-      />
+      {toolbar}
+
+      <div
+        className={cn(
+          'transition-opacity duration-200',
+          listQuery.isFetching && !listQuery.isLoading && 'opacity-60',
+        )}
+      >
+        <CustomerMobileCards
+          customers={result?.data ?? []}
+          rowSelection={rowSelection}
+          onSelectionChange={setRowSelection}
+          onEdit={setEditRow}
+        />
+
+        <div className="hidden md:block">
+          <DataTable
+            tableId={config.resourceKey}
+            columns={columns}
+            data={result?.data ?? []}
+            isLoading={listQuery.isLoading}
+            isError={listQuery.isError}
+            onRetry={() => listQuery.refetch()}
+            enableRowSelection
+            rowSelection={rowSelection}
+            onRowSelectionChange={setRowSelection}
+            getRowId={(row) => row.id}
+            emptyMessage="Chưa có Khách Hàng"
+            sorting={
+              params.sort
+                ? [{ id: params.sort, desc: params.dir === 'desc' }]
+                : []
+            }
+            onSortingChange={(updater) => {
+              const next =
+                typeof updater === 'function'
+                  ? updater(
+                      params.sort
+                        ? [{ id: params.sort, desc: params.dir === 'desc' }]
+                        : [],
+                    )
+                  : updater
+              if (next.length > 0)
+                setSort(next[0].id, next[0].desc ? 'desc' : 'asc')
+            }}
+            manualSorting
+            manualPagination
+            pagination={{
+              pageIndex: params.page - 1,
+              pageSize: params.pageSize,
+            }}
+            pageCount={
+              result ? Math.ceil(result.total / result.pageSize) : undefined
+            }
+          />
+        </div>
+      </div>
 
       {result && (
         <DataTablePagination
@@ -221,24 +297,15 @@ export default function KhachHangPage(): ReactElement {
           total={result.total}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
-          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          pageSizeOptions={API_PAGE_SIZE_OPTIONS}
         />
       )}
 
-      <CrudSheet
-        config={config}
-        mode="edit"
-        initialData={editRow}
+      <CustomerEditorDialog
         open={editRow !== undefined}
+        customer={editRow}
         onClose={() => setEditRow(undefined)}
-        onSubmit={(data) => {
-          if (!editRow) return
-          updateMutation.mutate(
-            { id: editRow.id, data },
-            { onSuccess: () => setEditRow(undefined) },
-          )
-        }}
-        isPending={updateMutation.isPending}
+        onSaved={() => setEditRow(undefined)}
       />
 
       <CrudDeleteDialog
@@ -246,18 +313,18 @@ export default function KhachHangPage(): ReactElement {
         onClose={() => setBulkDeleteOpen(false)}
         onConfirm={handleBulkDeleteConfirm}
         entityLabel={`${selectedIds.length} dòng đã chọn`}
-        isPending={deleteMutation.isPending}
+        isPending={isBulkDeleting}
       />
 
       <ThemKhachHangModal
         open={themKhachHangOpen}
         onClose={() => setThemKhachHangOpen(false)}
-        onCreated={() => listQuery.refetch()}
+        onCreated={() => setThemKhachHangOpen(false)}
       />
       <ThemDaiLyModal
         open={themDaiLyOpen}
         onClose={() => setThemDaiLyOpen(false)}
-        onCreated={() => listQuery.refetch()}
+        onCreated={() => setThemDaiLyOpen(false)}
       />
     </div>
   )

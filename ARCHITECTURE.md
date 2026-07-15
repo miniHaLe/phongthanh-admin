@@ -6,6 +6,7 @@
 
 ```
 src/
+├── api/                      # HTTP adapters + cờ chọn real/mock theo resource
 ├── a11y/                    # Tiện ích accessibility
 │   ├── announce.ts          # Aria-live announcer singleton + <A11yAnnouncer/>
 │   └── use-focus-trap.ts    # Focus trap hook cho custom overlays
@@ -25,6 +26,8 @@ src/
 │       ├── types.ts          # RepairTicket, CreateRepairInput
 │       └── mock-data.ts     # MOCK_TICKETS (live), fetchRepairList, …
 ├── features/
+│   ├── customer/            # Form khách hàng dùng chung + địa chỉ hai cấp
+│   ├── model/               # Catalog quan hệ Sản phẩm/Nhà sản xuất/Model
 │   ├── repair-list/         # RepairListPage — bảng chính sửa chữa
 │   └── repair-create/       # RepairCreatePage — form tạo phiếu
 ├── hooks/                   # use-crud, use-breakpoint, …
@@ -33,6 +36,8 @@ src/
 │   ├── store-keys.ts        # STORE_KEYS + ALL_STORE_KEYS
 │   ├── format.ts            # formatVND, formatDate
 │   └── utils.ts             # cn()
+├── data/
+│   └── vietnam-administrative-snapshot.ts # snapshot 34/3.321 cho mock fallback
 ├── mock/
 │   ├── masterdata/          # Mock data hiện tại (các page đang dùng)
 │   ├── seed/                # Base types + reference-data + lookup modules (C4)
@@ -90,19 +95,80 @@ src/
 
 ---
 
+## Real API Boundary
+
+`src/api/api-for.ts` chọn API thật hoặc mock theo từng `resourceKey`. Release hiện
+tại yêu cầu 20 resource thật trong production:
+
+```text
+khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao,ngan-hang,dia-ly
+```
+
+| Resource       | Phạm vi                    | Hành vi chính                                     |
+| -------------- | -------------------------- | ------------------------------------------------- |
+| `khach-hang`   | Theo `branchIds` trong JWT | CRUD; create đóng dấu `branchIds[0]`              |
+| `nha-san-xuat` | Dùng chung                 | CRUD danh mục hãng                                |
+| `san-pham`     | Dùng chung                 | CRUD danh mục sản phẩm                            |
+| `model`        | Dùng chung                 | CRUD; FK bắt buộc tới hãng và sản phẩm            |
+| `ngan-hang`    | Dùng chung                 | CRUD; form khách hàng chỉ lấy ngân hàng hoạt động |
+| `dia-ly`       | Dùng chung, chỉ đọc        | Snapshot Tỉnh/Thành phố + Phường/Xã hiện hành     |
+
+Các catalog còn lại dùng CRUD global; `nhom-quyen` chỉ đọc. `nguoi-dung`
+chỉ cho super-scope ghi và không serialize password material. Resource
+`phuong-xa` dùng bảng `phuong_xa_legacy` cho định tuyến sửa chữa; snapshot
+chính thức tiếp tục dùng bảng `phuong_xa` qua `dia-ly`.
+
+`scripts/assert-real-resources.mjs` chặn `build:prod` nếu thiếu một resource. Mock
+fallback chỉ dùng cho dev/test; không phải chế độ deploy. Phiếu sửa chữa vẫn lưu
+trong mock, dù các lookup khách hàng/model trên form có thể đến API thật.
+Quick-create Đại lý/Khách hàng cùng các mutation catalog đã bật real resource
+đều ghi qua adapter thật và invalidate lookup phụ thuộc.
+
+### Quan hệ Model
+
+- Bảng `model` lưu trực tiếp `nha_san_xuat_id` và `san_pham_id`, có FK, index và
+  unique theo `(hãng, sản phẩm, tên model chuẩn hóa)`.
+- Danh sách model trả kèm tên hãng/sản phẩm; API cho phép lọc bằng
+  `nhaSanXuatId`, `sanPhamId` và `tenModel`.
+- Trong lập phiếu: chọn hãng chỉ còn model cùng hãng; chọn thêm sản phẩm tiếp tục
+  thu hẹp; chọn model là nguồn quyết định và tự đồng bộ cả hai trường cha.
+- Đổi hãng hoặc sản phẩm sang giá trị không tương thích sẽ xóa model. Boundary
+  tạo phiếu còn kiểm tra lại bộ ba ID trước khi ghi vào mock ticket.
+- Form Model ở danh mục và quick-create dùng cùng contract bốn trường: Tên Sản
+  Phẩm, Nhà sản xuất, Tên model, Ghi chú.
+
+### Khách hàng và địa chỉ
+
+- Trường chuẩn hóa mới: `tenDuong`, `tinhThanhCode`, `phuongXaCode`, `maSoThue`,
+  `nganHangId`, `soTaiKhoan`.
+- Tỉnh/Thành phố và Phường/Xã phải cùng có hoặc cùng rỗng. Composite FK đảm bảo
+  phường/xã thuộc đúng tỉnh; UI cũng xóa lựa chọn không tương thích.
+- Chọn Phường/Xã có mã cụ thể tự điền Tỉnh/Thành phố. Tên trùng luôn hiển thị
+  kèm tỉnh và không được suy đoán chỉ từ tên.
+- API tổng hợp `diaChi` từ Tên đường + Phường/Xã + Tỉnh/Thành phố cho lần ghi mới.
+  Các cột `dia_chi`, `tinh_id`, `quan_id`, `phuong_xa_id` cũ được giữ lại; migration
+  không đoán mapping sau sáp nhập và không copy `dia_chi` sang `ten_duong`.
+- `soTaiKhoan` là text để giữ số 0 đầu; mã số thuế chấp nhận 10 số hoặc
+  `10-số-3-số`.
+
+Snapshot hành chính dùng Quyết định 19/2025/QĐ-TTg, hiệu lực 2025-07-01. Xem
+[`docs/vietnam-administrative-data-provenance.md`](./docs/vietnam-administrative-data-provenance.md).
+
+---
+
 ## CrudTablePage Template
 
 `src/components/crud/CrudTablePage.tsx` là generic host cho mọi trang danh mục:
 
-| Prop | Mô tả |
-|------|-------|
-| `config.title` | Tiêu đề hiển thị trong header và dialog xóa |
-| `config.resourceKey` | Key duy nhất cho TanStack Query + localStorage state |
-| `config.columns` | `ColumnConfig<T>[]` — header, width, sortable, hidden, renderCell |
-| `config.formFields` | `FormField[]` — cấu hình fields cho CrudSheet |
-| `config.filters` | `FilterConfig[]` — tùy chọn, render filter bar |
-| `config.api` | `{ list, create, update, delete }` — mock API functions |
-| `routePattern` | Route pattern để guard TanStack Query (chỉ fetch khi route active) |
+| Prop                 | Mô tả                                                              |
+| -------------------- | ------------------------------------------------------------------ |
+| `config.title`       | Tiêu đề hiển thị trong header và dialog xóa                        |
+| `config.resourceKey` | Key duy nhất cho TanStack Query + localStorage state               |
+| `config.columns`     | `ColumnConfig<T>[]` — header, width, sortable, hidden, renderCell  |
+| `config.formFields`  | `FormField[]` — cấu hình fields cho CrudSheet                      |
+| `config.filters`     | `FilterConfig[]` — tùy chọn, render filter bar                     |
+| `config.api`         | `{ list, create, update, delete }` — mock API functions            |
+| `routePattern`       | Route pattern để guard TanStack Query (chỉ fetch khi route active) |
 
 ---
 
@@ -112,13 +178,13 @@ Playwright covers browser-only UI/UX risks that Vitest/Happy DOM cannot measure:
 layout overflow, touch target size, mobile input font size, footer overlap,
 console warnings, and screenshots.
 
-| File | Role |
-|------|------|
-| `playwright.config.ts` | starts/reuses Vite dev server for UIUX tests |
-| `tests/e2e/uiux-viewports.ts` | phone, landscape, tablet, desktop, 4K matrix |
-| `tests/e2e/uiux-audit-helpers.ts` | auth harness, console gate, hit-area/font/overflow assertions, screenshots |
-| `tests/e2e/uiux-runtime.spec.ts` | route smoke, shell/mobile controls, repair cards/actions, dashboard 4K metrics, news semantics |
-| `plans/reports/260711-uiux-remediation-verification/screenshots/` | generated evidence screenshots |
+| File                                                              | Role                                                                                           |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `playwright.config.ts`                                            | starts/reuses Vite dev server for UIUX tests                                                   |
+| `tests/e2e/uiux-viewports.ts`                                     | phone, landscape, tablet, desktop, 4K matrix                                                   |
+| `tests/e2e/uiux-audit-helpers.ts`                                 | auth harness, console gate, hit-area/font/overflow assertions, screenshots                     |
+| `tests/e2e/uiux-runtime.spec.ts`                                  | route smoke, shell/mobile controls, repair cards/actions, dashboard 4K metrics, news semantics |
+| `plans/reports/260711-uiux-remediation-verification/screenshots/` | generated evidence screenshots                                                                 |
 
 Run:
 
@@ -133,15 +199,15 @@ browser warnings/errors remain failures.
 
 ## Zustand Store Slices + STORE_KEYS
 
-| Slice | Key (`STORE_KEYS.*`) | Nội dung |
-|-------|----------------------|---------|
-| `useAppStore` | `pt-app` | theme, sidebarCollapsed, activeBranch |
-| DataTable state | `pt-table-state` | columnVisibility, columnOrder, density per tableId |
-| Filter state | `pt-filter-state` | active filters, saved views |
-| Saved views | `pt-saved-views` | repair saved filter views |
-| Finance UI | `pt-finance-ui` | kỳ kế toán đang chọn |
-| Inventory UI | `pt-inventory-ui` | kỳ kho đang chọn |
-| Command recent | `pt-cmd-recent` | recent routes trong command palette |
+| Slice           | Key (`STORE_KEYS.*`) | Nội dung                                           |
+| --------------- | -------------------- | -------------------------------------------------- |
+| `useAppStore`   | `pt-app`             | theme, sidebarCollapsed, activeBranch              |
+| DataTable state | `pt-table-state`     | columnVisibility, columnOrder, density per tableId |
+| Filter state    | `pt-filter-state`    | active filters, saved views                        |
+| Saved views     | `pt-saved-views`     | repair saved filter views                          |
+| Finance UI      | `pt-finance-ui`      | kỳ kế toán đang chọn                               |
+| Inventory UI    | `pt-inventory-ui`    | kỳ kho đang chọn                                   |
+| Command recent  | `pt-cmd-recent`      | recent routes trong command palette                |
 
 `ALL_STORE_KEYS` (từ `@/lib/store-keys`) = mảng tất cả các key trên — dùng bởi `resetDemo()`.
 
@@ -151,13 +217,22 @@ browser warnings/errors remain failures.
 
 ```ts
 // List query
-['<resource>', params]          // e.g. ['repair-list', { page, pageSize, …filters }]
-
-// Single item
-['<resource>', id]              // e.g. ['repair-detail', 'SC-2024-00001']
-
-// Reference data (long staleTime)
-['ref-data', '<entity>']        // e.g. ['ref-data', 'nha-san-xuat']
+;[
+  '<resource>',
+  params,
+] // e.g. ['repair-list', { page, pageSize, …filters }]
+[
+  // Single item
+  ('<resource>', id)
+] // e.g. ['repair-detail', 'SC-2024-00001']
+[
+  // Reference data (long staleTime)
+  ('ref-data', '<entity>')
+] // e.g. ['ref-data', 'nha-san-xuat']
+[
+  // Catalog quan hệ dùng chung giữa Danh mục và lập phiếu
+  ('model', 'catalog')
+]
 ```
 
 Tất cả mock queries dùng `mockDelay()` để mô phỏng latency mạng (configurable).
@@ -181,17 +256,18 @@ Không tạo enum trạng thái ở nơi khác — luôn import từ đây.
 
 ## Data-Layer Map (D5)
 
-App có nhiều lớp mock render độc lập; mỗi trang đọc từ lớp *live* của nó (không phải một seed chung):
+App có nhiều lớp mock render độc lập; mỗi trang đọc từ lớp _live_ của nó (không phải một seed chung):
 
-| Lớp live (trang đọc) | Cấp cho | Vocab trạng thái |
-|---|---|---|
-| `src/domains/repair/mock-data.ts` → `MOCK_TICKETS` (250) | Sửa chữa list/detail/create | 15 id legacy |
-| `src/mock/dashboard-mock.ts` → `ALL_TICKETS` | Dashboard tiles/branches | 15 id legacy (import `status.ts`) |
-| `src/mock/finance-mock.ts` + `config/finance-tables/*` | Tài chính (thu chi 12 loại, công nợ per-ticket, hóa đơn VAT) | — |
-| `src/mock/masterdata/*` + `config/crud-configs/*` | Danh mục (14) + khách hàng + Chi nhánh/Người dùng | — |
-| `src/domains/warehouse/*` | Kho + xuất kho (tồn kho carry-forward theo Kỳ, 6 editor line-item) | — |
-| `src/domains/hr/*` + `masterdata/*` | Nhân sự (bảng lương tĩnh, chấm công exception) | — |
-| `src/mock/reports/*` + `MOCK_TICKETS` | Báo cáo (6 chuẩn: biểu đồ 15-status palette) | 15 id legacy |
+| Lớp live (trang đọc)                                     | Cấp cho                                                                            | Vocab trạng thái                  |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
+| `src/domains/repair/mock-data.ts` → `MOCK_TICKETS` (250) | Sửa chữa list/detail/create                                                        | 15 id legacy                      |
+| `src/mock/dashboard-mock.ts` → `ALL_TICKETS`             | Dashboard tiles/branches                                                           | 15 id legacy (import `status.ts`) |
+| `src/mock/finance-mock.ts` + `config/finance-tables/*`   | Tài chính (thu chi 12 loại, công nợ per-ticket, hóa đơn VAT)                       | —                                 |
+| `src/api/*` + `config/crud-configs/*`                    | Khách hàng, Người dùng và 18 lookup/catalog khi bật real resource                   | —                                 |
+| `src/mock/masterdata/*` + `config/crud-configs/*`        | Fallback dev/test cho các resource dual-run                                         | —                                 |
+| `src/domains/warehouse/*`                                | Kho + xuất kho (tồn kho carry-forward theo Kỳ, 6 editor line-item)                 | —                                 |
+| `src/domains/hr/*` + `masterdata/*`                      | Nhân sự (bảng lương tĩnh, chấm công exception)                                     | —                                 |
+| `src/mock/reports/*` + `MOCK_TICKETS`                    | Báo cáo (6 chuẩn: biểu đồ 15-status palette)                                       | 15 id legacy                      |
 
 Quá hạn là **field seeded** `isOverdue` (không so sánh đồng hồ); Công nợ là receivable per-ticket (không có Hạn TT). Module tra cứu trong `src/mock/seed/` (`ky`, `tinh-quan-xa` + `TUYEN`, `nhom-khach-hang`, `chung-tu`, `cong-no`, `tra-hang`, `cham-cong`, `loi-sua-chua`, `phi-giao`) dùng seed `SeededRandom` **4001–4009**; kho dùng **6100+**.
 
@@ -218,10 +294,10 @@ Cơ chế: class `dark` trên `<html>` element.
 
 ## A11y Utilities
 
-| File | Export | Dùng cho |
-|------|--------|----------|
-| `src/a11y/announce.ts` | `announce(msg, urgency?)` | Thông báo thay đổi trang/filter cho screen reader |
-| `src/a11y/announce.ts` | `<A11yAnnouncer/>` | Mount một lần ở App.tsx |
-| `src/a11y/use-focus-trap.ts` | `useFocusTrap(ref, active)` | Custom overlays (không dùng Radix) |
+| File                         | Export                      | Dùng cho                                          |
+| ---------------------------- | --------------------------- | ------------------------------------------------- |
+| `src/a11y/announce.ts`       | `announce(msg, urgency?)`   | Thông báo thay đổi trang/filter cho screen reader |
+| `src/a11y/announce.ts`       | `<A11yAnnouncer/>`          | Mount một lần ở App.tsx                           |
+| `src/a11y/use-focus-trap.ts` | `useFocusTrap(ref, active)` | Custom overlays (không dùng Radix)                |
 
 shadcn Dialog/Sheet đã trap focus qua Radix — các utility này chỉ dùng cho overlay tự viết.

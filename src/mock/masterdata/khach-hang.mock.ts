@@ -12,6 +12,7 @@ import { XA } from '@/mock/seed/tinh-quan-xa'
 import { makeMockApi } from './make-mock-api'
 
 const rng = new SeededRandom(1001)
+const MOCK_REFERENCE_NOW = Date.parse('2026-07-01T00:00:00.000Z')
 
 const HO = [
   'Nguyễn',
@@ -78,7 +79,7 @@ function makePhone(): string {
 /** Newest-first (default sort per reference): higher index → earlier date. */
 function createdAtDescByIndex(i: number): string {
   const daysAgo = i * 3 + rng.int(0, 2)
-  return rng.isoDateWithin(1, Date.now() - daysAgo * 86_400_000)
+  return rng.isoDateWithin(1, MOCK_REFERENCE_NOW - daysAgo * 86_400_000)
 }
 
 /** Built oldest-first (stable ids), then reversed to newest-first storage order. */
@@ -110,7 +111,9 @@ const rowsOldestFirst: KhachHang[] = Array.from({ length: 50 }, (_, i) => {
     ghiChu: rng.bool(0.15) ? 'Khách VIP' : undefined,
     active: true,
     createdAt: createdAtDescByIndex(i),
-    updatedAt: rng.bool(0.4) ? rng.isoDateWithin(30) : undefined,
+    updatedAt: rng.bool(0.4)
+      ? rng.isoDateWithin(30, MOCK_REFERENCE_NOW)
+      : undefined,
   }
 })
 

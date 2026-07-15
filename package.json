@@ -14,6 +14,7 @@
     "test:api:with-db": "bash scripts/test-api-with-db.sh",
     "test:e2e:uiux": "playwright test -c playwright.config.ts",
     "test:e2e:uiux:headed": "playwright test -c playwright.config.ts --headed",
+    "data:generate:vn-admin": "node scripts/generate-vietnam-administrative-snapshot.mjs",
     "test:watch": "vitest",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",

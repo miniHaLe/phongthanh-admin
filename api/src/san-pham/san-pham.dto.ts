@@ -6,10 +6,10 @@ import {
 
 export const createSanPhamSchema = z.object({
   maSP: nullableTextInput,
-  tenSP: z.string().min(1, 'Tên sản phẩm không được để trống'),
-  nhomSanPhamId: z.string().min(1, 'Nhóm sản phẩm không được để trống'),
+  tenSP: z.string().trim().min(1, 'Tên sản phẩm không được để trống'),
+  nhomSanPhamId: nullableTextInput,
   tienKhoan: nullableNonnegativeIntegerInput(
-    'Tiền khoán phải là số nguyên',
+    'Tiền khoán phải là số nguyên không âm',
   ),
   active: z.boolean().optional(),
 })

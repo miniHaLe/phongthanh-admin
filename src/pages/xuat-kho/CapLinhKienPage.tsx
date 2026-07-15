@@ -9,13 +9,18 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { isWithinInterval, parseISO } from 'date-fns'
 import type { PaginationState } from '@tanstack/react-table'
-import { DataTable, DataTablePagination, PageHeader, FilterPanel } from '@/components/shared'
+import {
+  DataTable,
+  DataTablePagination,
+  PageHeader,
+  FilterPanel,
+} from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
 import { fetchCheckoutList } from '@/domains/warehouse/list-fetchers'
 import { formatVND } from '@/lib/format'
-import { exportToXlsx } from '@/lib/export-xlsx'
+import { exportListXlsx } from '@/lib/export-list-xlsx'
 import type { CheckOutSlip } from '@/domains/warehouse/types'
 import {
   CAP_LINH_KIEN_TABLE_ID,
@@ -26,7 +31,7 @@ import {
   type CapLinhKienFilterValues,
 } from '@/features/stockout/cap-linh-kien-filters'
 
-const PAGE_SIZE_OPTIONS = [20, 50, 100]
+import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 const EXPORT_COLUMNS = [
@@ -38,7 +43,10 @@ const EXPORT_COLUMNS = [
   { header: 'Ghi chú', accessor: (r: CheckOutSlip) => r.ghiChu },
 ]
 
-function applyClientFilters(rows: CheckOutSlip[], f: CapLinhKienFilterValues): CheckOutSlip[] {
+function applyClientFilters(
+  rows: CheckOutSlip[],
+  f: CapLinhKienFilterValues,
+): CheckOutSlip[] {
   let out = rows
   if (f.kyThuat) out = out.filter((r) => r.kyThuat === f.kyThuat)
   if (f.dateFrom || f.dateTo) {
@@ -108,10 +116,12 @@ export default function CapLinhKienPage() {
     setPage(1)
   }
 
-  const activeFilterCount = Object.values(filters).filter((v) => v != null && v !== '').length
+  const activeFilterCount = Object.values(filters).filter(
+    (v) => v != null && v !== '',
+  ).length
 
   async function handleExport() {
-    await exportToXlsx({
+    await exportListXlsx({
       filename: 'cap-linh-kien',
       sheetName: 'Cấp Linh Kiện',
       columns: EXPORT_COLUMNS,
@@ -146,16 +156,36 @@ export default function CapLinhKienPage() {
           >
             Thêm phiếu cấp
           </Button>
-          <Button size="sm" variant="outline" className="h-8" onClick={() => refetch()}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => refetch()}
+          >
             Tìm kiếm
           </Button>
-          <Button size="sm" variant="outline" className="h-8" onClick={() => refetch()}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => refetch()}
+          >
             Tìm chi tiết
           </Button>
-          <Button size="sm" variant="outline" className="h-8" onClick={() => void handleExport()}>
-            Xuất ra Excel
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => void handleExport()}
+          >
+            Xuất Excel
           </Button>
-          <Button size="sm" variant="outline" className="h-8" onClick={() => void handleExport()}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => void handleExport()}
+          >
             Báo cáo lợi nhuận
           </Button>
 

@@ -29,6 +29,14 @@ export interface NavItem {
   children?: NavChild[]
 }
 
+export interface NavDestination {
+  id: string
+  label: string
+  path: string
+  icon: LucideIcon
+  keywords: string[]
+}
+
 /**
  * Frequency-ranked flat nav (C6/C8). Paths come from ROUTES — never hardcode.
  * `children` power sub-nav tab strips; the sidebar itself stays flat (top-level
@@ -79,7 +87,10 @@ export const NAV_ITEMS: NavItem[] = [
       { label: 'Tồn kho', path: ROUTES.inventoryStockView },
       { label: 'Tồn kho LK xác', path: ROUTES.inventoryConfirmedStock },
       { label: 'Tồn kho kỹ thuật', path: ROUTES.inventoryTechStock },
-      { label: 'Danh sách sử dụng linh kiện', path: ROUTES.inventoryPartsRecovery },
+      {
+        label: 'Danh sách sử dụng linh kiện',
+        path: ROUTES.inventoryPartsRecovery,
+      },
       { label: 'DS trả LK', path: ROUTES.inventoryPartsReturn },
       { label: 'DS trả LK xác', path: ROUTES.inventoryPartsReturnXac },
     ],
@@ -151,6 +162,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: 'Đơn vị tính', path: ROUTES.catalogUnit },
       { label: 'Nhóm sản phẩm', path: ROUTES.catalogProductCategory },
       { label: 'Lỗi sửa chữa', path: ROUTES.catalogFaultType },
+      { label: 'Ngân hàng', path: ROUTES.catalogBanks },
     ],
   },
   {
@@ -161,7 +173,6 @@ export const NAV_ITEMS: NavItem[] = [
     group: 'admin',
     keywords: ['nhan su', 'nhan vien', 'luong', 'cham cong'],
     children: [
-      { label: 'Ngân hàng', path: ROUTES.hrBanks },
       { label: 'Phòng ban', path: ROUTES.hrDepartments },
       { label: 'Chức vụ', path: ROUTES.hrPositions },
       { label: 'Phụ cấp', path: ROUTES.hrAllowances },
@@ -183,7 +194,6 @@ export const NAV_ITEMS: NavItem[] = [
     children: [
       { label: 'Chi nhánh', path: ROUTES.manageBranches },
       { label: 'Người dùng', path: ROUTES.manageUsers },
-      { label: 'Hóa đơn', path: ROUTES.manageInvoices },
     ],
   },
   {
@@ -203,3 +213,20 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const PRIMARY_NAV = NAV_ITEMS.filter((n) => n.group === 'primary')
 export const ADMIN_NAV = NAV_ITEMS.filter((n) => n.group === 'admin')
+
+export const NAV_DESTINATIONS: NavDestination[] = NAV_ITEMS.flatMap((item) => [
+  {
+    id: item.id,
+    label: item.label,
+    path: item.path,
+    icon: item.icon,
+    keywords: item.keywords ?? [],
+  },
+  ...(item.children ?? []).map((child) => ({
+    id: `${item.id}:${child.path}`,
+    label: `Mở ${child.label}`,
+    path: child.path,
+    icon: item.icon,
+    keywords: [item.label, child.label, ...(item.keywords ?? [])],
+  })),
+])

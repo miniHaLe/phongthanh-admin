@@ -5,115 +5,134 @@ Updated: 2026-07-15
 ## Overview
 
 Phong Thành Admin is a React 18 + Vite + TypeScript + Tailwind/shadcn admin app
-with a NestJS + Postgres + Drizzle API under `api/`. It is currently hybrid:
-auth and 18 release resources use the real API, while most repair, warehouse,
-finance, HR, permission-editing, and reporting workflows remain mock-backed.
+with a NestJS + Postgres + Drizzle API under `api/`. JWT auth and 20 release
+resources use the real API. Customer/dealer creation and catalog-dependent
+lookups persist through shared adapters and invalidate both CRUD and lookup
+caches. Repair tickets and most operational domains remain deterministic client
+mock data.
 
-The production release allowlist is:
+Production topology is GitHub Pages frontend plus a MacBook-hosted API/Postgres
+exposed through ngrok. Pages deploys only after its selected API URL passes
+`/health/ready` unless an explicit emergency override is used.
 
-```text
-khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao
-```
+## Frontend Contracts
 
-## Frontend
+- Shell and navigation: `src/components/shell/`, `src/config/nav-config.tsx`,
+  and `src/routes/` provide a frequency-ranked flat sidebar, module tab strips,
+  mobile drawer, command palette, route error boundary, and protected layout.
+  Danh mục has 15 children. Removed News screens stay compatible through a
+  `/tin-tuc/*` redirect to `/thong-bao`.
+- Shared UI: `src/components/shared/` owns page headers, status components,
+  filters, dirty-close confirmation, empty/stat states, server autocomplete,
+  and the reusable data-table system. Tables support pagination, stable visible
+  row numbering, density/column preferences, mobile cards, bounded horizontal
+  scroll, export, and print contracts.
+- Branch scope: `src/api/jwt-claims.ts`, `src/store/app-store.ts`,
+  `src/components/shared/branch-switcher.tsx`, and `src/routes/RequireAuth.tsx`
+  expose only authorized branches. A persisted unauthorized branch is
+  reconciled to the safe `all` selection, which still means the JWT-authorized
+  union at the API.
+- Repair: list, KT, and detail views use
+  `src/features/repair-shared/update-status-modal.tsx`. One mock mutation updates
+  the ticket and invalidates list, KT, detail, dashboard summary, recent-ticket,
+  and status-distribution queries. Dashboard metrics therefore follow status
+  changes without reload.
+- Customer: `src/features/customer/` shares one create/edit dialog contract
+  across customer and dealer flows. Official province/commune lookup, duplicate
+  commune handling, bank/tax/account fields, parent dealer, explicit address
+  clearing, and legacy address preservation align with the API.
+- Notifications: the bell and `/thong-bao` share one seen-id store. Item/row
+  activation opens repair detail. The former news badge/pages are removed;
+  legacy news URLs redirect to notifications.
+- Operational layouts: repair, repair-KT, finance, warehouse, stock-out, HR,
+  permissions, and reports reuse shared filter/table primitives while retaining
+  their route-specific columns, actions, and mock domain behavior.
 
-- Shell: `src/components/shell/` owns sidebar, drawer, topbar, footer, command
-  palette, branch map modal, and protected route layout.
-- Shared UI: `src/components/ui/` contains shadcn/Radix primitives with
-  mobile-safe defaults and desktop density via responsive classes.
-- Tables/workflows: `src/components/shared/data-table/` keeps the table frame as
-  the horizontal-scroll owner and supports an opt-in `content-safe` auto layout.
-  Explicit column sizes become minimums; protected identifiers, phone numbers,
-  serials, dates, quantities, and currency expand the inner table instead of
-  wrapping or clipping, while descriptive prose uses an explicit two-line clamp.
-- Composite tables: repair, repair-KT, Thu/Chi, and five warehouse routes render
-  legacy fields in shared two-column label/value groups within a 1560px default
-  composition. Hidden `sort-only` columns retain field-level sort IDs, and each
-  visible group exposes accessible sort choices without consuming table width.
-- Table preferences: composite group visibility and density remain keyed by
-  stable table IDs. The persisted Zustand migration translates legacy
-  `repair-list` visibility keys to group keys, preserves density, and removes
-  replaced IDs from dormant column-order state.
-- CRUD and repair workflows: `src/components/crud/` and
-  `src/features/repair-list/` preserve existing selection, pagination, filters,
-  exports, actions, dialogs, and the repair mobile-card path.
-- API selection: `src/api/api-for.ts` chooses the HTTP or mock implementation per
-  resource. `src/hooks/use-lookup.ts` loads all lookup pages, caches rows and ID
-  maps with TanStack Query, and shares invalidation with CRUD/custom create paths.
-  Generic CRUD fields and filters can also load options asynchronously.
-- Sync behavior: customer, product, and quick-create mutations now use their
-  selected API implementation instead of writing real-resource mock arrays.
-  Real customer persistence and newly created warehouse dropdown visibility were
-  verified against a throwaway Postgres database in a live browser session.
-- Dashboard: `src/pages/DashboardPage.tsx` caps and composes large-screen
-  content with dashboard-local grid/height rules instead of global zoom.
+## API Contracts
 
-## Backend
+- `api/src/auth/`: 15-minute access JWT, 30-day httpOnly refresh-cookie
+  rotation, reuse-family revocation, CSRF header on refresh/logout, forced first
+  password change, locked-user handling, and rate limits.
+- `api/src/crud/`: paged CRUD engine with explicit sort/filter/search allowlists,
+  escaped wildcard search, Vietnamese text collation, stable database error
+  mapping, and write-time scope checks.
+- `api/src/khach-hang/`: JWT branch union for reads, primary-branch stamping for
+  creates, unauthorized branch rejection, normalized/legacy address
+  compatibility, and bank/dealer name enrichment.
+- `api/src/{nha-san-xuat,san-pham,model,ngan-hang}/`: authenticated global CRUD.
+  Model validates both required parents and enriches parent names in batches.
+- `api/src/nguoi-dung/`: admin-guarded CRUD with bcrypt-12 password hashing,
+  exact allowlisted filters, and secret-free response projection.
+- Eleven additional catalog endpoints retain legacy IDs and nullable PATCH
+  semantics. The legacy repair-routing `phuong-xa` endpoint uses
+  `phuong_xa_legacy`, avoiding collision with official geography.
+- `api/src/dia-ly/`: public-data resource behind JWT, read-only
+  `official-2025.07.01` snapshot with 34 provinces/cities and 3,321
+  communes/wards/special zones.
+- `api/src/health/`: public `/health` liveness plus `/health/ready` Postgres
+  readiness with a three-second query timeout and `503` not-ready response.
+- `api/src/config/`: fail-loud env validation, explicit CORS methods/headers,
+  comma-separated origin normalization, and trusted-proxy/rate-limit settings.
 
-- `api/src/auth/` implements JWT access + httpOnly refresh rotation, CSRF guard
-  on cookie routes, and session family reuse detection.
-- `api/src/crud/` implements the generic CRUD engine with per-resource
-  allowlists for sort/filter/search, optional response projection/write guards,
-  audit stamping, branch scoping, and Vietnamese database error mapping.
-- `nguoi-dung` supports real list/get/create/update/delete. Writes require the
-  interim server-side `superScope` check; passwords are bcrypt-12 hashes, new
-  admin-created users can log in immediately with `mustChangePassword=false`, and
-  password material is never serialized. `nhom-quyen` is real but read-only.
-- Migration `0001_masterdata_catalogs.sql` adds 14 catalog tables. Together with
-  the existing `chi_nhanh` table, these expose 15 real catalog/branch resources.
-  Frozen JSON fixtures preserve legacy IDs; seed order and FK closure cover the
-  full dependency graph, and repeated-seed tests prove idempotent table counts.
-- Nullable PATCH inputs preserve omission as no-op and map explicit blank/null to
-  SQL `NULL` only for nullable fields. Generated non-null warehouse codes remain
-  protected from null clearing.
-- `api/test/global-setup.ts` provisions `phongthanh_test` on compose Postgres,
-  runs migrations, and seeds deterministic fixtures before Jest.
+## Data and Migrations
 
-## Voucher Codes
+- `0000_omniscient_mesmero.sql`: baseline.
+- `0001_cool_sunspot.sql`: catalogs, official geography, normalized customer
+  fields, ICU collation, and unaccent support.
+- `0002_backfill-khach-hang-address-codes.sql`: exact-signature, data-only
+  backfill for frozen seed customers with one authoritative post-merger mapping;
+  ambiguous legacy rows stay unchanged.
+- `0003_masterdata_catalogs.sql`: remaining legacy catalog tables, including
+  the isolated `phuong_xa_legacy` repair-routing catalog.
+- Seed remains idempotent, validates fixture FK closure/checksums/counts, stamps
+  branch ownership, and forces seeded users to change the bootstrap password.
+- The `0001` down script is not a safe rollback after `0002`; deployment uses
+  application-only rollback or full backup restore.
 
-New mock/module-memory voucher create paths use `PREFIX-yyyymm-N`, where the
-ordinal is independent per prefix and calendar month. Current prefixes are PSC,
-PBH, PTH, PCK, PCH, PNK, PTT, and PCC. Legacy seed codes are ignored by the new
-sequence scan and remain unchanged. Concurrency-safe server-side generation is
-deferred until the corresponding repair/warehouse/finance endpoints move to the
-real backend.
+Administrative source and checksums remain documented in
+[`vietnam-administrative-data-provenance.md`](./vietnam-administrative-data-provenance.md).
 
-## Deferred Work
+## Deployment Contract
 
-- Full RBAC matrix persistence and `PermissionGuard` enforcement; current
-  permission screens remain UI-only and `superScope` is an interim user-write seam.
-- Real HR, menu/chuc-nang, repair, warehouse-ledger, finance, and report APIs.
-- `CURRENT_USER` removal and the bigint/money JSON-string contract migration.
+- `.github/workflows/deploy-pages.yml` uses Node 24, `npm ci`, hash routing, the
+  GitHub Pages base path, and all 20 real resources.
+- `VITE_API_URL` resolves from manual `api_url` for one run or persisted
+  `vars.API_URL`. The manual input does not update the repository variable.
+- Every workflow run validates the URL. Normal runs also require public
+  `/health/ready`; `skip_health_gate=true` is emergency-only and still validates
+  the URL.
+- MacBook runtime uses Docker Postgres, host-run Nest API, two long-lived
+  API/ngrok terminals, backups outside Git, and forward-only migrations.
+  Postgres binds only to `127.0.0.1:5434`; the runbook requires the macOS
+  firewall and forbids router forwarding for the host-run API.
+
+See [`deployment.md`](./deployment.md) for first rollout, normal Git update,
+tunnel rotation, troubleshooting, and restore procedures.
 
 ## Verification
-
-Use the focused gates first, then broad gates:
 
 ```bash
 npm run type-check
 npm run lint
 npm run test
 npm run test:e2e:uiux
-env VITE_REAL_RESOURCES=khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao npm run build:prod
+env VITE_REAL_RESOURCES=khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao,ngan-hang,dia-ly npm run build:prod
 npm run test:api:with-db
 ```
 
-`test:e2e:uiux` writes screenshots to
-`plans/260711-1527-responsive-table-1080p-fit/reports/screenshots/`.
-Unit tests cover protected/descriptive cell primitives, sort-only rendering,
-composite sort headers, field preservation, and persisted repair-state
-migration. Playwright's `uiux-table-heavy.spec.ts` checks table access,
-protected-value fit, touch targets, and 1920x1080 frame fit across the viewport
-matrix; `uiux-composite-table-contracts.spec.ts` adds all-route collapsed-sidebar
-fit, synthetic overlength bounded scrolling, dark/focus, export/print, and detail
-dialog contracts.
+Final verified inventory:
 
-Root Vitest explicitly excludes `api/**`; database-backed API behavior belongs to
-API Jest. `test:api:with-db` starts only compose Postgres, avoids committed
-secrets, and runs API lint/build plus all DB suites.
+- 193 Vitest files / 664 frontend tests.
+- 13 Jest API suites / 109 tests.
+- 222 Playwright cases across 3 specs, phone through 4K.
 
-`build:prod` requires all 18 release resources. The guard rejects
-`ALLOW_MOCK_BUILD=1` when invoked with `--prod` or `NODE_ENV=production`; the
-override remains available only for non-production previews. Final 2026-07-15
-verification passed 507 frontend tests, 74 API tests, the full production build,
-the missing-resource negative probe, and the production-override negative probe.
+Playwright covers runtime route matrices, legacy news redirect, mobile controls,
+repair actions, large-screen dashboard composition, table-heavy horizontal
+access, composite controls, date filters, export/print, and detail dialogs.
+
+## References
+
+- [Project README](../README.md)
+- [API README](../api/README.md)
+- [Deployment runbook](./deployment.md)
+- [Architecture](../ARCHITECTURE.md)

@@ -34,8 +34,9 @@ import { MENU_ROWS } from '@/mock/masterdata/menu.mock'
 import type { Menu } from '@/types/masterdata-types'
 import { usePermissionStore } from '@/store/permission-store'
 import { FunctionPermissionMatrix } from '@/features/permissions/function-permission-matrix'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const UNSET = '__all__'
 
 /** Fresh per-mount draft id so an unsaved create-mode matrix selection
@@ -171,7 +172,8 @@ export default function MenuPage() {
       {
         id: 'stt',
         header: '##',
-        cell: ({ row }) => (params.page - 1) * params.pageSize + row.index + 1,
+        cell: ({ row, table }) =>
+          getVisibleRowNumber(table, row, (params.page - 1) * params.pageSize),
         enableSorting: false,
         size: 48,
       },
@@ -291,7 +293,10 @@ export default function MenuPage() {
             getRowId={(row) => row.id}
             emptyMessage="Chưa có Menu"
             manualPagination
-            pagination={{ pageIndex: params.page - 1, pageSize: params.pageSize }}
+            pagination={{
+              pageIndex: params.page - 1,
+              pageSize: params.pageSize,
+            }}
             pageCount={
               result ? Math.ceil(result.total / result.pageSize) : undefined
             }
@@ -329,10 +334,7 @@ export default function MenuPage() {
                   setForm((f) => ({ ...f, parentId: v === UNSET ? '' : v }))
                 }
               >
-                <SelectTrigger
-                  id="menu-form-parent"
-                  aria-label="Danh mục cha"
-                >
+                <SelectTrigger id="menu-form-parent" aria-label="Danh mục cha">
                   <SelectValue placeholder="Không có (mục gốc)" />
                 </SelectTrigger>
                 <SelectContent>

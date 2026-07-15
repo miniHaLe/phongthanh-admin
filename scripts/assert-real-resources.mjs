@@ -31,6 +31,8 @@ const V1_RELEASE_RESOURCES = [
   'hang-hoa',
   'model',
   'phi-giao',
+  'ngan-hang',
+  'dia-ly',
 ]
 
 const isProd = process.env.NODE_ENV === 'production' || process.argv.includes('--prod')

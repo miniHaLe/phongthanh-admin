@@ -24,11 +24,11 @@ export const nguoiDungResourceConfig: CrudResourceConfig = {
     nhomQuyenId: { column: nguoiDung.nhomQuyenId },
     locked: {
       column: nguoiDung.locked,
-      parse: (raw) => raw === 'true' || raw === true,
+      valueType: 'boolean',
     },
     active: {
       column: nguoiDung.active,
-      parse: (raw) => raw === 'true' || raw === true,
+      valueType: 'boolean',
     },
   },
   searchColumns: [

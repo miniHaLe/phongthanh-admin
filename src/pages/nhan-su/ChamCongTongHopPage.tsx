@@ -41,6 +41,7 @@ import { KY, KY_DEFAULT } from '@/mock/seed/ky'
 import { LOAI_CHAM } from '@/mock/seed/cham-cong'
 import { CHAM_CONG_RECORD_ROWS } from '@/domains/hr/cham-cong.mock'
 import type { ChamCongRecord } from '@/domains/hr/types'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 import { useLookup } from '@/hooks/use-lookup'
 import type { ChiNhanh } from '@/types/masterdata-types'
 
@@ -145,7 +146,12 @@ export default function ChamCongTongHopPage() {
 
   const columns = useMemo<ColumnDef<TongHopRow, unknown>[]>(
     () => [
-      { id: 'stt', header: 'STT', cell: ({ row }) => row.index + 1, size: 50 },
+      {
+        id: 'stt',
+        header: 'STT',
+        cell: ({ row, table }) => getVisibleRowNumber(table, row),
+        size: 50,
+      },
       { accessorKey: 'maNV', header: 'Mã NV', size: 90 },
       { accessorKey: 'hoTen', header: 'Tên NV', size: 180 },
       { accessorKey: 'chiNhanh', header: 'Chi nhánh', size: 150 },

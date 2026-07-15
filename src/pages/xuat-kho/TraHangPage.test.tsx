@@ -17,10 +17,10 @@ describe('TraHangPage', () => {
     })
   })
 
-  it('renders Tìm kiếm/Xuất ra Excel/Xuất Excel Chi Tiết', () => {
+  it('renders Tìm kiếm/Xuất Excel/Xuất Excel Chi Tiết', () => {
     renderWithProviders(<TraHangPage />)
     expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Xuất ra Excel' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Xuất Excel' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Xuất Excel Chi Tiết' })).toBeInTheDocument()
   })
 

@@ -78,10 +78,11 @@ export const ROUTES = {
   catalogUnit: '/danh-muc/don-vi-tinh',
   catalogProductCategory: '/danh-muc/nhom-san-pham',
   catalogFaultType: '/danh-muc/loi-sua-chua',
+  catalogBanks: '/danh-muc/ngan-hang',
 
   // HR (Nhân Sự)
   hr: '/nhan-su',
-  hrBanks: '/nhan-su/ngan-hang',
+  hrBanks: '/nhan-su/ngan-hang', // redirects → catalogBanks
   hrDepartments: '/nhan-su/phong-ban',
   hrPositions: '/nhan-su/chuc-vu',
   hrAllowances: '/nhan-su/phu-cap',

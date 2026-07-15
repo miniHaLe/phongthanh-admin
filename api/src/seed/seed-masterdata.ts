@@ -57,20 +57,6 @@ export async function seedMasterdataTables(
       .onConflictDoNothing({ target: schema.nhomHangHoa.id })
   }
 
-  if (fixtures.nhaSanXuat.length > 0) {
-    await db
-      .insert(schema.nhaSanXuat)
-      .values(
-        fixtures.nhaSanXuat.map((row) => ({
-          ...baseValues(row),
-          maNSX: row.maNSX,
-          tenNSX: row.tenNSX,
-          ghiChu: row.ghiChu,
-        })),
-      )
-      .onConflictDoNothing({ target: schema.nhaSanXuat.id })
-  }
-
   if (fixtures.thoiHan.length > 0) {
     await db
       .insert(schema.thoiHan)
@@ -101,11 +87,11 @@ export async function seedMasterdataTables(
       .onConflictDoNothing({ target: schema.nhaKho.id })
   }
 
-  if (fixtures.phuongXa.length > 0) {
+  if (fixtures.legacyPhuongXa.length > 0) {
     await db
-      .insert(schema.phuongXa)
+      .insert(schema.phuongXaLegacy)
       .values(
-        fixtures.phuongXa.map((row) => ({
+        fixtures.legacyPhuongXa.map((row) => ({
           ...baseValues(row),
           tenPhuongXa: row.tenPhuongXa,
           tinhId: row.tinhId,
@@ -115,7 +101,7 @@ export async function seedMasterdataTables(
           tuyenId: row.tuyenId,
         })),
       )
-      .onConflictDoNothing({ target: schema.phuongXa.id })
+      .onConflictDoNothing({ target: schema.phuongXaLegacy.id })
   }
 
   if (fixtures.khuVuc.length > 0) {
@@ -165,21 +151,6 @@ export async function seedMasterdataTables(
       .onConflictDoNothing({ target: schema.nganChua.id })
   }
 
-  if (fixtures.sanPham.length > 0) {
-    await db
-      .insert(schema.sanPham)
-      .values(
-        fixtures.sanPham.map((row) => ({
-          ...baseValues(row),
-          maSP: row.maSP,
-          tenSP: row.tenSP,
-          nhomSanPhamId: row.nhomSanPhamId,
-          tienKhoan: row.tienKhoan,
-        })),
-      )
-      .onConflictDoNothing({ target: schema.sanPham.id })
-  }
-
   if (fixtures.phiGiao.length > 0) {
     await db
       .insert(schema.phiGiao)
@@ -194,23 +165,6 @@ export async function seedMasterdataTables(
         })),
       )
       .onConflictDoNothing({ target: schema.phiGiao.id })
-  }
-
-  if (fixtures.model.length > 0) {
-    await db
-      .insert(schema.model)
-      .values(
-        fixtures.model.map((row) => ({
-          ...baseValues(row),
-          tenModel: row.tenModel,
-          maModel: row.maModel,
-          nhaSanXuatId: row.nhaSanXuatId,
-          sanPhamId: row.sanPhamId,
-          nguoiTao: row.nguoiTao,
-          ghiChu: row.ghiChu,
-        })),
-      )
-      .onConflictDoNothing({ target: schema.model.id })
   }
 
   if (fixtures.hangHoa.length > 0) {
@@ -249,16 +203,13 @@ export async function seedMasterdataTables(
     donViTinh: fixtures.donViTinh.length,
     nhomSanPham: fixtures.nhomSanPham.length,
     nhomHangHoa: fixtures.nhomHangHoa.length,
-    nhaSanXuat: fixtures.nhaSanXuat.length,
     thoiHan: fixtures.thoiHan.length,
     nhaKho: fixtures.nhaKho.length,
-    phuongXa: fixtures.phuongXa.length,
+    legacyPhuongXa: fixtures.legacyPhuongXa.length,
     khuVuc: fixtures.khuVuc.length,
     loiSuaChua: fixtures.loiSuaChua.length,
     nganChua: fixtures.nganChua.length,
-    sanPham: fixtures.sanPham.length,
     phiGiao: fixtures.phiGiao.length,
-    model: fixtures.model.length,
     hangHoa: fixtures.hangHoa.length,
   }
 }

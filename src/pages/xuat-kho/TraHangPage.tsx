@@ -28,7 +28,7 @@ import {
 import { TraHangFilters, type TraHangFilterValues } from '@/features/stockout/tra-hang-filters'
 import { TraHangBatchToolbar } from '@/features/stockout/tra-hang-batch-toolbar'
 
-const PAGE_SIZE_OPTIONS = [20, 50, 100]
+import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 function applyClientFilters(rows: ReturnSlip[], f: TraHangFilterValues): ReturnSlip[] {

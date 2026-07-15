@@ -4,6 +4,7 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
+  type Cell,
   type ColumnDef,
   type SortingState,
   type PaginationState,
@@ -30,6 +31,7 @@ import {
   ChevronRight,
   CircleAlert,
   Inbox,
+  LoaderCircle,
 } from 'lucide-react'
 import { useTableState } from './use-table-state'
 import { Button } from '@/components/ui/button'
@@ -43,6 +45,7 @@ export type ColumnPresentation = 'visible' | 'sort-only'
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
     sticky?: boolean
+    initiallyHidden?: boolean
     presentation?: ColumnPresentation
     compositeSortOptions?: readonly CompositeSortOption[]
   }
@@ -56,6 +59,8 @@ export interface DataTableProps<TData> {
   columns: ColumnDef<TData, unknown>[]
   data: TData[]
   isLoading?: boolean
+  /** Background request state; keeps current rows visible while refreshing. */
+  isFetching?: boolean
   isError?: boolean
   onRetry?: () => void
   emptyMessage?: string
@@ -65,6 +70,8 @@ export interface DataTableProps<TData> {
   onSortingChange?: OnChangeFn<SortingState>
   /** Manual pagination flag (server-style). Rendering handled by parent via toolbar/pagination. */
   manualPagination?: boolean
+  /** Preserve server-provided ordering instead of sorting the current page again. */
+  manualSorting?: boolean
   pagination?: PaginationState
   onPaginationChange?: OnChangeFn<PaginationState>
   pageCount?: number
@@ -108,6 +115,16 @@ function flattenColumnDefs<TData>(columns: ColumnDef<TData, unknown>[]) {
   })
 }
 
+function NormalizedCellValue<TData>({ cell }: { cell: Cell<TData, unknown> }) {
+  const renderer = cell.column.columnDef.cell
+  const context = cell.getContext()
+  const value =
+    typeof renderer === 'function'
+      ? renderer(context)
+      : flexRender(renderer, context)
+  return value === '' || value === null || value === undefined ? '—' : value
+}
+
 /**
  * The ONE generic table (C3). TanStack headless + shadcn Table primitives.
  * Handles loading / empty / error states, sortable headers, sticky header,
@@ -119,6 +136,7 @@ export function DataTable<TData>({
   columns,
   data,
   isLoading,
+  isFetching,
   isError,
   onRetry,
   emptyMessage = 'Không có dữ liệu',
@@ -126,6 +144,7 @@ export function DataTable<TData>({
   sorting,
   onSortingChange,
   manualPagination,
+  manualSorting,
   pagination,
   onPaginationChange,
   pageCount,
@@ -159,12 +178,21 @@ export function DataTable<TData>({
       }),
     [flatColumns],
   )
+  const initiallyHiddenColumnIds = useMemo(
+    () =>
+      flatColumns.flatMap((column) => {
+        const id = getColumnDefId(column)
+        return column.meta?.initiallyHidden && id ? [id] : []
+      }),
+    [flatColumns],
+  )
   const columnVisibility: VisibilityState = useMemo(
     () => ({
+      ...Object.fromEntries(initiallyHiddenColumnIds.map((id) => [id, false])),
       ...(persisted?.columnVisibility ?? {}),
       ...Object.fromEntries(sortOnlyColumnIds.map((id) => [id, false])),
     }),
-    [persisted?.columnVisibility, sortOnlyColumnIds],
+    [initiallyHiddenColumnIds, persisted?.columnVisibility, sortOnlyColumnIds],
   )
 
   const table = useReactTable({
@@ -179,6 +207,7 @@ export function DataTable<TData>({
     onSortingChange,
     onPaginationChange,
     manualPagination,
+    manualSorting,
     pageCount,
     enableRowSelection,
     onRowSelectionChange,
@@ -193,6 +222,7 @@ export function DataTable<TData>({
     tableMinWidth == null ? undefined : (tableLayout ?? 'fixed')
   const usesFitLayout = resolvedTableLayout === 'fixed'
   const usesContentSafeLayout = resolvedTableLayout === 'content-safe'
+  const isBackgroundFetching = !!isFetching && !isLoading
   const visibleColCount = Math.max(1, table.getVisibleLeafColumns().length)
   const explicitColumnSizes = useMemo(
     () =>
@@ -322,11 +352,29 @@ export function DataTable<TData>({
             </Button>
           </div>
         )}
+        {isBackgroundFetching && (
+          <div
+            role="status"
+            aria-live="polite"
+            data-table-fetch-indicator
+            className={cn(
+              'pointer-events-none absolute right-3 z-20 inline-flex items-center gap-1.5 rounded-md border bg-background/95 px-2.5 py-1.5 text-xs font-medium text-foreground shadow-sm backdrop-blur',
+              scrollState.hasOverflow ? 'top-12' : 'top-3',
+            )}
+          >
+            <LoaderCircle
+              className="size-3.5 animate-spin"
+              aria-hidden="true"
+            />
+            Đang cập nhật…
+          </div>
+        )}
         <div
           ref={scrollFrameRef}
           data-table-scroll-frame
           role="region"
           aria-label={scrollLabel}
+          aria-busy={isLoading || isFetching || undefined}
           tabIndex={0}
           className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           onScroll={updateScrollState}
@@ -336,7 +384,8 @@ export function DataTable<TData>({
             data-table-fit-layout={resolvedTableLayout != null || undefined}
             data-table-layout={resolvedTableLayout}
             className={cn(
-              'w-full caption-bottom text-sm',
+              'w-full caption-bottom text-sm transition-opacity',
+              isBackgroundFetching && 'opacity-60',
               usesFitLayout && 'table-fixed',
               usesContentSafeLayout && 'table-auto',
               tableClassName,
@@ -488,10 +537,7 @@ export function DataTable<TData>({
                         )}
                         style={getColumnSizeStyle(cell.column.id)}
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+                        <NormalizedCellValue cell={cell} />
                       </TableCell>
                     ))}
                   </TableRow>
@@ -502,14 +548,5 @@ export function DataTable<TData>({
         </div>
       </div>
     </div>
-  )
-}
-
-/** Small helper: a sortable-header retry-less error retry button (exported for reuse). */
-export function TableRetryButton({ onRetry }: { onRetry: () => void }) {
-  return (
-    <Button variant="outline" size="sm" onClick={onRetry}>
-      Thử lại
-    </Button>
   )
 }

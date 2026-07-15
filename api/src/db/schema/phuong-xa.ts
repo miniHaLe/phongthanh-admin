@@ -7,7 +7,8 @@ import {
 } from 'drizzle-orm/pg-core'
 import { quan, tinh } from './dia-ly'
 
-export const phuongXa = pgTable('phuong_xa', {
+// Legacy repair-routing catalog. Official 2025 geography owns `phuong_xa`.
+export const phuongXaLegacy = pgTable('phuong_xa_legacy', {
   id: text('id').primaryKey(),
   tenPhuongXa: text('ten_phuong_xa').notNull(),
   tinhId: text('tinh_id')

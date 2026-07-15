@@ -27,17 +27,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from '@/components/ui/radio-group'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { FilterPanel } from '@/components/shared'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
 import { thuChiApi, THU_CHI_ROWS } from '@/mock/finance-mock'
 import { formatVND, formatDateTime } from '@/lib/format'
-import { exportToXlsx } from '@/lib/export-xlsx'
+import { exportListXlsx } from '@/lib/export-list-xlsx'
 import { openPrintWindow } from '@/components/print/print-window'
 import { PrintLayout } from '@/components/print/print-layout'
 import { LapPhieuThuModal } from '@/features/finance/lap-phieu-thu-modal'
@@ -55,7 +52,7 @@ import {
 } from '@/config/finance-tables/thu-chi.config'
 import type { ThuChi } from '@/types/finance-types'
 
-const PAGE_SIZE_OPTIONS = [20, 30, 50, 100, 150, 200, 300]
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 const TABLE_ID = 'thu-chi'
 
@@ -82,8 +79,10 @@ function applyFilters(rows: ThuChi[], f: ThuChiFilters): ThuChi[] {
   let out = rows
   if (f.branchId) out = out.filter((r) => r.branchId === f.branchId)
   if (f.tinhTrang) out = out.filter((r) => String(r.tinhTrang) === f.tinhTrang)
-  if (f.hinhThucId) out = out.filter((r) => String(r.hinhThucId) === f.hinhThucId)
-  if (f.loaiThuChi) out = out.filter((r) => String(r.loaiThuChi) === f.loaiThuChi)
+  if (f.hinhThucId)
+    out = out.filter((r) => String(r.hinhThucId) === f.hinhThucId)
+  if (f.loaiThuChi)
+    out = out.filter((r) => String(r.loaiThuChi) === f.loaiThuChi)
   if (f.soChungTu) {
     const q = f.soChungTu.toLowerCase()
     out = out.filter((r) => r.soChungTu.toLowerCase().includes(q))
@@ -222,13 +221,18 @@ export default function ThuChiPage() {
   ).length
 
   async function handleExport(scOnly: boolean) {
-    const rows = scOnly ? filteredRows.filter((r) => r.loaiThuChi === 3) : filteredRows
-    await exportToXlsx({
+    const rows = scOnly
+      ? filteredRows.filter((r) => r.loaiThuChi === 3)
+      : filteredRows
+    await exportListXlsx({
       filename: scOnly ? 'thu-chi-thu-sc' : 'thu-chi',
       sheetName: 'Chứng Từ',
       columns: [
         { header: 'Số chứng từ', accessor: (r: ThuChi) => r.soChungTu },
-        { header: 'Loại phiếu', accessor: (r: ThuChi) => loaiThuChiLabel(r.loaiThuChi) },
+        {
+          header: 'Loại phiếu',
+          accessor: (r: ThuChi) => loaiThuChiLabel(r.loaiThuChi),
+        },
         { header: 'Tên khách hàng', accessor: (r: ThuChi) => r.tenKhachHang },
         { header: 'Số tiền', accessor: (r: ThuChi) => r.soTien },
         { header: 'Ngày lập', accessor: (r: ThuChi) => r.ngayLap },
@@ -245,12 +249,20 @@ export default function ThuChiPage() {
     <div className="space-y-0">
       <PageHeader
         title="Chứng Từ"
-        breadcrumbs={[{ label: 'Tài Chính', href: ROUTES.finance }, { label: 'Chứng Từ' }]}
+        breadcrumbs={[
+          { label: 'Tài Chính', href: ROUTES.finance },
+          { label: 'Chứng Từ' },
+        ]}
       >
         <Button size="sm" className="h-8" onClick={() => setPhieuThuOpen(true)}>
           Lập Phiếu Thu
         </Button>
-        <Button size="sm" variant="outline" className="h-8" onClick={() => setPhieuChiOpen(true)}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          onClick={() => setPhieuChiOpen(true)}
+        >
           Lập Phiếu Chi
         </Button>
       </PageHeader>
@@ -279,10 +291,15 @@ export default function ThuChiPage() {
           />
         </div>
 
-        <FilterPanel filterCount={activeFilterCount} onClear={() => setFilters(DEFAULT_FILTERS)}>
+        <FilterPanel
+          filterCount={activeFilterCount}
+          onClear={() => setFilters(DEFAULT_FILTERS)}
+        >
           <Select
             value={filters.branchId ?? '__all__'}
-            onValueChange={(v) => handleFilterChange({ branchId: v === '__all__' ? undefined : v })}
+            onValueChange={(v) =>
+              handleFilterChange({ branchId: v === '__all__' ? undefined : v })
+            }
           >
             <SelectTrigger aria-label="Chi nhánh">
               <SelectValue placeholder="Chi nhánh" />
@@ -299,7 +316,9 @@ export default function ThuChiPage() {
 
           <Select
             value={filters.tinhTrang ?? '__all__'}
-            onValueChange={(v) => handleFilterChange({ tinhTrang: v === '__all__' ? undefined : v })}
+            onValueChange={(v) =>
+              handleFilterChange({ tinhTrang: v === '__all__' ? undefined : v })
+            }
           >
             <SelectTrigger aria-label="Tình trạng">
               <SelectValue placeholder="Tình trạng" />
@@ -316,7 +335,11 @@ export default function ThuChiPage() {
 
           <Select
             value={filters.hinhThucId ?? '__all__'}
-            onValueChange={(v) => handleFilterChange({ hinhThucId: v === '__all__' ? undefined : v })}
+            onValueChange={(v) =>
+              handleFilterChange({
+                hinhThucId: v === '__all__' ? undefined : v,
+              })
+            }
           >
             <SelectTrigger aria-label="Hình thức thu">
               <SelectValue placeholder="Hình thức thu" />
@@ -333,7 +356,11 @@ export default function ThuChiPage() {
 
           <Select
             value={filters.loaiThuChi ?? '__all__'}
-            onValueChange={(v) => handleFilterChange({ loaiThuChi: v === '__all__' ? undefined : v })}
+            onValueChange={(v) =>
+              handleFilterChange({
+                loaiThuChi: v === '__all__' ? undefined : v,
+              })
+            }
           >
             <SelectTrigger aria-label="Loại thu chi">
               <SelectValue placeholder="Loại thu chi" />
@@ -351,32 +378,43 @@ export default function ThuChiPage() {
           <Input
             placeholder="Số chứng từ"
             value={filters.soChungTu ?? ''}
-            onChange={(e) => handleFilterChange({ soChungTu: e.target.value || undefined })}
+            onChange={(e) =>
+              handleFilterChange({ soChungTu: e.target.value || undefined })
+            }
           />
 
           <Input
             placeholder="Tên khách hàng/ điện thoại"
             value={filters.tenKhachHang ?? ''}
-            onChange={(e) => handleFilterChange({ tenKhachHang: e.target.value || undefined })}
+            onChange={(e) =>
+              handleFilterChange({ tenKhachHang: e.target.value || undefined })
+            }
           />
 
           <Input
             placeholder="Nội dung"
             value={filters.noiDung ?? ''}
-            onChange={(e) => handleFilterChange({ noiDung: e.target.value || undefined })}
+            onChange={(e) =>
+              handleFilterChange({ noiDung: e.target.value || undefined })
+            }
           />
 
           <div className="flex items-center gap-3">
             <Label className="text-xs text-muted-foreground">Loại ngày:</Label>
             <RadioGroup
               value={filters.loaiNgay}
-              onValueChange={(v) => handleFilterChange({ loaiNgay: v as LoaiNgay })}
+              onValueChange={(v) =>
+                handleFilterChange({ loaiNgay: v as LoaiNgay })
+              }
               className="flex items-center gap-3"
             >
               {LOAI_NGAY_OPTIONS.map((o) => (
                 <div key={o.value} className="flex items-center gap-1.5">
                   <RadioGroupItem value={o.value} id={`loai-ngay-${o.value}`} />
-                  <Label htmlFor={`loai-ngay-${o.value}`} className="text-xs font-normal">
+                  <Label
+                    htmlFor={`loai-ngay-${o.value}`}
+                    className="text-xs font-normal"
+                  >
                     {o.label}
                   </Label>
                 </div>
@@ -388,14 +426,20 @@ export default function ThuChiPage() {
             <Input
               type="date"
               value={filters.dateFrom ?? ''}
-              onChange={(e) => handleFilterChange({ dateFrom: e.target.value || undefined })}
+              onChange={(e) =>
+                handleFilterChange({ dateFrom: e.target.value || undefined })
+              }
               aria-label="Từ ngày"
             />
-            <span className="hidden text-center text-muted-foreground sm:block">–</span>
+            <span className="hidden text-center text-muted-foreground sm:block">
+              –
+            </span>
             <Input
               type="date"
               value={filters.dateTo ?? ''}
-              onChange={(e) => handleFilterChange({ dateTo: e.target.value || undefined })}
+              onChange={(e) =>
+                handleFilterChange({ dateTo: e.target.value || undefined })
+              }
               aria-label="Đến ngày"
             />
           </div>
@@ -442,8 +486,13 @@ export default function ThuChiPage() {
             <DataTableToolbar
               right={
                 <div className={isFetching ? 'opacity-60' : ''}>
-                  <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => void handleExport(false)}>
-                    Xuất ra Excel
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 gap-1"
+                    onClick={() => void handleExport(false)}
+                  >
+                    Xuất Excel
                   </Button>
                   <Button
                     size="sm"
@@ -451,7 +500,7 @@ export default function ThuChiPage() {
                     className="ml-2 h-8 gap-1"
                     onClick={() => void handleExport(true)}
                   >
-                    Xuất ra Excel Thu SC
+                    Xuất Excel Thu SC
                   </Button>
                 </div>
               }

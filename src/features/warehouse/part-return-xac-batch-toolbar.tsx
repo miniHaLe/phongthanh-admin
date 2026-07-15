@@ -1,14 +1,17 @@
 /**
  * DSTraLKXac batch toolbar — bulk Trả hàng (opens the "Trả linh kiện" modal
- * collecting a Mã vận đơn), In BB Kỹ Thuật, In Phiếu Trả Hãng, Xuất ra Excel.
+ * collecting a Mã vận đơn), In BB Kỹ Thuật, In Phiếu Trả Hãng, Xuất Excel.
  * Each print/action alerts "Vui lòng chọn phiếu để …" when nothing is checked.
  */
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { notify } from '@/components/shared'
-import { exportToXlsx } from '@/lib/export-xlsx'
+import { exportListXlsx } from '@/lib/export-list-xlsx'
 import type { PartReturnXac } from '@/domains/warehouse/types'
-import { printBienBanKyThuat, printPhieuTraHang } from './prints/warehouse-prints'
+import {
+  printBienBanKyThuat,
+  printPhieuTraHang,
+} from './prints/warehouse-prints'
 import { TraHangModal } from './tra-hang-modal'
 
 interface PartReturnXacBatchToolbarProps {
@@ -66,7 +69,9 @@ export function PartReturnXacBatchToolbar({
         size="sm"
         variant="outline"
         className="h-8"
-        onClick={() => requireSelection('in') && void printBienBanKyThuat(selected)}
+        onClick={() =>
+          requireSelection('in') && void printBienBanKyThuat(selected)
+        }
       >
         In BB Kỹ Thuật
       </Button>
@@ -74,7 +79,9 @@ export function PartReturnXacBatchToolbar({
         size="sm"
         variant="outline"
         className="h-8"
-        onClick={() => requireSelection('in') && void printPhieuTraHang(selected)}
+        onClick={() =>
+          requireSelection('in') && void printPhieuTraHang(selected)
+        }
       >
         In Phiếu Trả Hãng
       </Button>
@@ -89,7 +96,7 @@ export function PartReturnXacBatchToolbar({
         variant="outline"
         className="h-8"
         onClick={() =>
-          void exportToXlsx({
+          void exportListXlsx({
             filename: 'ds-tra-lk-xac',
             sheetName: 'Trả linh kiện xác',
             columns: EXPORT_COLUMNS,
@@ -97,11 +104,15 @@ export function PartReturnXacBatchToolbar({
           })
         }
       >
-        Xuất ra Excel
+        Xuất Excel
       </Button>
 
       {traHangOpen && (
-        <TraHangModal open={traHangOpen} onOpenChange={setTraHangOpen} ids={ids} />
+        <TraHangModal
+          open={traHangOpen}
+          onOpenChange={setTraHangOpen}
+          ids={ids}
+        />
       )}
     </div>
   )

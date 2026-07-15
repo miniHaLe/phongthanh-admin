@@ -28,14 +28,17 @@ export interface SeedResult {
   nhaSanXuat: number
   thoiHan: number
   nhaKho: number
-  phuongXa: number
+  legacyPhuongXa: number
   khuVuc: number
   loiSuaChua: number
   nganChua: number
   sanPham: number
-  phiGiao: number
   model: number
   hangHoa: number
+  phiGiao: number
+  nganHang: number
+  tinhThanh: number
+  phuongXa: number
 }
 
 export async function seedDatabase(
@@ -102,6 +105,86 @@ export async function seedDatabase(
       .onConflictDoNothing({ target: schema.xa.id })
   }
 
+  if (fixtures.tinhThanh.length > 0) {
+    await db
+      .insert(schema.tinhThanh)
+      .values(
+        fixtures.tinhThanh.map((row) => ({
+          ...row,
+          effectiveFrom: fixtures.diaLyMetadata.effectiveFrom,
+          snapshotVersion: fixtures.diaLyMetadata.version,
+          sourceDocument: fixtures.diaLyMetadata.sourceDocument,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.tinhThanh.code })
+  }
+
+  if (fixtures.phuongXa.length > 0) {
+    await db
+      .insert(schema.phuongXa)
+      .values(
+        fixtures.phuongXa.map((row) => ({
+          ...row,
+          effectiveFrom: fixtures.diaLyMetadata.effectiveFrom,
+          snapshotVersion: fixtures.diaLyMetadata.version,
+          sourceDocument: fixtures.diaLyMetadata.sourceDocument,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.phuongXa.code })
+  }
+
+  if (fixtures.nhaSanXuat.length > 0) {
+    await db
+      .insert(schema.nhaSanXuat)
+      .values(
+        fixtures.nhaSanXuat.map((row) => ({
+          ...row,
+          createdAt: new Date(row.createdAt),
+          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.nhaSanXuat.id })
+  }
+
+  if (fixtures.sanPham.length > 0) {
+    await db
+      .insert(schema.sanPham)
+      .values(
+        fixtures.sanPham.map((row) => ({
+          ...row,
+          createdAt: new Date(row.createdAt),
+          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.sanPham.id })
+  }
+
+  if (fixtures.nganHang.length > 0) {
+    await db
+      .insert(schema.nganHang)
+      .values(
+        fixtures.nganHang.map((row) => ({
+          ...row,
+          createdAt: new Date(row.createdAt),
+          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.nganHang.id })
+  }
+
+  if (fixtures.model.length > 0) {
+    await db
+      .insert(schema.model)
+      .values(
+        fixtures.model.map((row) => ({
+          ...row,
+          createdAt: new Date(row.createdAt),
+          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
+        })),
+      )
+      .onConflictDoNothing({ target: schema.model.id })
+  }
+
   if (fixtures.loaiKhachHang.length > 0) {
     await db
       .insert(schema.loaiKhachHang)
@@ -126,8 +209,6 @@ export async function seedDatabase(
       .onConflictDoNothing({ target: schema.nhomQuyen.id })
   }
 
-  // Danh-muc FK order is encapsulated here: group-1 lookups first, then the
-  // dependent product/model/goods tables.
   const masterdataResult = await seedMasterdataTables(db, fixtures)
 
   if (fixtures.nguoiDung.length > 0) {
@@ -171,6 +252,8 @@ export async function seedDatabase(
           dienThoai: kh.dienThoai,
           dienThoai2: kh.dienThoai2,
           diaChi: kh.diaChi,
+          tinhThanhCode: kh.tinhThanhCode,
+          phuongXaCode: kh.phuongXaCode,
           phuongXaId: kh.phuongXaId,
           quanId: kh.quanId,
           tinhId: kh.tinhId,
@@ -198,5 +281,11 @@ export async function seedDatabase(
     nguoiDung: fixtures.nguoiDung.length,
     khachHang: fixtures.khachHang.length,
     ...masterdataResult,
+    nhaSanXuat: fixtures.nhaSanXuat.length,
+    sanPham: fixtures.sanPham.length,
+    model: fixtures.model.length,
+    nganHang: fixtures.nganHang.length,
+    tinhThanh: fixtures.tinhThanh.length,
+    phuongXa: fixtures.phuongXa.length,
   }
 }

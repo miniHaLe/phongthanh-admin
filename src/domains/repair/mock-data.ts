@@ -31,6 +31,7 @@ import {
   LOI_SUA_CHUA,
   TINH_OPTIONS,
   HUYEN_BY_TINH,
+  isCompatibleModelSelection,
 } from './reference-data'
 
 // ── Seed arrays ───────────────────────────────────────────────────────────
@@ -180,7 +181,9 @@ const FINISHED_STATUS_IDS: readonly RepairStatusId[] = [9, 10, 12]
  * Legacy status pipeline used to synthesize a plausible history ending at the
  * ticket's current status. Statuses off this happy path get a [1, final] pair.
  */
-const STATUS_PIPELINE: readonly RepairStatusId[] = [1, 2, 15, 4, 6, 7, 13, 9, 10]
+const STATUS_PIPELINE: readonly RepairStatusId[] = [
+  1, 2, 15, 4, 6, 7, 13, 9, 10,
+]
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -338,7 +341,9 @@ function generateTicket(idx: number): RepairTicket {
       hinhThuc === 'sua_dich_vu' && rng.bool(0.5)
         ? rng.int(1, 30) * 100_000
         : undefined,
-    cachGiaiQuyet: isRepaired ? 'Đã thay linh kiện và kiểm tra hoạt động' : undefined,
+    cachGiaiQuyet: isRepaired
+      ? 'Đã thay linh kiện và kiểm tra hoạt động'
+      : undefined,
     ngaySuaXong,
     ngayGiao,
     khachHangId: customer.id,
@@ -496,7 +501,9 @@ function applyNonStatusFilters(
   }
   if (params.diaChi) {
     const q = params.diaChi.toLowerCase()
-    results = results.filter((t) => t.khachHang.diaChi.toLowerCase().includes(q))
+    results = results.filter((t) =>
+      t.khachHang.diaChi.toLowerCase().includes(q),
+    )
   }
   if (params.kyThuatId) {
     results = results.filter((t) => t.kyThuatId === params.kyThuatId)
@@ -515,11 +522,15 @@ function applyNonStatusFilters(
   }
   if (params.tuyen) {
     const q = params.tuyen.toLowerCase()
-    results = results.filter((t) => t.khachHang.tuyen?.toLowerCase().includes(q))
+    results = results.filter((t) =>
+      t.khachHang.tuyen?.toLowerCase().includes(q),
+    )
   }
   if (params.daiLy) {
     const q = params.daiLy.toLowerCase()
-    results = results.filter((t) => t.khachHang.daiLy?.toLowerCase().includes(q))
+    results = results.filter((t) =>
+      t.khachHang.daiLy?.toLowerCase().includes(q),
+    )
   }
   if (params.loaiBaoHanh) {
     results = results.filter((t) => t.loaiBaoHanh === params.loaiBaoHanh)
@@ -602,9 +613,7 @@ export async function fetchSerialHistory(
 ): Promise<RepairTicket[]> {
   await mockDelay(200, 100)
   if (!serial) return []
-  return MOCK_TICKETS.filter(
-    (t) => t.soSerial === serial && t.id !== excludeId,
-  )
+  return MOCK_TICKETS.filter((t) => t.soSerial === serial && t.id !== excludeId)
 }
 
 /** KT-board list — the 10-status workshop subset of MOCK_TICKETS. */
@@ -651,6 +660,19 @@ let createIdCounter = 300000
 export async function createRepairTicket(
   input: CreateRepairInput,
 ): Promise<RepairTicket> {
+  if (
+    !isCompatibleModelSelection(
+      input.nhaSanXuatId,
+      input.sanPhamId,
+      input.modelId,
+    )
+  ) {
+    throw new MockApiError(
+      'Model không thuộc Nhà sản xuất và Sản phẩm đã chọn.',
+      'INVALID_MODEL_RELATION',
+    )
+  }
+
   await mockDelay(600, 200)
 
   createIdCounter++

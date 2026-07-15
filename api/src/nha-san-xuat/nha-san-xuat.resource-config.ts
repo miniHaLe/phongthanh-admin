@@ -1,6 +1,6 @@
-import { randomBytes } from 'node:crypto'
-import { nhaSanXuat } from '../db/schema'
 import type { CrudResourceConfig } from '../crud/crud-resource-config'
+import { nhaSanXuat } from '../db/schema'
+import { generateCatalogId } from '../shared/catalog-id'
 
 export const nhaSanXuatResourceConfig: CrudResourceConfig = {
   table: nhaSanXuat,
@@ -8,9 +8,19 @@ export const nhaSanXuatResourceConfig: CrudResourceConfig = {
   createdAtColumn: nhaSanXuat.createdAt,
   updatedAtColumn: nhaSanXuat.updatedAt,
   activeColumn: nhaSanXuat.active,
-  sortableColumns: { maNSX: nhaSanXuat.maNSX, tenNSX: nhaSanXuat.tenNSX },
-  filterableColumns: { tenNSX: { column: nhaSanXuat.tenNSX } },
-  searchColumns: [nhaSanXuat.maNSX, nhaSanXuat.tenNSX, nhaSanXuat.ghiChu],
+  sortableColumns: {
+    tenNSX: nhaSanXuat.tenNSX,
+    maNSX: nhaSanXuat.maNSX,
+    createdAt: nhaSanXuat.createdAt,
+  },
+  filterableColumns: {
+    tenNSX: { column: nhaSanXuat.tenNSX, valueType: 'string' },
+    active: {
+      column: nhaSanXuat.active,
+      valueType: 'boolean',
+    },
+  },
+  searchColumns: [nhaSanXuat.tenNSX, nhaSanXuat.maNSX, nhaSanXuat.ghiChu],
   notFoundMessage: (id) => `Không tìm thấy nhà sản xuất id=${id}`,
-  genId: () => `nsx-${randomBytes(6).toString('hex')}`,
+  genId: () => generateCatalogId('nsx'),
 }

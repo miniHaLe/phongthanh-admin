@@ -1,9 +1,9 @@
 /**
- * Trả Hàng bulk toolbar — Tìm kiếm (refetch), Xuất ra Excel, Xuất Excel Chi
+ * Trả Hàng bulk toolbar — Tìm kiếm (refetch), Xuất Excel, Xuất Excel Chi
  * Tiết over the filtered row set.
  */
 import { Button } from '@/components/ui/button'
-import { exportToXlsx } from '@/lib/export-xlsx'
+import { exportListXlsx } from '@/lib/export-list-xlsx'
 import type { ReturnSlip } from '@/domains/warehouse/types'
 
 interface TraHangBatchToolbarProps {
@@ -18,7 +18,10 @@ const EXPORT_COLUMNS = [
   { header: 'Người lập', accessor: (r: ReturnSlip) => r.nguoiLap },
 ]
 
-export function TraHangBatchToolbar({ allRows, onSearch }: TraHangBatchToolbarProps) {
+export function TraHangBatchToolbar({
+  allRows,
+  onSearch,
+}: TraHangBatchToolbarProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button size="sm" variant="outline" className="h-8" onClick={onSearch}>
@@ -29,7 +32,7 @@ export function TraHangBatchToolbar({ allRows, onSearch }: TraHangBatchToolbarPr
         variant="outline"
         className="h-8"
         onClick={() =>
-          void exportToXlsx({
+          void exportListXlsx({
             filename: 'tra-hang',
             sheetName: 'Trả Hàng',
             columns: EXPORT_COLUMNS,
@@ -37,14 +40,14 @@ export function TraHangBatchToolbar({ allRows, onSearch }: TraHangBatchToolbarPr
           })
         }
       >
-        Xuất ra Excel
+        Xuất Excel
       </Button>
       <Button
         size="sm"
         variant="outline"
         className="h-8"
         onClick={() =>
-          void exportToXlsx({
+          void exportListXlsx({
             filename: 'tra-hang-chi-tiet',
             sheetName: 'Trả Hàng Chi Tiết',
             columns: EXPORT_COLUMNS,

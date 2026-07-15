@@ -22,6 +22,8 @@ const fullReleaseSet = [
   'hang-hoa',
   'model',
   'phi-giao',
+  'ngan-hang',
+  'dia-ly',
 ].join(',')
 
 function runGuard({

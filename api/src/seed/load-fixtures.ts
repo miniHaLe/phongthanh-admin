@@ -3,6 +3,7 @@
  * shape is validated structurally by the FK-closure check in `run-seed.ts`,
  * not by a schema here (YAGNI — one-shot seed data, not a runtime API). */
 import { readFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 
 const FIXTURES_DIR = join(__dirname, '../../seed-fixtures')
@@ -10,6 +11,12 @@ const FIXTURES_DIR = join(__dirname, '../../seed-fixtures')
 function loadJson<T>(file: string): T {
   const raw = readFileSync(join(FIXTURES_DIR, file), 'utf-8')
   return JSON.parse(raw) as T
+}
+
+function sha256(file: string): string {
+  return createHash('sha256')
+    .update(readFileSync(join(FIXTURES_DIR, file)))
+    .digest('hex')
 }
 
 export interface ChiNhanhFixture {
@@ -86,6 +93,8 @@ export interface KhachHangFixture {
   dienThoai: string
   dienThoai2?: string
   diaChi?: string
+  tinhThanhCode?: string
+  phuongXaCode?: string
   phuongXaId?: string
   quanId?: string
   tinhId?: string
@@ -99,39 +108,60 @@ export interface KhachHangFixture {
   updatedAt?: string
 }
 
-interface BaseMasterdataFixture {
+export interface CatalogFixtureBase {
   id: string
   active: boolean
   createdAt: string
   updatedAt?: string
 }
 
-export interface DonViTinhFixture extends BaseMasterdataFixture {
+export interface DonViTinhFixture extends CatalogFixtureBase {
   tenDVT: string
 }
 
-export interface NhomSanPhamFixture extends BaseMasterdataFixture {
+export interface NhomSanPhamFixture extends CatalogFixtureBase {
   tenNhomSP: string
 }
 
-export interface NhomHangHoaFixture extends BaseMasterdataFixture {
+export interface NhomHangHoaFixture extends CatalogFixtureBase {
   maNhom?: string
   tenNhom: string
 }
 
-export interface NhaSanXuatFixture extends BaseMasterdataFixture {
+export interface NhaSanXuatFixture extends CatalogFixtureBase {
   maNSX?: string
   tenNSX: string
   ghiChu?: string
 }
 
-export interface ThoiHanFixture extends BaseMasterdataFixture {
+export interface SanPhamFixture extends CatalogFixtureBase {
+  maSP?: string
+  tenSP: string
+  nhomSanPhamId?: string
+  tienKhoan?: number
+}
+
+export interface ModelFixture extends CatalogFixtureBase {
+  tenModel: string
+  tenModelNormalized: string
+  nhaSanXuatId: string
+  sanPhamId: string
+  ghiChu?: string
+}
+
+export interface NganHangFixture extends CatalogFixtureBase {
+  maNganHang: string
+  tenNganHang: string
+  diaChi?: string
+}
+
+export interface ThoiHanFixture extends CatalogFixtureBase {
   ten: string
   loai: 'Tháng' | 'Năm'
   thoiGian: number
 }
 
-export interface NhaKhoFixture extends BaseMasterdataFixture {
+export interface NhaKhoFixture extends CatalogFixtureBase {
   maNhaKho: string
   tenNhaKho: string
   chiNhanhId: string
@@ -139,7 +169,7 @@ export interface NhaKhoFixture extends BaseMasterdataFixture {
   khoXac: boolean
 }
 
-export interface PhuongXaFixture extends BaseMasterdataFixture {
+export interface LegacyPhuongXaFixture extends CatalogFixtureBase {
   tenPhuongXa: string
   tinhId: string
   quanId: string
@@ -148,7 +178,7 @@ export interface PhuongXaFixture extends BaseMasterdataFixture {
   tuyenId?: string
 }
 
-export interface KhuVucFixture extends BaseMasterdataFixture {
+export interface KhuVucFixture extends CatalogFixtureBase {
   tenKhuVuc: string
   tinhId: string
   quanId: string
@@ -158,7 +188,7 @@ export interface KhuVucFixture extends BaseMasterdataFixture {
   tienCong2: number
 }
 
-export interface LoiSuaChuaFixture extends BaseMasterdataFixture {
+export interface LoiSuaChuaFixture extends CatalogFixtureBase {
   branchId: string
   nhomSanPhamId: string
   tenLoi: string
@@ -166,28 +196,12 @@ export interface LoiSuaChuaFixture extends BaseMasterdataFixture {
   tienCongDV: number
 }
 
-export interface NganChuaFixture extends BaseMasterdataFixture {
+export interface NganChuaFixture extends CatalogFixtureBase {
   tenNgan: string
   nhaKhoId: string
 }
 
-export interface SanPhamFixture extends BaseMasterdataFixture {
-  maSP?: string
-  tenSP: string
-  nhomSanPhamId: string
-  tienKhoan?: number
-}
-
-export interface ModelFixture extends BaseMasterdataFixture {
-  tenModel: string
-  maModel?: string
-  nhaSanXuatId: string
-  sanPhamId: string
-  nguoiTao: string
-  ghiChu?: string
-}
-
-export interface HangHoaFixture extends BaseMasterdataFixture {
+export interface HangHoaFixture extends CatalogFixtureBase {
   maHH: string
   maHHPhu?: string
   tenHH: string
@@ -211,7 +225,7 @@ export interface HangHoaFixture extends BaseMasterdataFixture {
   tonKho: number
 }
 
-export interface PhiGiaoFixture extends BaseMasterdataFixture {
+export interface PhiGiaoFixture extends CatalogFixtureBase {
   sanPhamId: string | null
   tenPhi: string
   soTien: number
@@ -219,7 +233,37 @@ export interface PhiGiaoFixture extends BaseMasterdataFixture {
   ghiChu?: string
 }
 
+export interface TinhThanhFixture {
+  code: string
+  name: string
+  type: string
+  normalizedName: string
+}
+
+export interface PhuongXaFixture extends TinhThanhFixture {
+  provinceCode: string
+}
+
+export interface DiaLyMetadataFixture {
+  version: string
+  effectiveFrom: string
+  sourceDocument: string
+  officialSourceUrl: string
+  counts: { provinces: number; communes: number }
+  checksums: { provincesSha256: string; communesSha256: string }
+}
+
 export function loadFixtures() {
+  const diaLyMetadata = loadJson<DiaLyMetadataFixture>('dia-ly-metadata.json')
+  const actualProvinceChecksum = sha256('tinh-thanh.json')
+  const actualCommuneChecksum = sha256('phuong-xa-2025.json')
+  if (
+    actualProvinceChecksum !== diaLyMetadata.checksums.provincesSha256 ||
+    actualCommuneChecksum !== diaLyMetadata.checksums.communesSha256
+  ) {
+    throw new Error('Official geography fixture checksum mismatch')
+  }
+
   return {
     chiNhanh: loadJson<ChiNhanhFixture[]>('chi-nhanh.json'),
     tinh: loadJson<TinhFixture[]>('tinh.json'),
@@ -235,7 +279,7 @@ export function loadFixtures() {
     nhaSanXuat: loadJson<NhaSanXuatFixture[]>('nha-san-xuat.json'),
     thoiHan: loadJson<ThoiHanFixture[]>('thoi-han.json'),
     nhaKho: loadJson<NhaKhoFixture[]>('nha-kho.json'),
-    phuongXa: loadJson<PhuongXaFixture[]>('phuong-xa.json'),
+    legacyPhuongXa: loadJson<LegacyPhuongXaFixture[]>('phuong-xa.json'),
     khuVuc: loadJson<KhuVucFixture[]>('khu-vuc.json'),
     loiSuaChua: loadJson<LoiSuaChuaFixture[]>('loi-sua-chua.json'),
     nganChua: loadJson<NganChuaFixture[]>('ngan-chua.json'),
@@ -243,6 +287,10 @@ export function loadFixtures() {
     model: loadJson<ModelFixture[]>('model.json'),
     hangHoa: loadJson<HangHoaFixture[]>('hang-hoa.json'),
     phiGiao: loadJson<PhiGiaoFixture[]>('phi-giao.json'),
+    nganHang: loadJson<NganHangFixture[]>('ngan-hang.json'),
+    tinhThanh: loadJson<TinhThanhFixture[]>('tinh-thanh.json'),
+    phuongXa: loadJson<PhuongXaFixture[]>('phuong-xa-2025.json'),
+    diaLyMetadata,
   }
 }
 

@@ -22,6 +22,7 @@ import {
 import { formatDate } from '@/lib/format'
 import { duyetTraLK } from '@/domains/warehouse/mock-mutations'
 import type { PartReturn } from '@/domains/warehouse/types'
+import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
 
 export const PART_RETURN_TABLE_ID = 'part-return-list'
 
@@ -114,25 +115,28 @@ export function usePartReturnColumns(): ColumnDef<PartReturn, unknown>[] {
         ),
         size: 80,
         enableSorting: false,
-        cell: ({ row }) => (
-          <div className="flex items-center gap-1">
-            <span className="inline-flex min-h-11 min-w-11 items-center justify-center lg:min-h-4 lg:min-w-4">
-              <Checkbox
-                checked={row.getIsSelected()}
-                onCheckedChange={(checked) =>
-                  row.toggleSelected(checked === true)
-                }
-                aria-label={`Chọn dòng ${row.index + 1}`}
-              />
-            </span>
-            <TableProtectedValue
-              tabular
-              className="text-xs text-muted-foreground"
-            >
-              {row.index + 1}
-            </TableProtectedValue>
-          </div>
-        ),
+        cell: ({ row, table }) => {
+          const rowNumber = getVisibleRowNumber(table, row)
+          return (
+            <div className="flex items-center gap-1">
+              <span className="inline-flex min-h-11 min-w-11 items-center justify-center lg:min-h-4 lg:min-w-4">
+                <Checkbox
+                  checked={row.getIsSelected()}
+                  onCheckedChange={(checked) =>
+                    row.toggleSelected(checked === true)
+                  }
+                  aria-label={`Chọn dòng ${rowNumber}`}
+                />
+              </span>
+              <TableProtectedValue
+                tabular
+                className="text-xs text-muted-foreground"
+              >
+                {rowNumber}
+              </TableProtectedValue>
+            </div>
+          )
+        },
       },
       {
         id: 'statusAction',

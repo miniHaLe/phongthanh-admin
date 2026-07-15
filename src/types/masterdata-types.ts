@@ -8,23 +8,37 @@ import type { BranchId } from '@/mock/seed/branches'
 export type { BaseEntity }
 
 export interface KhachHang extends BaseEntity {
+  /** Server-owned creator branch; list requests may narrow by this value. */
+  branchId?: string
   tenKH: string
   dienThoai: string
-  dienThoai2?: string
-  diaChi?: string
+  dienThoai2?: string | null
+  diaChi?: string | null
+  /** Street/house component for current two-level Vietnamese addresses. */
+  tenDuong?: string | null
+  /** Official two-digit province/city code from Decision 19/2025/QD-TTg. */
+  tinhThanhCode?: string | null
+  /** Official five-digit commune/ward code from Decision 19/2025/QD-TTg. */
+  phuongXaCode?: string | null
   /** Xã/Phường — references the P1 Tỉnh→Quận→Xã `XA` lookup id. */
-  phuongXaId?: string
+  phuongXaId?: string | null
   /** Quận/Huyện — references `QUAN`. */
-  quanId?: string
+  quanId?: string | null
   /** Tỉnh — references `TINH`. */
-  tinhId?: string
-  email?: string
+  tinhId?: string | null
+  email?: string | null
+  maSoThue?: string | null
+  nganHangId?: string | null
+  nganHangTen?: string | null
+  /** Text by design so leading zeroes survive persistence and export. */
+  soTaiKhoan?: string | null
   /** Nhóm khách hàng — 1-9, references LOAI_KHACH_HANG. */
   loaiKhachHangId: number
   /** Đại lý/Trạm — self-referential parent dealer/station KhachHang id. */
-  daiLyId?: string
+  daiLyId?: string | null
+  daiLyTen?: string | null
   nguoiTao: string
-  ghiChu?: string
+  ghiChu?: string | null
 }
 
 export interface Model extends BaseEntity {
@@ -32,7 +46,7 @@ export interface Model extends BaseEntity {
   maModel?: string
   nhaSanXuatId: string
   sanPhamId: string
-  nguoiTao: string
+  nguoiTao?: string
   ghiChu?: string
 }
 

@@ -7,8 +7,7 @@ import {
   timestamp,
 } from 'drizzle-orm/pg-core'
 import { donViTinh } from './don-vi-tinh'
-import { model } from './model'
-import { nhaSanXuat } from './nha-san-xuat'
+import { model, nhaSanXuat } from './danh-muc-thiet-bi'
 import { nhomHangHoa } from './nhom-hang-hoa'
 
 export const hangHoa = pgTable('hang_hoa', {

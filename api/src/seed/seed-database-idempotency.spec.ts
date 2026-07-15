@@ -22,6 +22,7 @@ const seededTables: Record<keyof SeedResult, AnyPgTable> = {
   thoiHan: schema.thoiHan,
   nhaKho: schema.nhaKho,
   phuongXa: schema.phuongXa,
+  legacyPhuongXa: schema.phuongXaLegacy,
   khuVuc: schema.khuVuc,
   loiSuaChua: schema.loiSuaChua,
   nganChua: schema.nganChua,
@@ -29,6 +30,8 @@ const seededTables: Record<keyof SeedResult, AnyPgTable> = {
   phiGiao: schema.phiGiao,
   model: schema.model,
   hangHoa: schema.hangHoa,
+  nganHang: schema.nganHang,
+  tinhThanh: schema.tinhThanh,
 }
 
 async function countSeededTables(db: DbClient): Promise<SeedResult> {

@@ -6,9 +6,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   fetchDashboardSummary,
+  fetchRecentTickets,
   fetchStatusDistribution,
 } from './dashboard-mock'
 import { STATUS_LABEL, OPEN_STATUS_IDS } from '@/domains/repair/status'
+import { MOCK_TICKETS } from '@/domains/repair/mock-data'
 
 const VALID_IDS = new Set(Object.keys(STATUS_LABEL).map(Number))
 
@@ -18,11 +20,22 @@ describe('fetchDashboardSummary — characterization', () => {
     expect(summary.queue).toHaveLength(4)
     for (const q of summary.queue) {
       expect(VALID_IDS.has(q.status)).toBe(true)
-      expect(typeof q.count).toBe('number')
+      expect(q.count).toBe(
+        MOCK_TICKETS.filter((ticket) => ticket.tinhTrang === q.status).length,
+      )
     }
     for (const b of summary.branches) {
-      expect(typeof b.openCount).toBe('number')
-      expect(typeof b.overdueCount).toBe('number')
+      const branchTickets = MOCK_TICKETS.filter(
+        (ticket) => ticket.branchId === b.branchId,
+      )
+      expect(b.openCount).toBe(
+        branchTickets.filter((ticket) =>
+          OPEN_STATUS_IDS.includes(ticket.tinhTrang),
+        ).length,
+      )
+      expect(b.overdueCount).toBe(
+        branchTickets.filter((ticket) => ticket.isOverdue).length,
+      )
     }
   })
 })
@@ -59,6 +72,23 @@ describe('fetchDashboardSummary — legacy-id spec', () => {
   })
 })
 
+describe('fetchRecentTickets', () => {
+  it('returns recent rows backed by real repair ticket ids', async () => {
+    const recent = await fetchRecentTickets()
+    const expectedIds = [...MOCK_TICKETS]
+      .sort(
+        (a, b) =>
+          new Date(b.ngayNhan).getTime() - new Date(a.ngayNhan).getTime() ||
+          a.id.localeCompare(b.id),
+      )
+      .slice(0, 10)
+      .map((ticket) => ticket.id)
+
+    expect(recent).toHaveLength(10)
+    expect(recent.map((ticket) => ticket.id)).toEqual(expectedIds)
+  })
+})
+
 describe('fetchStatusDistribution — legacy-id spec', () => {
   it('emits only canonical ids with labels from STATUS_LABEL', async () => {
     const dist = await fetchStatusDistribution()
@@ -66,6 +96,9 @@ describe('fetchStatusDistribution — legacy-id spec', () => {
     for (const d of dist) {
       expect(VALID_IDS.has(d.status)).toBe(true)
       expect(d.label).toBe(STATUS_LABEL[d.status])
+      expect(d.count).toBe(
+        MOCK_TICKETS.filter((ticket) => ticket.tinhTrang === d.status).length,
+      )
     }
   })
 })

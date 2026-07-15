@@ -30,11 +30,11 @@ describe('rethrowDatabaseWriteError', () => {
   it('maps foreign keys differently for writes and deletes', () => {
     expect(() =>
       rethrowDatabaseWriteError(nestedDatabaseError('23503'), 'update', config),
-    ).toThrow(new BadRequestException('Dữ liệu liên kết không tồn tại'))
+    ).toThrow(new BadRequestException('Dữ liệu tham chiếu không hợp lệ'))
     expect(() =>
       rethrowDatabaseWriteError(nestedDatabaseError('23503'), 'delete', config),
     ).toThrow(
-      new BadRequestException('Không thể xóa vì dữ liệu đang được sử dụng'),
+      new ConflictException('Không thể xóa vì dữ liệu đang được tham chiếu'),
     )
   })
 

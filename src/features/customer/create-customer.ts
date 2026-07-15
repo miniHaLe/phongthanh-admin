@@ -1,26 +1,33 @@
-/** Shared real-or-mock create mutation for both customer create flows. */
-import { khachHangConfig } from '@/config/crud-configs/khach-hang.config'
+import { apiFor } from '@/api/api-for'
 import { CURRENT_USER } from '@/mock/current-user-mock'
+import { KHACH_HANG_ROWS } from '@/mock/masterdata/khach-hang.mock'
 import type { KhachHang } from '@/types/masterdata-types'
+import type { ListParams } from '@/mock/seed'
 
-export interface CreateCustomerInput {
-  tenKH: string
-  dienThoai: string
-  dienThoai2?: string
-  email?: string
-  diaChi?: string
-  tinhId: string
-  quanId?: string
-  phuongXaId?: string
-  loaiKhachHangId: number
-  daiLyId?: string
-  ghiChu?: string
+export const customerApi = apiFor('khach-hang', KHACH_HANG_ROWS)
+
+export type CustomerMutationInput = Omit<KhachHang, 'id' | 'createdAt'> & {
+  /** Command-only marker; the API strips it before writing the entity row. */
+  clearDiaChi?: true
 }
 
-export function createCustomer(input: CreateCustomerInput): Promise<KhachHang> {
-  return khachHangConfig.mockApi.create({
+export async function persistCustomer(
+  input: Omit<CustomerMutationInput, 'nguoiTao' | 'active'>,
+): Promise<KhachHang> {
+  return customerApi.create({
     ...input,
     nguoiTao: CURRENT_USER.hoVaTen,
     active: true,
   })
+}
+
+export async function updateCustomer(
+  id: string,
+  input: Partial<CustomerMutationInput>,
+): Promise<KhachHang> {
+  return customerApi.update(id, input)
+}
+
+export function listCustomers(params: ListParams) {
+  return customerApi.list(params)
 }

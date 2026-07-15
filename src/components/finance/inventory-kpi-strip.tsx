@@ -7,8 +7,8 @@
  * (W2/W3/W4): those pages already have their KPI values from `fetchInventory`
  * (the same Kỳ carry-forward feeding the grid rows), so they render the trio
  * directly instead of firing the separate date-range `useInventoryKpi` query.
- * Negative values are never clamped — a stock-out-heavy period can render a
- * negative `Tổng tồn`, and the minus sign must stay visible.
+ * Negative upstream values are never hidden; the shared StatCard surfaces the
+ * anomaly with destructive styling while the mock inventory source stays valid.
  */
 import {
   Package,

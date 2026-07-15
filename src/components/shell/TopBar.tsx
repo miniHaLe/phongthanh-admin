@@ -4,7 +4,6 @@ import { ThemeToggle, BranchSwitcher } from '@/components/shared'
 import { useSidebarStore } from '@/store/sidebar-store'
 import { useCommandStore } from '@/components/shell/command-registry'
 import { NotifBadge } from './NotifBadge'
-import { NewsBadge } from './NewsBadge'
 import { SupportDropdown } from './SupportDropdown'
 import { UserMenu } from './UserMenu'
 
@@ -41,7 +40,7 @@ export function TopBar() {
           variant="ghost"
           size="icon"
           className="flex sm:hidden"
-          aria-label="Tìm kiếm"
+          aria-label="Đi tới"
           onClick={openCommandPalette}
         >
           <Search className="size-5" />
@@ -53,14 +52,13 @@ export function TopBar() {
           onClick={openCommandPalette}
         >
           <Search className="size-4" />
-          <span>Tìm kiếm</span>
+          <span>Đi tới…</span>
           <kbd className="pointer-events-none ml-1 inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
             ⌘K
           </kbd>
         </Button>
 
         <NotifBadge />
-        <NewsBadge />
         <SupportDropdown />
         <BranchSwitcher className="hidden w-44 lg:flex" />
         <ThemeToggle />

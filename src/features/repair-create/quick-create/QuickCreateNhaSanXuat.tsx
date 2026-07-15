@@ -3,12 +3,14 @@
  * MANUFACTURERS lookup array via createNhaSanXuat and selects the record.
  */
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
 import { notify, type AutocompleteOption } from '@/components/shared'
-import { createNhaSanXuat } from '@/domains/repair/reference-data'
+import { nhaSanXuatConfig } from '@/config/crud-configs/nha-san-xuat.config'
+import { MODEL_CATALOG_QUERY_KEY } from '@/features/model/model-catalog-data'
 
 interface QuickCreateNhaSanXuatProps {
   close: () => void
@@ -20,14 +22,29 @@ export function QuickCreateNhaSanXuat({
   select,
 }: QuickCreateNhaSanXuatProps) {
   const [ten, setTen] = useState('')
+  const [saving, setSaving] = useState(false)
+  const queryClient = useQueryClient()
 
-  function handleSave() {
+  async function handleSave() {
     if (!ten.trim()) {
       notify.error('Vui lòng nhập tên nhà sản xuất!')
       return
     }
-    const created = createNhaSanXuat(ten.trim())
-    select({ id: created.id, label: created.ten })
+    setSaving(true)
+    try {
+      const created = await nhaSanXuatConfig.mockApi.create({
+        tenNSX: ten.trim(),
+        active: true,
+      })
+      await queryClient.invalidateQueries({ queryKey: MODEL_CATALOG_QUERY_KEY })
+      select({ id: created.id, label: created.tenNSX })
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : 'Không thể thêm nhà sản xuất.',
+      )
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -43,11 +60,15 @@ export function QuickCreateNhaSanXuat({
         />
       </div>
       <DialogFooter>
-        <Button type="button" variant="ghost" onClick={close}>
+        <Button type="button" variant="ghost" onClick={close} disabled={saving}>
           Hủy
         </Button>
-        <Button type="button" onClick={handleSave}>
-          Lưu
+        <Button
+          type="button"
+          onClick={() => void handleSave()}
+          disabled={saving}
+        >
+          {saving ? 'Đang lưu…' : 'Lưu'}
         </Button>
       </DialogFooter>
     </div>

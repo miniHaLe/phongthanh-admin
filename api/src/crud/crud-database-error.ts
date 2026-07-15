@@ -5,19 +5,17 @@ import type {
 } from './crud-resource-config'
 
 function hasDatabaseErrorCode(error: unknown, code: string): boolean {
-  let current = error
-  for (let depth = 0; depth < 5 && current; depth += 1) {
-    if (
-      typeof current === 'object' &&
-      'code' in current &&
-      current.code === code
-    ) {
-      return true
+  const queue = [error]
+  const seen = new Set<unknown>()
+  while (queue.length > 0) {
+    const current = queue.shift()
+    if (!current || typeof current !== 'object' || seen.has(current)) continue
+    seen.add(current)
+    const record = current as Record<string, unknown>
+    if (record.code === code) return true
+    for (const key of ['cause', 'original', 'driverError', 'error']) {
+      if (record[key] !== undefined) queue.push(record[key])
     }
-    current =
-      typeof current === 'object' && 'cause' in current
-        ? current.cause
-        : undefined
   }
   return false
 }
@@ -33,13 +31,17 @@ export function rethrowDatabaseWriteError(
     )
   }
   if (hasDatabaseErrorCode(error, '23503')) {
-    const fallbackMessage =
-      operation === 'delete'
-        ? 'Không thể xóa vì dữ liệu đang được sử dụng'
-        : 'Dữ liệu liên kết không tồn tại'
+    if (operation === 'delete') {
+      throw new ConflictException(
+        'Không thể xóa vì dữ liệu đang được tham chiếu',
+      )
+    }
     throw new BadRequestException(
-      config.foreignKeyViolationMessage ?? fallbackMessage,
+      config.foreignKeyViolationMessage ?? 'Dữ liệu tham chiếu không hợp lệ',
     )
+  }
+  if (hasDatabaseErrorCode(error, '23514')) {
+    throw new BadRequestException('Dữ liệu không hợp lệ')
   }
   throw error
 }
