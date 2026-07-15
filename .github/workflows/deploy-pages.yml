@@ -31,7 +31,7 @@ jobs:
       - run: npm ci
       - run: npm run build:prod
         env:
-          VITE_REAL_RESOURCES: khach-hang
+          VITE_REAL_RESOURCES: khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao
           VITE_API_URL: ${{ github.event.inputs.api_url || 'https://phongthanh-admin-api-minihale.onrender.com' }}
           VITE_ROUTER_MODE: hash
           VITE_BASE_PATH: /phongthanh-admin/

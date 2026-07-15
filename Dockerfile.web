@@ -12,7 +12,7 @@ COPY . .
 # Same-origin deployment: empty API base => the client calls /api/... and
 # /auth/... relatively, which nginx proxies to the API. VITE_REAL_RESOURCES must
 # cover the release or build:prod's guard fails the build (security gate 5).
-ARG VITE_REAL_RESOURCES=khach-hang
+ARG VITE_REAL_RESOURCES=khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao
 ARG VITE_API_URL=""
 ENV VITE_REAL_RESOURCES=$VITE_REAL_RESOURCES
 ENV VITE_API_URL=$VITE_API_URL

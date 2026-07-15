@@ -58,7 +58,7 @@ services:
       context: .
       dockerfile: Dockerfile.web
       args:
-        VITE_REAL_RESOURCES: khach-hang
+        VITE_REAL_RESOURCES: khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao
         VITE_API_URL: ''
     container_name: phongthanh-web
     restart: unless-stopped
