@@ -1,6 +1,7 @@
 import type { DbClient } from '../db/client'
 import * as schema from '../db/schema'
 import type { SeedFixtures } from './load-fixtures'
+import { mapCatalogId, type CatalogIdMaps } from './seed-catalog-tables'
 
 function baseValues(row: {
   id: string
@@ -19,6 +20,7 @@ function baseValues(row: {
 export async function seedMasterdataTables(
   db: DbClient,
   fixtures: SeedFixtures,
+  catalogIdMaps: CatalogIdMaps,
 ) {
   if (fixtures.donViTinh.length > 0) {
     await db
@@ -157,7 +159,7 @@ export async function seedMasterdataTables(
       .values(
         fixtures.phiGiao.map((row) => ({
           ...baseValues(row),
-          sanPhamId: row.sanPhamId,
+          sanPhamId: mapCatalogId(catalogIdMaps.sanPham, row.sanPhamId),
           tenPhi: row.tenPhi,
           soTien: row.soTien,
           loaiPhi: row.loaiPhi,
@@ -178,8 +180,11 @@ export async function seedMasterdataTables(
           tenHH: row.tenHH,
           tenTiengAnh: row.tenTiengAnh,
           nhomHangHoaId: row.nhomHangHoaId,
-          nhaSanXuatId: row.nhaSanXuatId,
-          modelId: row.modelId,
+          nhaSanXuatId: mapCatalogId(
+            catalogIdMaps.nhaSanXuat,
+            row.nhaSanXuatId,
+          ),
+          modelId: mapCatalogId(catalogIdMaps.model, row.modelId),
           modelDungChung: row.modelDungChung,
           modelDungChungText: row.modelDungChungText,
           donViTinhId: row.donViTinhId,

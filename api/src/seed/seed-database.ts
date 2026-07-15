@@ -7,6 +7,7 @@ import type { DbClient } from '../db/client'
 import * as schema from '../db/schema'
 import { branchIdForTinh } from './branch-map'
 import { loadFixtures } from './load-fixtures'
+import { seedCatalogTables } from './seed-catalog-tables'
 import { seedMasterdataTables } from './seed-masterdata'
 import { validateSeedFixtureClosure } from './validate-fk-closure'
 
@@ -133,57 +134,11 @@ export async function seedDatabase(
       .onConflictDoNothing({ target: schema.phuongXa.code })
   }
 
-  if (fixtures.nhaSanXuat.length > 0) {
-    await db
-      .insert(schema.nhaSanXuat)
-      .values(
-        fixtures.nhaSanXuat.map((row) => ({
-          ...row,
-          createdAt: new Date(row.createdAt),
-          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
-        })),
-      )
-      .onConflictDoNothing({ target: schema.nhaSanXuat.id })
-  }
-
-  if (fixtures.sanPham.length > 0) {
-    await db
-      .insert(schema.sanPham)
-      .values(
-        fixtures.sanPham.map((row) => ({
-          ...row,
-          createdAt: new Date(row.createdAt),
-          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
-        })),
-      )
-      .onConflictDoNothing({ target: schema.sanPham.id })
-  }
-
-  if (fixtures.nganHang.length > 0) {
-    await db
-      .insert(schema.nganHang)
-      .values(
-        fixtures.nganHang.map((row) => ({
-          ...row,
-          createdAt: new Date(row.createdAt),
-          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
-        })),
-      )
-      .onConflictDoNothing({ target: schema.nganHang.id })
-  }
-
-  if (fixtures.model.length > 0) {
-    await db
-      .insert(schema.model)
-      .values(
-        fixtures.model.map((row) => ({
-          ...row,
-          createdAt: new Date(row.createdAt),
-          updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
-        })),
-      )
-      .onConflictDoNothing({ target: schema.model.id })
-  }
+  // Catalog tables carry natural-key unique indexes (normalized name, bank
+  // code, model parent+name), so on a live DB a fixture row may already exist
+  // under a user-created id. Resolve by natural key and get back id maps to
+  // rewrite child fixture references.
+  const catalogIdMaps = await seedCatalogTables(db, fixtures)
 
   if (fixtures.loaiKhachHang.length > 0) {
     await db
@@ -209,7 +164,11 @@ export async function seedDatabase(
       .onConflictDoNothing({ target: schema.nhomQuyen.id })
   }
 
-  const masterdataResult = await seedMasterdataTables(db, fixtures)
+  const masterdataResult = await seedMasterdataTables(
+    db,
+    fixtures,
+    catalogIdMaps,
+  )
 
   if (fixtures.nguoiDung.length > 0) {
     // Every seeded user gets a password from INITIAL_ADMIN_PASSWORD + forced
