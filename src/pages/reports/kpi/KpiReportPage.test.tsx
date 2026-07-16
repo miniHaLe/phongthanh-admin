@@ -4,7 +4,7 @@
  * list, and the 3 export buttons render inside the "Xuất Excel" menu.
  */
 import { describe, it, expect } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/test/render-with-providers'
 import KpiReportPage from './KpiReportPage'
@@ -29,7 +29,9 @@ const EXPECTED_NHOM_SAN_PHAM = [
 describe('KpiReportPage', () => {
   it('renders Kỹ thuật and Nhóm sản phẩm as multi-select comboboxes', () => {
     renderWithProviders(<KpiReportPage />)
-    expect(screen.getByRole('combobox', { name: 'Kỹ thuật' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('combobox', { name: 'Kỹ thuật' }),
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('combobox', { name: 'Nhóm sản phẩm' }),
     ).toBeInTheDocument()
@@ -68,7 +70,36 @@ describe('KpiReportPage', () => {
 
   it('renders the Chi nhánh select + Tìm kiếm button', () => {
     renderWithProviders(<KpiReportPage />)
-    expect(screen.getByRole('combobox', { name: 'Chi nhánh' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('combobox', { name: 'Chi nhánh' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
+  })
+
+  it('replaces the redesigned summary with the exact technician aging pivot', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<KpiReportPage />)
+    await user.click(screen.getByRole('button', { name: 'Tìm kiếm' }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('columnheader', { name: 'Kỹ thuật' }),
+      ).toBeInTheDocument()
+    })
+    expect(
+      screen.getAllByRole('columnheader').map((header) => header.textContent),
+    ).toEqual([
+      'STT',
+      'Kỹ thuật',
+      '1 ngày',
+      '2 ngày',
+      '3 ngày',
+      '4 ngày',
+      '5 ngày',
+      '6 ngày',
+      '7 ngày',
+      '>7 ngày',
+      'Tổng',
+    ])
   })
 })

@@ -10,7 +10,7 @@ on:
         required: false
         type: string
       skip_health_gate:
-        description: Emergency only - deploy without checking /health/ready
+        description: Emergency only - skip API readiness and release-capability checks
         required: false
         default: false
         type: boolean
@@ -50,10 +50,20 @@ jobs:
         env:
           API_URL: ${{ github.event.inputs.api_url || vars.API_URL }}
         run: curl -sf --retry 5 --retry-delay 10 "${API_URL%/}/health/ready"
+      - name: Check API release capability
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.skip_health_gate != 'true' }}
+        env:
+          API_URL: ${{ github.event.inputs.api_url || vars.API_URL }}
+        run: |
+          status="$(curl -sS -o /dev/null -w '%{http_code}' --retry 5 --retry-delay 10 -H 'ngrok-skip-browser-warning: true' "${API_URL%/}/api/v1/tin-tuc?page=1&pageSize=1")"
+          if [[ "$status" != "401" ]]; then
+            echo "Compatible API must expose protected tin-tuc and return 401 without a token; received HTTP $status."
+            exit 1
+          fi
       - run: npm ci
       - run: npm run build:prod
         env:
-          VITE_REAL_RESOURCES: khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao,ngan-hang,dia-ly
+          VITE_REAL_RESOURCES: khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao,ngan-hang,dia-ly,tin-tuc
           VITE_API_URL: ${{ github.event.inputs.api_url || vars.API_URL }}
           VITE_ROUTER_MODE: hash
           VITE_BASE_PATH: /phongthanh-admin/

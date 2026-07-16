@@ -15,17 +15,24 @@ import {
   notify,
   type AutocompleteOption,
 } from '@/components/shared'
-import { filterLookupOptions, useLookup } from '@/hooks/use-lookup'
+import {
+  filterLookupOptions,
+  toResourceBranchId,
+  useLookup,
+} from '@/hooks/use-lookup'
 import type { BanHangLine } from './stockout-editor-types'
 
 type PriceKind = 'le' | 'si'
 
 interface BanHangLineEntryProps {
   onAdd: (line: BanHangLine) => void
+  branchId: string | null
 }
 
-export function BanHangLineEntry({ onAdd }: BanHangLineEntryProps) {
+export function BanHangLineEntry({ onAdd, branchId }: BanHangLineEntryProps) {
   const { rows: hangHoaRows, byId: hangHoaById } = useLookup('hang-hoa')
+  const { byId: modelById } = useLookup('model')
+  const { rows: nhaKhoRows } = useLookup('nha-kho')
   const [hangHoa, setHangHoa] = useState<AutocompleteOption | null>(null)
   const [theoSerial, setTheoSerial] = useState(false)
   const [priceKind, setPriceKind] = useState<PriceKind>('le')
@@ -53,6 +60,11 @@ export function BanHangLineEntry({ onAdd }: BanHangLineEntryProps) {
   const effectivePrice =
     capNhatGia && priceNew ? Number(priceNew) || 0 : basePrice
   const tonKho = selectedHang?.tonKho ?? 0
+  const warehouse = branchId
+    ? nhaKhoRows.find(
+        (row) => row.chiNhanhId === toResourceBranchId(branchId),
+      ) ?? nhaKhoRows[0]
+    : undefined
 
   function reset() {
     setHangHoa(null)
@@ -69,13 +81,28 @@ export function BanHangLineEntry({ onAdd }: BanHangLineEntryProps) {
       notify.error('Vui lòng chọn hàng hóa!')
       return
     }
+    if (!warehouse) {
+      notify.error('Không tìm thấy nhà kho bán hàng!')
+      return
+    }
     const qty = Number(soLuong) || 0
+    if (qty <= 0) {
+      notify.error('Số lượng phải lớn hơn 0!')
+      return
+    }
     onAdd({
+      hangHoaId: selectedHang.id,
+      maHang: selectedHang.maHH,
+      tenHang: selectedHang.tenHH,
+      model: selectedHang.modelId
+        ? (modelById.get(selectedHang.modelId)?.tenModel ?? '')
+        : '',
       serial: theoSerial ? serial.trim() : '',
-      ten: selectedHang.tenHH,
-      model: '',
+      khoId: warehouse.id,
+      khoTen: warehouse.tenNhaKho,
       capNhatGia,
-      gia: effectivePrice,
+      giaVon: selectedHang.giaNhap ?? selectedHang.giaMua ?? 0,
+      giaBan: effectivePrice,
       soLuong: qty,
       thanhTien: qty * effectivePrice,
     })

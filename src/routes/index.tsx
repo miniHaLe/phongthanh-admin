@@ -32,6 +32,9 @@ const RepairCreatePage = lazy(
 const RepairDetailPage = lazy(
   () => import('@/features/repair-detail/RepairDetailPage'),
 )
+const RepairEditPage = lazy(
+  () => import('@/features/repair-edit/RepairEditPage'),
+)
 const RepairKtListPage = lazy(
   () => import('@/features/repair-kt/RepairKtListPage'),
 )
@@ -157,6 +160,8 @@ const ChuyenKhoCrossBranchPage = lazy(
 )
 // Phase 2 — Shell-accessed pages (header widgets / user menu)
 const ThongBaoPage = lazy(() => import('@/pages/thong-bao/ThongBaoPage'))
+const TinTucPage = lazy(() => import('@/pages/tin-tuc/TinTucPage'))
+const TinTucDetailPage = lazy(() => import('@/pages/tin-tuc/TinTucDetailPage'))
 const TaiKhoanPage = lazy(() => import('@/pages/tai-khoan/TaiKhoanPage'))
 
 /** Relative path helper — strips the section prefix from an absolute ROUTE. */
@@ -212,6 +217,7 @@ export const appRoutes = [
       { path: rel(ROUTES.repairList, ''), element: <RepairListPage /> },
       { path: rel(ROUTES.repairKt, ''), element: <RepairKtListPage /> },
       { path: rel(ROUTES.repairCreate, ''), element: <RepairCreatePage /> },
+      { path: 'sua-chua-bao-hanh/:id/sua', element: <RepairEditPage /> },
       { path: 'sua-chua-bao-hanh/:id', element: <RepairDetailPage /> },
 
       // Customers (Phase 5)
@@ -571,10 +577,8 @@ export const appRoutes = [
 
       // Shell-accessed pages (Phase 2 — header widgets / user menu)
       { path: rel(ROUTES.notifications, ''), element: <ThongBaoPage /> },
-      {
-        path: 'tin-tuc/*',
-        element: <Navigate to={ROUTES.notifications} replace />,
-      },
+      { path: rel(ROUTES.news, ''), element: <TinTucPage /> },
+      { path: 'tin-tuc/:id', element: <TinTucDetailPage /> },
       { path: rel(ROUTES.account, ''), element: <TaiKhoanPage /> },
 
       // Change-password (inside shell — reached from user menu / first login)

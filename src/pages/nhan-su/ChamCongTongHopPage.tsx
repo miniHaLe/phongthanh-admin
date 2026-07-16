@@ -31,7 +31,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { DataTable, DataTableToolbar } from '@/components/shared'
+import {
+  DataTable,
+  DataTablePagination,
+  DataTableToolbar,
+} from '@/components/shared'
+import { STANDARD_PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 import { formatDate } from '@/lib/format'
 import { mockDelay } from '@/lib/mock-delay'
 import { exportToXlsx } from '@/lib/export-xlsx'
@@ -113,6 +118,8 @@ export default function ChamCongTongHopPage() {
   const chiNhanhLookup = useLookup('chi-nhanh')
   const [kyId, setKyId] = useState(KY_DEFAULT.id)
   const [hoTen, setHoTen] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(STANDARD_PAGE_SIZE_OPTIONS[0])
   const [detailRow, setDetailRow] = useState<TongHopRow | undefined>()
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -126,6 +133,12 @@ export default function ChamCongTongHopPage() {
   })
 
   const rows = data ?? []
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize))
+  const safePage = Math.min(page, totalPages)
+  const pageRows = rows.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize,
+  )
 
   async function handleExport() {
     await exportToXlsx({
@@ -149,7 +162,8 @@ export default function ChamCongTongHopPage() {
       {
         id: 'stt',
         header: 'STT',
-        cell: ({ row, table }) => getVisibleRowNumber(table, row),
+        cell: ({ row, table }) =>
+          getVisibleRowNumber(table, row, (safePage - 1) * pageSize),
         size: 50,
       },
       { accessorKey: 'maNV', header: 'Mã NV', size: 90 },
@@ -182,7 +196,7 @@ export default function ChamCongTongHopPage() {
         ),
       },
     ],
-    [],
+    [pageSize, safePage],
   )
 
   return (
@@ -192,7 +206,13 @@ export default function ChamCongTongHopPage() {
       <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-muted/30 p-3">
         <div className="space-y-1">
           <label className="text-xs text-muted-foreground">Kỳ</label>
-          <Select value={kyId} onValueChange={setKyId}>
+          <Select
+            value={kyId}
+            onValueChange={(value) => {
+              setKyId(value)
+              setPage(1)
+            }}
+          >
             <SelectTrigger className="h-8 w-40 text-sm">
               <SelectValue />
             </SelectTrigger>
@@ -226,18 +246,36 @@ export default function ChamCongTongHopPage() {
       <DataTable
         tableId="cham-cong-tong-hop"
         columns={columns}
-        data={rows}
+        data={pageRows}
         isLoading={isLoading}
         isError={isError}
         onRetry={() => refetch()}
         emptyMessage="Chưa có dữ liệu chấm công tổng hợp"
+        manualPagination
+        pagination={{ pageIndex: safePage - 1, pageSize }}
+        pageCount={totalPages}
         toolbar={
           <DataTableToolbar
             searchValue={hoTen}
-            onSearchChange={setHoTen}
+            onSearchChange={(value) => {
+              setHoTen(value)
+              setPage(1)
+            }}
             searchPlaceholder="Tên Nhân Viên…"
           />
         }
+      />
+
+      <DataTablePagination
+        page={safePage}
+        pageSize={pageSize}
+        total={rows.length}
+        onPageChange={setPage}
+        onPageSizeChange={(value) => {
+          setPageSize(value)
+          setPage(1)
+        }}
+        pageSizeOptions={STANDARD_PAGE_SIZE_OPTIONS}
       />
 
       <Dialog

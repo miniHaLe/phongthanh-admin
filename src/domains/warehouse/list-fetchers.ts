@@ -23,6 +23,38 @@ interface BaseListParams {
   pageSize?: number
 }
 
+export interface ReceivingListParams extends BaseListParams {
+  hinhThucThanhToan?: string
+  khoId?: string
+  nganChuaId?: string
+  soDatHangHoaDon?: string
+  maSanPham?: string
+  nhaCungCap?: string
+  nguoiLap?: string
+  dateFrom?: string
+  dateTo?: string
+}
+
+export interface CheckoutListParams extends BaseListParams {
+  kyThuat?: string
+  khoId?: string
+  mucDich?: string
+  soPhieuSC?: string
+  maSanPham?: string
+  nsx?: string
+  dateFrom?: string
+  dateTo?: string
+}
+
+export interface SellingListParams extends BaseListParams {
+  khoId?: string
+  hinhThucThanhToan?: string
+  tenKhachHang?: string
+  maHang?: string
+  dateFrom?: string
+  dateTo?: string
+}
+
 function byBranch<T extends { branchId: string }>(
   rows: T[],
   branchId?: string,
@@ -30,33 +62,147 @@ function byBranch<T extends { branchId: string }>(
   return branchId ? rows.filter((r) => r.branchId === branchId) : rows
 }
 
-export async function fetchReceivingList(p: BaseListParams = {}) {
+export async function fetchReceivingList(p: ReceivingListParams = {}) {
   await mockDelay(300, 150)
   let rows = byBranch(RECEIVING_ROWS, p.branchId)
   if (p.soPhieu) {
     const q = p.soPhieu.toLowerCase()
     rows = rows.filter((r) => r.soPhieu.toLowerCase().includes(q))
   }
+  if (p.hinhThucThanhToan)
+    rows = rows.filter(
+      (r) => r.hinhThucThanhToan === p.hinhThucThanhToan,
+    )
+  if (p.khoId) rows = rows.filter((r) => r.khoId === p.khoId)
+  if (p.soDatHangHoaDon) {
+    const q = p.soDatHangHoaDon.toLowerCase()
+    rows = rows.filter(
+      (r) =>
+        r.soDatHang.toLowerCase().includes(q) ||
+        r.soHoaDon.toLowerCase().includes(q),
+    )
+  }
+  const receivingProductQuery = p.maSanPham?.toLowerCase()
+  if (p.nganChuaId || receivingProductQuery) {
+    rows = rows.filter((r) =>
+      r.lines.some((line) => {
+        if (p.nganChuaId && line.nganChuaId !== p.nganChuaId) return false
+        if (
+          receivingProductQuery &&
+          !line.ma.toLowerCase().includes(receivingProductQuery)
+        )
+          return false
+        return true
+      }),
+    )
+  }
+  if (p.nhaCungCap) {
+    const q = p.nhaCungCap.toLowerCase()
+    rows = rows.filter(
+      (r) =>
+        r.nhaCungCap.toLowerCase().includes(q) ||
+        r.nhaCungCapSdt.includes(q),
+    )
+  }
+  if (p.nguoiLap) {
+    const q = p.nguoiLap.toLowerCase()
+    rows = rows.filter((r) => r.nguoiLap.toLowerCase().includes(q))
+  }
+  const { dateFrom, dateTo } = p
+  if (dateFrom)
+    rows = rows.filter((r) => r.ngayLap.slice(0, 10) >= dateFrom)
+  if (dateTo) rows = rows.filter((r) => r.ngayLap.slice(0, 10) <= dateTo)
   return paginate(rows, p.page, p.pageSize)
 }
 
-export async function fetchCheckoutList(p: BaseListParams = {}) {
+export async function fetchCheckoutList(p: CheckoutListParams = {}) {
   await mockDelay(300, 150)
   let rows = byBranch(CHECKOUT_ROWS, p.branchId)
   if (p.soPhieu) {
     const q = p.soPhieu.toLowerCase()
     rows = rows.filter((r) => r.soPhieuCap.toLowerCase().includes(q))
   }
+  if (p.kyThuat) rows = rows.filter((r) => r.kyThuat === p.kyThuat)
+  const { dateFrom, dateTo } = p
+  if (dateFrom)
+    rows = rows.filter((r) => r.ngayLap.slice(0, 10) >= dateFrom)
+  if (dateTo) rows = rows.filter((r) => r.ngayLap.slice(0, 10) <= dateTo)
+  const repairTicketQuery = p.soPhieuSC?.toLowerCase()
+  const checkoutProductQuery = p.maSanPham?.toLowerCase()
+  const manufacturerQuery = p.nsx?.toLowerCase()
+  if (
+    p.khoId ||
+    p.mucDich ||
+    repairTicketQuery ||
+    checkoutProductQuery ||
+    manufacturerQuery
+  ) {
+    rows = rows.filter((r) =>
+      r.lines.some((line) => {
+        if (p.khoId && line.khoId !== p.khoId) return false
+        if (p.mucDich && line.mucDich !== p.mucDich) return false
+        if (
+          repairTicketQuery &&
+          !line.soPhieuSC.toLowerCase().includes(repairTicketQuery)
+        )
+          return false
+        if (
+          checkoutProductQuery &&
+          !line.maHang.toLowerCase().includes(checkoutProductQuery)
+        )
+          return false
+        if (
+          manufacturerQuery &&
+          !line.nhaSanXuat.toLowerCase().includes(manufacturerQuery)
+        )
+          return false
+        return true
+      }),
+    )
+  }
   return paginate(rows, p.page, p.pageSize)
 }
 
-export async function fetchSellingList(p: BaseListParams = {}) {
+export async function fetchSellingList(p: SellingListParams = {}) {
   await mockDelay(300, 150)
   let rows = byBranch(SELLING_ROWS, p.branchId)
   if (p.soPhieu) {
     const q = p.soPhieu.toLowerCase()
-    rows = rows.filter((r) => r.soPhieu.toLowerCase().includes(q))
+    rows = rows.filter(
+      (r) =>
+        r.soPhieu.toLowerCase().includes(q) ||
+        r.ghiChu.toLowerCase().includes(q),
+    )
   }
+  if (p.hinhThucThanhToan)
+    rows = rows.filter(
+      (r) => r.hinhThucThanhToan === p.hinhThucThanhToan,
+    )
+  if (p.tenKhachHang) {
+    const q = p.tenKhachHang.toLowerCase()
+    rows = rows.filter(
+      (r) =>
+        r.khachHang.toLowerCase().includes(q) || r.dienThoai.includes(q),
+    )
+  }
+  const productQuery = p.maHang?.toLowerCase()
+  if (p.khoId || productQuery) {
+    rows = rows.filter((r) =>
+      r.lines.some((line) => {
+        if (p.khoId && line.khoId !== p.khoId) return false
+        if (
+          productQuery &&
+          !`${line.maHang} ${line.tenHang}`.toLowerCase().includes(productQuery)
+        )
+          return false
+        return true
+      }),
+    )
+  }
+  if (p.dateFrom)
+    rows = rows.filter((r) => r.ngayLap.slice(0, 10) >= p.dateFrom!)
+  if (p.dateTo)
+    rows = rows.filter((r) => r.ngayLap.slice(0, 10) <= p.dateTo!)
   return paginate(rows, p.page, p.pageSize)
 }
 

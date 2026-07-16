@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { ChevronDown, SlidersHorizontal, X } from 'lucide-react'
+import { ChevronDown, Search, SlidersHorizontal, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -10,6 +10,7 @@ export interface FilterPanelProps {
   filterCount: number
   defaultExpanded?: boolean
   savedViewsSlot?: React.ReactNode
+  onSearch?: () => void
   triggerLabel?: string
   contentClassName?: string
 }
@@ -25,6 +26,7 @@ export function FilterPanel({
   filterCount,
   defaultExpanded = false,
   savedViewsSlot,
+  onSearch,
   triggerLabel = 'Bộ lọc',
   contentClassName,
 }: FilterPanelProps) {
@@ -72,6 +74,19 @@ export function FilterPanel({
 
         {/* Saved-views slot (e.g. <SavedViews>) */}
         {savedViewsSlot}
+
+        {onSearch && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-11 gap-1.5 md:h-8"
+            onClick={onSearch}
+          >
+            <Search className="h-3.5 w-3.5" />
+            Tìm kiếm
+          </Button>
+        )}
 
         {/* Clear button */}
         <Button

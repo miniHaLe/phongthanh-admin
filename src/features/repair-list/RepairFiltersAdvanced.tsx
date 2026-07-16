@@ -309,6 +309,16 @@ export function RepairFiltersAdvanced({
         </Select>
       </Field>
 
+      <Field label="Tên khu vực" htmlFor={`${uid}-khuvuc`}>
+        <Input
+          id={`${uid}-khuvuc`}
+          className="h-11 text-base md:h-8 md:text-sm"
+          placeholder="Tên khu vực"
+          value={filters.khuVuc ?? ''}
+          onChange={(e) => onChange({ khuVuc: e.target.value || undefined })}
+        />
+      </Field>
+
       {/* Tuyến */}
       <Field label="Tuyến" htmlFor={`${uid}-tuyen`}>
         <Input

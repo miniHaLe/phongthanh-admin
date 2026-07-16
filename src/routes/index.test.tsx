@@ -33,6 +33,7 @@ describe('application route IA', () => {
       'xuat-kho/chuyen-kho/cung-chi-nhanh',
       'xuat-kho/chuyen-kho/khac-chi-nhanh',
       'tai-chinh/hoa-don/tao-moi',
+      'sua-chua-bao-hanh/:id/sua',
     ]
 
     for (const path of editorPaths) {
@@ -48,9 +49,6 @@ describe('application route IA', () => {
   it('preserves moved URLs through redirects', () => {
     const children = shellChildren()
     expect(
-      redirectTarget(children.find((route) => route.path === 'tin-tuc/*')),
-    ).toBe(ROUTES.notifications)
-    expect(
       redirectTarget(
         children.find((route) => route.path === 'nhan-su/ngan-hang'),
       ),
@@ -60,6 +58,14 @@ describe('application route IA', () => {
         children.find((route) => route.path === 'quan-ly/hoa-don'),
       ),
     ).toBe(ROUTES.financeInvoices)
+  })
+
+  it('restores the news list and real detail routes', () => {
+    const children = shellChildren()
+    expect(children.find((route) => route.path === 'tin-tuc')).toBeDefined()
+    const detailRoute = children.find((route) => route.path === 'tin-tuc/:id')
+    expect(detailRoute?.element).toBeDefined()
+    expect(redirectTarget(detailRoute)).toBeUndefined()
   })
 
   it('DEV-gates the Gallery route', () => {

@@ -1,9 +1,10 @@
 /** Spec: grouped print actions and selection-gated repair bulk operations. */
 import { describe, expect, it, vi } from 'vitest'
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/test/render-with-providers'
 import { MOCK_TICKETS } from '@/domains/repair/mock-data'
+import * as exportXlsx from '@/lib/export-xlsx'
 import { RepairBatchToolbar } from './repair-batch-toolbar'
 
 const printMocks = vi.hoisted(() => ({
@@ -28,7 +29,7 @@ describe('RepairBatchToolbar', () => {
 
     expect(screen.getByRole('button', { name: /^In/ })).toBeDisabled()
     expect(
-      screen.getByRole('button', { name: 'Xuất Excel' }),
+      screen.getByRole('button', { name: 'Xuất Excel File' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Xuất Excel In' }),
@@ -79,5 +80,34 @@ describe('RepairBatchToolbar', () => {
 
     await user.click(screen.getByRole('menuitem', { name: 'In Phiếu SC' }))
     expect(printMocks.printPhieuSc).toHaveBeenCalledWith(selected)
+  })
+
+  it('uses distinct legacy column sets for file and print-layout exports', async () => {
+    const user = userEvent.setup()
+    const spy = vi.spyOn(exportXlsx, 'exportToXlsx').mockResolvedValue()
+    renderWithProviders(
+      <RepairBatchToolbar {...baseProps} total={MOCK_TICKETS.length} />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Xuất Excel File' }))
+    await user.click(screen.getByRole('button', { name: 'Xuất Excel In' }))
+
+    await waitFor(() => expect(spy).toHaveBeenCalledTimes(2))
+    const fileHeaders = spy.mock.calls[0][0].columns.map((c) => c.header)
+    const printHeaders = spy.mock.calls[1][0].columns.map((c) => c.header)
+    expect(printHeaders).toEqual([
+      'Phiếu sửa chữa',
+      'Khách hàng',
+      'Sản phẩm',
+      'Kỹ thuật',
+      'Loại SC',
+      'Chi phí',
+      'Ngày nhận',
+      'Ngày HT',
+      'Sửa chữa',
+      'Ghi chú',
+      'Người nhận',
+    ])
+    expect(printHeaders).not.toEqual(fileHeaders)
   })
 })

@@ -45,13 +45,23 @@ export interface FieldConfig<T> {
   createOnly?: boolean
 }
 
-export interface FilterConfig<T> {
+export type FilterConfig<T> = {
   key: keyof T
   label: string
-  type: 'text' | 'select' | 'date-range'
   options?: { label: string; value: string }[]
   loadOptions?: () => Promise<{ label: string; value: string }[]>
-}
+} & (
+  | {
+      type: 'text' | 'select'
+      fromKey?: never
+      toKey?: never
+    }
+  | {
+      type: 'date-range'
+      fromKey: string
+      toKey: string
+    }
+)
 
 export interface MockApi<T> {
   list: (params: ListParams) => Promise<PagedResult<T>>

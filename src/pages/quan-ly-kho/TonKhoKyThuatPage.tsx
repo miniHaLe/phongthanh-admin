@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/select'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
+import { exportToXlsx, type ExportColumn } from '@/lib/export-xlsx'
 import { formatVND, formatNumber } from '@/lib/format'
 import { fetchInventory } from '@/domains/warehouse/mock-data'
 import { BRANCHES } from '@/mock/seed/branches'
@@ -52,6 +53,28 @@ const NHOM_HANG_OPTIONS = [
 
 import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const UNSET = '__all__'
+
+const EXPORT_COLUMNS: ExportColumn<InventoryRow>[] = [
+  {
+    header: 'Chi nhánh',
+    accessor: (row) =>
+      BRANCHES.find((branch) => branch.id === row.branchId)?.name ??
+      row.branchId,
+  },
+  { header: 'Kỳ', accessor: (row) => row.kyLabel },
+  { header: 'Kỹ thuật', accessor: (row) => row.kyThuat },
+  { header: 'Mã hàng', accessor: (row) => row.maHang },
+  { header: 'Tên hàng', accessor: (row) => row.tenHang },
+  { header: 'Nhóm hàng', accessor: (row) => row.nhomHang },
+  { header: 'Nhà sản xuất', accessor: (row) => row.nhaSanXuat },
+  { header: 'Model', accessor: (row) => row.model },
+  { header: 'Tồn đầu kỳ', accessor: (row) => row.tonDauKy },
+  { header: 'Nhập trong kỳ', accessor: (row) => row.nhapTrongKy },
+  { header: 'Xuất trong kỳ', accessor: (row) => row.xuatTrongKy },
+  { header: 'Tồn', accessor: (row) => row.ton },
+  { header: 'Giá vốn trong kỳ', accessor: (row) => row.giaVonTrongKy },
+  { header: 'Tồn cuối kỳ', accessor: (row) => row.tonCuoiKy },
+]
 
 interface TonKhoKyThuatFilters {
   branchId: string | null
@@ -126,6 +149,20 @@ export default function TonKhoKyThuatPage() {
   function handleFilterChange(next: Partial<TonKhoKyThuatFilters>) {
     setFilters((f) => ({ ...f, ...next }))
     setPage(1)
+  }
+
+  async function handleExport() {
+    const result = await fetchInventory({
+      ...queryParams,
+      page: 1,
+      pageSize: Math.max(total, 300),
+    })
+    await exportToXlsx({
+      filename: 'ton-kho-ky-thuat',
+      sheetName: 'Tồn kho kỹ thuật',
+      columns: EXPORT_COLUMNS,
+      rows: result.rows,
+    })
   }
 
   const columns = useMemo<ColumnDef<InventoryRow, unknown>[]>(
@@ -329,6 +366,24 @@ export default function TonKhoKyThuatPage() {
             value={filters.denKy ?? undefined}
             onChange={(kyId) => handleFilterChange({ denKy: kyId })}
           />
+        </div>
+
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            className="mr-2"
+            onClick={() => void refetch()}
+          >
+            Tìm kiếm
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleExport()}
+          >
+            Xuất ra Excel
+          </Button>
         </div>
 
         <DataTable

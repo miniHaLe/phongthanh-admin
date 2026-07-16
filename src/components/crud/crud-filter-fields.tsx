@@ -101,6 +101,40 @@ export function CrudFilterFields<T>({
     const controlId = `${uid}-${key}`
     const currentValue = String(value[key] ?? '')
 
+    if (filter.type === 'date-range') {
+      const fromId = `${controlId}-from`
+      const toId = `${controlId}-to`
+      return (
+        <div
+          key={key}
+          className="grid min-w-0 grid-cols-1 gap-2 sm:col-span-2 sm:grid-cols-2"
+        >
+          <FilterField label="Từ ngày" htmlFor={fromId}>
+            <Input
+              id={fromId}
+              type="date"
+              aria-label="Từ ngày"
+              className={filterControlClassName}
+              value={String(value[filter.fromKey] ?? '')}
+              onChange={(event) =>
+                handleChange(filter.fromKey, event.target.value)
+              }
+            />
+          </FilterField>
+          <FilterField label="Đến ngày" htmlFor={toId}>
+            <Input
+              id={toId}
+              type="date"
+              aria-label="Đến ngày"
+              className={filterControlClassName}
+              value={String(value[filter.toKey] ?? '')}
+              onChange={(event) => handleChange(filter.toKey, event.target.value)}
+            />
+          </FilterField>
+        </div>
+      )
+    }
+
     if (filter.type === 'select') {
       return (
         <FilterField key={key} label={filter.label} htmlFor={controlId}>

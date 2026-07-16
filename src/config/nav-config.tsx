@@ -87,10 +87,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: 'Tồn kho', path: ROUTES.inventoryStockView },
       { label: 'Tồn kho LK xác', path: ROUTES.inventoryConfirmedStock },
       { label: 'Tồn kho kỹ thuật', path: ROUTES.inventoryTechStock },
-      {
-        label: 'Danh sách sử dụng linh kiện',
-        path: ROUTES.inventoryPartsRecovery,
-      },
+      { label: 'Thu Hồi Linh Kiện', path: ROUTES.inventoryPartsRecovery },
       { label: 'DS trả LK', path: ROUTES.inventoryPartsReturn },
       { label: 'DS trả LK xác', path: ROUTES.inventoryPartsReturnXac },
     ],

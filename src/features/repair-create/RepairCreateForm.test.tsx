@@ -38,13 +38,13 @@ describe('RepairCreateForm', () => {
     expect(labels).toEqual(['Bảo hành', 'BH sửa chửa', 'Sửa dịch vụ'])
   })
 
-  it('renders the Loại bảo hành radios with Tại Nhà checked by default', () => {
+  it('renders the Loại bảo hành radios with Tại Nhà Khách checked by default', () => {
     renderWithProviders(<RepairCreateForm />)
     const group = screen.getByRole('radiogroup', { name: 'Loại bảo hành' })
     const labels = within_(group).map((el) => el.textContent)
-    expect(labels).toEqual(['Tại TTBH', 'Tại Nhà'])
+    expect(labels).toEqual(['Tại TTBH', 'Tại Nhà Khách'])
 
-    const taiNha = screen.getByRole('radio', { name: 'Tại Nhà' })
+    const taiNha = screen.getByRole('radio', { name: 'Tại Nhà Khách' })
     expect(taiNha).toHaveAttribute('data-state', 'checked')
   })
 

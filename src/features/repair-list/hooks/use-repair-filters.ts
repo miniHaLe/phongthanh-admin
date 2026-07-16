@@ -14,15 +14,19 @@ import type {
   DateType,
 } from '@/domains/repair/types'
 import { subDays, format } from 'date-fns'
+import { REPAIR_MOCK_REFERENCE_EPOCH_MS } from '@/domains/repair/mock-data'
 
 // ── Default filter factory ────────────────────────────────────────────────
 
 function todayIso(): string {
-  return format(new Date(), 'yyyy-MM-dd')
+  return format(new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS), 'yyyy-MM-dd')
 }
 
 function thirtyDaysAgoIso(): string {
-  return format(subDays(new Date(), 30), 'yyyy-MM-dd')
+  return format(
+    subDays(new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS), 30),
+    'yyyy-MM-dd',
+  )
 }
 
 export function buildDefaultFilters(activeBranch: string): RepairListFilters {
@@ -57,6 +61,7 @@ function toParams(filters: RepairListFilters): URLSearchParams {
   if (filters.kyId) p.set('kyId', filters.kyId)
   if (filters.tinh) p.set('tinh', filters.tinh)
   if (filters.huyen) p.set('huyen', filters.huyen)
+  if (filters.khuVuc) p.set('khuVuc', filters.khuVuc)
   if (filters.tuyen) p.set('tuyen', filters.tuyen)
   if (filters.daiLy) p.set('daiLy', filters.daiLy)
   if (filters.diaChi) p.set('diaChi', filters.diaChi)
@@ -99,6 +104,7 @@ function fromParams(
     kyId: sp.get('kyId') ?? defaults.kyId,
     tinh: sp.get('tinh') ?? defaults.tinh,
     huyen: sp.get('huyen') ?? defaults.huyen,
+    khuVuc: sp.get('khuVuc') ?? defaults.khuVuc,
     tuyen: sp.get('tuyen') ?? defaults.tuyen,
     daiLy: sp.get('daiLy') ?? defaults.daiLy,
     diaChi: sp.get('diaChi') ?? defaults.diaChi,
@@ -133,6 +139,7 @@ function countActiveFilters(
     'kyId',
     'tinh',
     'huyen',
+    'khuVuc',
     'tuyen',
     'daiLy',
     'diaChi',

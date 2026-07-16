@@ -6,15 +6,27 @@
  * Durability note (Finding 6): these writes live in module memory only — they
  * are lost on any page reload; resetDemo() regenerates the seed identically.
  */
-import { MOCK_TICKETS } from './mock-data'
+import { MOCK_TICKETS, REPAIR_MOCK_REFERENCE_EPOCH_MS } from './mock-data'
 import { TECHNICIANS } from './reference-data'
 import { labelOf, type RepairStatusId } from './status'
 import type { RepairTicket, StatusHistoryEntry } from './types'
 
-const CLOCK = '2024-07-01T00:00:00.000Z'
+export { createRepairTicket, updateRepairTicket } from './mock-ticket-mutations'
 
 function byId(id: string): RepairTicket | undefined {
   return MOCK_TICKETS.find((t) => t.id === id)
+}
+
+function mutationTimestamp(ticket: RepairTicket): string {
+  const latest = Date.parse(
+    ticket.statusHistory.at(-1)?.changedAt ?? ticket.updatedAt,
+  )
+  return new Date(
+    Math.max(
+      REPAIR_MOCK_REFERENCE_EPOCH_MS,
+      Number.isFinite(latest) ? latest : REPAIR_MOCK_REFERENCE_EPOCH_MS,
+    ),
+  ).toISOString()
 }
 
 function pushHistory(t: RepairTicket, entry: StatusHistoryEntry) {
@@ -39,13 +51,14 @@ export function updateTicketStatus(
   for (const id of ids) {
     const t = byId(id)
     if (!t) continue
+    const changedAt = mutationTimestamp(t)
     t.tinhTrang = status
     if (fields.gia != null) t.giaBaoGia = fields.gia
     if (fields.cachGiaiQuyet != null) t.cachGiaiQuyet = fields.cachGiaiQuyet
-    if (status === 9) t.ngaySuaXong = t.ngaySuaXong ?? CLOCK
+    if (status === 9) t.ngaySuaXong = t.ngaySuaXong ?? changedAt
     pushHistory(t, {
       status,
-      changedAt: CLOCK,
+      changedAt,
       changedBy: fields.changedBy ?? 'Hệ thống',
       note: fields.noiDung ?? `Đổi tình trạng: ${labelOf(status)}`,
     })
@@ -55,7 +68,10 @@ export function updateTicketStatus(
 }
 
 /** Assign or reassign a technician across the given tickets. */
-export function dispatchTechnician(ids: string[], techId: string): RepairTicket[] {
+export function dispatchTechnician(
+  ids: string[],
+  techId: string,
+): RepairTicket[] {
   const tech = TECHNICIANS.find((t) => t.id === techId)
   const updated: RepairTicket[] = []
   for (const id of ids) {
@@ -65,10 +81,11 @@ export function dispatchTechnician(ids: string[], techId: string): RepairTicket[
     t.kyThuat = tech?.ten ?? techId
     // Điều phối moves a new ticket to "Đã Điều Phối" (2).
     if (t.tinhTrang === 1) {
+      const changedAt = mutationTimestamp(t)
       t.tinhTrang = 2
       pushHistory(t, {
         status: 2,
-        changedAt: CLOCK,
+        changedAt,
         changedBy: tech?.ten ?? 'Hệ thống',
         note: 'Điều phối kỹ thuật',
       })
@@ -100,7 +117,7 @@ export function transferBranch(
     t.branchId = branchId
     pushHistory(t, {
       status: t.tinhTrang,
-      changedAt: CLOCK,
+      changedAt: mutationTimestamp(t),
       changedBy: 'Hệ thống',
       note: note ? `Chuyển chi nhánh: ${note}` : 'Chuyển chi nhánh',
     })
@@ -131,7 +148,7 @@ export function addScheduleReminder(
   if (!t) return undefined
   pushHistory(t, {
     status: t.tinhTrang,
-    changedAt: CLOCK,
+    changedAt: mutationTimestamp(t),
     changedBy: 'Hệ thống',
     note: `Lịch hẹn ${reminder.date}: ${reminder.note}`,
   })
@@ -160,7 +177,7 @@ export function checkoutDelivery(
   t.ngayGiao = info.ngayGiao
   pushHistory(t, {
     status: 10,
-    changedAt: CLOCK,
+    changedAt: mutationTimestamp(t),
     changedBy: 'Hệ thống',
     note: info.ghiChu ? `Giao máy: ${info.ghiChu}` : 'Giao máy cho khách',
   })
@@ -179,14 +196,18 @@ export function updateSolution(
 }
 
 /** Set a quote (Báo giá → status Báo Giá 4). */
-export function setQuote(id: string, gia: number, noiDung?: string): RepairTicket | undefined {
+export function setQuote(
+  id: string,
+  gia: number,
+  noiDung?: string,
+): RepairTicket | undefined {
   const t = byId(id)
   if (!t) return undefined
   t.giaBaoGia = gia
   t.tinhTrang = 4
   pushHistory(t, {
     status: 4,
-    changedAt: CLOCK,
+    changedAt: mutationTimestamp(t),
     changedBy: 'Hệ thống',
     note: noiDung ? `Báo giá: ${noiDung}` : 'Báo giá',
   })
@@ -202,7 +223,10 @@ export function deleteQuote(id: string): RepairTicket | undefined {
 }
 
 /** Toggle the "Sửa gấp" (rush) flag on a ticket. */
-export function updateSuaGap(id: string, value: boolean): RepairTicket | undefined {
+export function updateSuaGap(
+  id: string,
+  value: boolean,
+): RepairTicket | undefined {
   const t = byId(id)
   if (!t) return undefined
   t.isQuick = value

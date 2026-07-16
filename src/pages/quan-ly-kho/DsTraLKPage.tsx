@@ -24,7 +24,7 @@ import {
   type PartReturnFilterValues,
 } from '@/features/warehouse/part-return-filters'
 
-import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 function applyClientFilters(rows: PartReturn[], f: PartReturnFilterValues): PartReturn[] {
@@ -136,6 +136,7 @@ export default function DsTraLKPage() {
         <FilterPanel
           filterCount={activeFilterCount}
           onClear={() => setFilters({})}
+          onSearch={() => void refetch()}
           defaultExpanded
         >
           <PartReturnFilters filters={filters} onChange={handleFilterChange} />

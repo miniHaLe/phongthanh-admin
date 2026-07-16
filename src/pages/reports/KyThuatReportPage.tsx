@@ -30,7 +30,10 @@ import {
 } from '@/components/reports/status-column-chart'
 import { ReportDrilldown } from '@/components/reports/report-drilldown'
 import { ReportLoadingState } from '@/components/reports/report-loading-state'
-import { MOCK_TICKETS } from '@/domains/repair/mock-data'
+import {
+  MOCK_TICKETS,
+  REPAIR_MOCK_REFERENCE_EPOCH_MS,
+} from '@/domains/repair/mock-data'
 import { TECHNICIANS } from '@/domains/repair/reference-data'
 import {
   REPAIR_STATUS_DISPLAY_ORDER,
@@ -43,8 +46,14 @@ import type { RepairTicket } from '@/domains/repair/types'
 
 const DEFAULT_STATUS_ID: RepairStatusId = 9 // Sửa Xong
 
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10)
+function defaultFromIso(): string {
+  const date = new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS)
+  date.setDate(date.getDate() - 30)
+  return date.toISOString().slice(0, 10)
+}
+
+function defaultToIso(): string {
+  return new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS).toISOString().slice(0, 10)
 }
 
 interface KyThuatReportParams {
@@ -105,16 +114,16 @@ async function searchTechnicians(query: string): Promise<AutocompleteOption[]> {
 export default function KyThuatReportPage() {
   const [statusId, setStatusId] = useState<RepairStatusId>(DEFAULT_STATUS_ID)
   const [kyThuat, setKyThuat] = useState<AutocompleteOption | null>(null)
-  const [tuNgay, setTuNgay] = useState(todayIso())
-  const [denNgay, setDenNgay] = useState(todayIso())
+  const [tuNgay, setTuNgay] = useState(defaultFromIso())
+  const [denNgay, setDenNgay] = useState(defaultToIso())
   const [selectedTech, setSelectedTech] = useState<string | null>(null)
 
   // Auto-runs on mount: initial submittedParams already reflects the default
   // filter values, so the first query fires without waiting for a click.
   const [submittedParams, setSubmittedParams] = useState<KyThuatReportParams>({
     statusId: DEFAULT_STATUS_ID,
-    tuNgay: todayIso(),
-    denNgay: todayIso(),
+    tuNgay: defaultFromIso(),
+    denNgay: defaultToIso(),
   })
 
   const { data, isFetching } = useQuery({

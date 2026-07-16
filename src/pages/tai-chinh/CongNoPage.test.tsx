@@ -33,4 +33,9 @@ describe('CongNoPage', () => {
     const buttons = await screen.findAllByRole('button', { name: 'Thanh toán' })
     expect(buttons.length).toBeGreaterThan(0)
   })
+
+  it('renders the explicit legacy search affordance', () => {
+    renderWithProviders(<CongNoPage />)
+    expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
+  })
 })

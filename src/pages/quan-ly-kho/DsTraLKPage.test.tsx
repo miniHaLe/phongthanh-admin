@@ -96,6 +96,7 @@ describe('DsTraLKPage', () => {
     expect(
       screen.getByRole('button', { name: 'Xuất Excel' }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
   })
 
   it('does not render an invented Lý do column', async () => {

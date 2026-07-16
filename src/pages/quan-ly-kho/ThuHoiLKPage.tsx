@@ -11,11 +11,18 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { isWithinInterval, parseISO } from 'date-fns'
 import type { PaginationState } from '@tanstack/react-table'
-import { DataTable, DataTablePagination, PageHeader, FilterPanel } from '@/components/shared'
+import {
+  DataTable,
+  DataTablePagination,
+  PageHeader,
+  FilterPanel,
+} from '@/components/shared'
+import { Button } from '@/components/ui/button'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
 import { fetchIssuedUsageList } from '@/domains/warehouse/list-fetchers'
-import { formatVND } from '@/lib/format'
+import { exportToXlsx, type ExportColumn } from '@/lib/export-xlsx'
+import { formatDate, formatVND } from '@/lib/format'
 import type { IssuedPartUsage } from '@/domains/warehouse/types'
 import { KpiBox } from '@/features/warehouse/kpi-box'
 import {
@@ -27,8 +34,30 @@ import {
   type IssuedUsageFilterValues,
 } from '@/features/warehouse/issued-usage-filters'
 
-import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
+
+const EXPORT_COLUMNS: ExportColumn<IssuedPartUsage>[] = [
+  { header: 'Tình trạng', accessor: (row) => row.tinhTrang },
+  { header: 'Số phiếu cấp', accessor: (row) => row.soPhieuCap },
+  { header: 'Số phiếu SC', accessor: (row) => row.soPhieuSC },
+  { header: 'Số phiếu hãng', accessor: (row) => row.soPhieuHang },
+  { header: 'Model', accessor: (row) => row.model },
+  { header: 'Serial', accessor: (row) => row.serial },
+  { header: 'NSX', accessor: (row) => row.nsx },
+  { header: 'Nhà kho', accessor: (row) => row.nhaKho },
+  { header: 'Mã hàng', accessor: (row) => row.maHang },
+  { header: 'Tên hàng', accessor: (row) => row.tenHang },
+  { header: 'Kĩ thuật', accessor: (row) => row.kyThuat },
+  { header: 'Mục đích', accessor: (row) => row.mucDich },
+  { header: 'Ngày cấp', accessor: (row) => formatDate(row.ngayCap) },
+  { header: 'Người cấp', accessor: (row) => row.nguoiCap },
+  { header: 'Ngày giao', accessor: (row) => formatDate(row.ngayGiao) },
+  { header: 'Ngày TX', accessor: (row) => formatDate(row.ngayTX) },
+  { header: 'Người TX', accessor: (row) => row.nguoiTX },
+  { header: 'Số lượng cấp', accessor: (row) => row.soLuongCap },
+  { header: 'SL Trả', accessor: (row) => row.slTra },
+]
 
 /** Apply the client-side-only filters (the fetcher supports branchId/tinhTrang/mucDich). */
 function applyClientFilters(
@@ -42,7 +71,8 @@ function applyClientFilters(
     const q = f.soPhieuCap.toLowerCase()
     out = out.filter((r) => r.soPhieuCap.toLowerCase().includes(q))
   }
-  if (f.tinhTrangPhieu != null) out = out.filter((r) => r.ticketStatusId === f.tinhTrangPhieu)
+  if (f.tinhTrangPhieu != null)
+    out = out.filter((r) => r.ticketStatusId === f.tinhTrangPhieu)
   if (f.soPhieuSC) {
     const q = f.soPhieuSC.toLowerCase()
     out = out.filter((r) => r.soPhieuSC.toLowerCase().includes(q))
@@ -54,7 +84,9 @@ function applyClientFilters(
   if (f.maSanPham) {
     const q = f.maSanPham.toLowerCase()
     out = out.filter(
-      (r) => r.maHang.toLowerCase().includes(q) || r.tenHang.toLowerCase().includes(q),
+      (r) =>
+        r.maHang.toLowerCase().includes(q) ||
+        r.tenHang.toLowerCase().includes(q),
     )
   }
   if (f.nsx) out = out.filter((r) => r.nsx === f.nsx)
@@ -99,7 +131,11 @@ export default function ThuHoiLKPage() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: [
       'issued-usage-list',
-      { branchId: filters.branchId, tinhTrang: filters.tinhTrang, mucDich: filters.mucDich },
+      {
+        branchId: filters.branchId,
+        tinhTrang: filters.tinhTrang,
+        mucDich: filters.mucDich,
+      },
     ],
     queryFn: () =>
       fetchIssuedUsageList({
@@ -141,7 +177,9 @@ export default function ThuHoiLKPage() {
     setPage(1)
   }
 
-  const activeFilterCount = Object.values(filters).filter((v) => v != null && v !== '').length
+  const activeFilterCount = Object.values(filters).filter(
+    (v) => v != null && v !== '',
+  ).length
 
   return (
     <div className="space-y-0">
@@ -157,6 +195,7 @@ export default function ThuHoiLKPage() {
         <FilterPanel
           filterCount={activeFilterCount}
           onClear={() => setFilters({})}
+          onSearch={() => void refetch()}
           defaultExpanded
         >
           <IssuedUsageFilters filters={filters} onChange={handleFilterChange} />
@@ -164,8 +203,33 @@ export default function ThuHoiLKPage() {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <KpiBox label="Tổng cấp" value={String(kpi.tongCap)} tone="yellow" />
-          <KpiBox label="Tổng tiền LK chưa giao" value={formatVND(kpi.chuaGiao)} tone="blue" />
-          <KpiBox label="Tổng tiền LK đã giao" value={formatVND(kpi.daGiao)} tone="green" />
+          <KpiBox
+            label="Tổng tiền LK chưa giao"
+            value={formatVND(kpi.chuaGiao)}
+            tone="blue"
+          />
+          <KpiBox
+            label="Tổng tiền LK đã giao"
+            value={formatVND(kpi.daGiao)}
+            tone="green"
+          />
+        </div>
+
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              void exportToXlsx({
+                filename: 'danh-sach-su-dung-linh-kien',
+                sheetName: 'Sử dụng linh kiện',
+                columns: EXPORT_COLUMNS,
+                rows: filteredRows,
+              })
+            }
+          >
+            Xuất ra Excel
+          </Button>
         </div>
 
         <DataTable

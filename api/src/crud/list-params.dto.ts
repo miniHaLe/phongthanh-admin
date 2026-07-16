@@ -19,7 +19,7 @@ const listFilterValueSchema = z
  * (the allowlist is per-resource, this DTO is resource-agnostic). */
 export const listParamsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(200).default(20),
+  pageSize: z.coerce.number().int().min(1).max(300).default(20),
   sort: z.string().min(1).optional(),
   dir: z.enum(['asc', 'desc']).default('asc'),
   search: z.string().optional(),

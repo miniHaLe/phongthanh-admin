@@ -78,5 +78,12 @@ export const hoaDonConfig: CrudConfig<HoaDon> = {
       ],
     },
     { key: 'tenDonVi', label: 'Tên đơn vị', type: 'text' },
+    {
+      key: 'ngayXuat',
+      label: 'Ngày lập',
+      type: 'date-range',
+      fromKey: 'tuNgay',
+      toKey: 'denNgay',
+    },
   ],
 }

@@ -12,6 +12,7 @@ export const ROUTES = {
   repairList: '/sua-chua-bao-hanh',
   repairKt: '/sua-chua-bao-hanh-kt',
   repairDetail: (id: string) => `/sua-chua-bao-hanh/${id}`,
+  repairEdit: (id: string) => `/sua-chua-bao-hanh/${id}/sua`,
   repairCreate: '/sua-chua-bao-hanh/tao-moi',
 
   // Customers

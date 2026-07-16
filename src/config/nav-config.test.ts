@@ -47,4 +47,13 @@ describe('navigation IA', () => {
       ROUTES.inventoryStockView,
     )
   })
+
+  it('restores the legacy parts-recovery menu label', () => {
+    const inventory = NAV_ITEMS.find((item) => item.id === 'inventory')
+    expect(
+      inventory?.children?.find(
+        (child) => child.path === ROUTES.inventoryPartsRecovery,
+      )?.label,
+    ).toBe('Thu Hồi Linh Kiện')
+  })
 })

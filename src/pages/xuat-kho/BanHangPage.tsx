@@ -7,7 +7,6 @@ import { useMemo, useState } from 'react'
 import { ShoppingCart } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
-import { isWithinInterval, parseISO } from 'date-fns'
 import type { PaginationState, RowSelectionState } from '@tanstack/react-table'
 import {
   DataTable,
@@ -32,8 +31,9 @@ import {
 } from '@/features/stockout/ban-hang-filters'
 import { BanHangBatchToolbar } from '@/features/stockout/ban-hang-batch-toolbar'
 import { deleteSellingOrders } from '@/features/stockout/delete-selling'
+import { SellingReportDialogs } from '@/features/stockout/selling-report-dialogs'
 
-import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 const EXPORT_COLUMNS = [
@@ -46,35 +46,14 @@ const EXPORT_COLUMNS = [
   { header: 'Ghi chú', accessor: (r: SellingOrder) => r.ghiChu },
 ]
 
-function applyClientFilters(
-  rows: SellingOrder[],
-  f: BanHangFilterValues,
-): SellingOrder[] {
-  let out = rows
-  if (f.tenKhachHang) {
-    const q = f.tenKhachHang.toLowerCase()
-    out = out.filter((r) => r.khachHang.toLowerCase().includes(q))
-  }
-  if (f.dateFrom || f.dateTo) {
-    const from = f.dateFrom ? parseISO(f.dateFrom) : new Date(0)
-    const to = f.dateTo ? parseISO(f.dateTo) : new Date(8640000000000000)
-    out = out.filter((r) => {
-      try {
-        return isWithinInterval(parseISO(r.ngayLap), { start: from, end: to })
-      } catch {
-        return false
-      }
-    })
-  }
-  return out
-}
-
 export default function BanHangPage() {
   const navigate = useNavigate()
   const [filters, setFilters] = useState<BanHangFilterValues>({})
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [detailOpen, setDetailOpen] = useState(false)
+  const [profitOpen, setProfitOpen] = useState(false)
 
   const commands = useMemo(
     () => [
@@ -92,14 +71,17 @@ export default function BanHangPage() {
   useRegisterCommands('page-ban-hang', commands)
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: [
-      'ban-hang-list',
-      { branchId: filters.branchId, soPhieu: filters.soPhieu },
-    ],
+    queryKey: ['ban-hang-list', filters],
     queryFn: () =>
       fetchSellingList({
         branchId: filters.branchId,
         soPhieu: filters.soPhieu,
+        khoId: filters.khoId,
+        hinhThucThanhToan: filters.hinhThucThuChi,
+        tenKhachHang: filters.tenKhachHang,
+        maHang: filters.maHang,
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
         pageSize: 300,
       }),
     placeholderData: keepPreviousData,
@@ -107,10 +89,7 @@ export default function BanHangPage() {
 
   const columns = useBanHangColumns()
 
-  const filteredRows = useMemo(
-    () => applyClientFilters(data?.data ?? [], filters),
-    [data?.data, filters],
-  )
+  const filteredRows = data?.data ?? []
   const total = filteredRows.length
   const start = (page - 1) * pageSize
   const pageRows = filteredRows.slice(start, start + pageSize)
@@ -150,7 +129,7 @@ export default function BanHangPage() {
           className="h-8"
           onClick={() => navigate(ROUTES.stockOutSalesCreate)}
         >
-          Thêm phiếu bán hàng
+          Thêm đơn hàng
         </Button>
       </PageHeader>
 
@@ -168,7 +147,7 @@ export default function BanHangPage() {
             size="sm"
             variant="outline"
             className="h-8"
-            onClick={() => refetch()}
+            onClick={() => void refetch()}
           >
             Tìm kiếm
           </Button>
@@ -176,7 +155,7 @@ export default function BanHangPage() {
             size="sm"
             variant="outline"
             className="h-8"
-            onClick={() => refetch()}
+            onClick={() => setDetailOpen(true)}
           >
             Tìm chi tiết
           </Button>
@@ -192,7 +171,7 @@ export default function BanHangPage() {
             size="sm"
             variant="outline"
             className="h-8"
-            onClick={() => void handleExport()}
+            onClick={() => setProfitOpen(true)}
           >
             Báo cáo lợi nhuận
           </Button>
@@ -242,6 +221,15 @@ export default function BanHangPage() {
           />
         )}
       </div>
+
+      <SellingReportDialogs
+        orders={filteredRows}
+        filters={filters}
+        detailOpen={detailOpen}
+        onDetailOpenChange={setDetailOpen}
+        profitOpen={profitOpen}
+        onProfitOpenChange={setProfitOpen}
+      />
     </div>
   )
 }

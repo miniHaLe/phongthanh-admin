@@ -63,7 +63,7 @@ export function PartReturnXacBatchToolbar({
         className="h-8"
         onClick={() => requireSelection('trả') && setTraHangOpen(true)}
       >
-        Trả hàng
+        Trả hãng
       </Button>
       <Button
         size="sm"

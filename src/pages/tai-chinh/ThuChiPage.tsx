@@ -7,7 +7,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
-import { isWithinInterval, parseISO, subDays } from 'date-fns'
+import { subDays } from 'date-fns'
 import type { RowSelectionState } from '@tanstack/react-table'
 import {
   DataTable,
@@ -51,64 +51,19 @@ import {
   type LoaiNgay,
 } from '@/config/finance-tables/thu-chi.config'
 import type { ThuChi } from '@/types/finance-types'
+import {
+  filterThuChiRows,
+  type ThuChiFilters,
+} from '@/features/finance/thu-chi-filtering'
 
 import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 const TABLE_ID = 'thu-chi'
 
-interface ThuChiFilters {
-  branchId?: string
-  tinhTrang?: string
-  hinhThucId?: string
-  loaiThuChi?: string
-  soChungTu?: string
-  tenKhachHang?: string
-  noiDung?: string
-  loaiNgay: LoaiNgay
-  dateFrom?: string
-  dateTo?: string
-}
-
 const DEFAULT_FILTERS: ThuChiFilters = {
   loaiNgay: 'ngay_lap',
   dateFrom: subDays(new Date(), 30).toISOString().slice(0, 10),
   dateTo: new Date().toISOString().slice(0, 10),
-}
-
-function applyFilters(rows: ThuChi[], f: ThuChiFilters): ThuChi[] {
-  let out = rows
-  if (f.branchId) out = out.filter((r) => r.branchId === f.branchId)
-  if (f.tinhTrang) out = out.filter((r) => String(r.tinhTrang) === f.tinhTrang)
-  if (f.hinhThucId)
-    out = out.filter((r) => String(r.hinhThucId) === f.hinhThucId)
-  if (f.loaiThuChi)
-    out = out.filter((r) => String(r.loaiThuChi) === f.loaiThuChi)
-  if (f.soChungTu) {
-    const q = f.soChungTu.toLowerCase()
-    out = out.filter((r) => r.soChungTu.toLowerCase().includes(q))
-  }
-  if (f.tenKhachHang) {
-    const q = f.tenKhachHang.toLowerCase()
-    out = out.filter((r) => r.tenKhachHang.toLowerCase().includes(q))
-  }
-  if (f.noiDung) {
-    const q = f.noiDung.toLowerCase()
-    out = out.filter((r) => r.noiDung.toLowerCase().includes(q))
-  }
-  if (f.dateFrom || f.dateTo) {
-    const from = f.dateFrom ? parseISO(f.dateFrom) : new Date(0)
-    const to = f.dateTo ? parseISO(f.dateTo) : new Date(8640000000000000)
-    out = out.filter((r) => {
-      const dateField = f.loaiNgay === 'ngay_lap' ? r.ngayLap : r.ngayThuChi
-      if (!dateField) return false
-      try {
-        return isWithinInterval(parseISO(dateField), { start: from, end: to })
-      } catch {
-        return false
-      }
-    })
-  }
-  return out
 }
 
 function printPhieuThuChi(row: ThuChi) {
@@ -182,7 +137,7 @@ export default function ThuChiPage() {
       // Số phiếu SC/hãng, …) is bespoke enough to filter client-side here,
       // same pattern as BanHangPage's applyClientFilters.
       await thuChiApi.list({ page: 1, pageSize: THU_CHI_ROWS.length })
-      return applyFilters(THU_CHI_ROWS, filters)
+      return filterThuChiRows(THU_CHI_ROWS, filters)
     },
     placeholderData: keepPreviousData,
   })
@@ -294,6 +249,7 @@ export default function ThuChiPage() {
         <FilterPanel
           filterCount={activeFilterCount}
           onClear={() => setFilters(DEFAULT_FILTERS)}
+          onSearch={() => void refetch()}
         >
           <Select
             value={filters.branchId ?? '__all__'}
@@ -376,10 +332,34 @@ export default function ThuChiPage() {
           </Select>
 
           <Input
+            placeholder="Kỹ thuật"
+            value={filters.kyThuat ?? ''}
+            onChange={(e) =>
+              handleFilterChange({ kyThuat: e.target.value || undefined })
+            }
+          />
+
+          <Input
+            placeholder="Tên nhà sản xuất"
+            value={filters.nhaSanXuat ?? ''}
+            onChange={(e) =>
+              handleFilterChange({ nhaSanXuat: e.target.value || undefined })
+            }
+          />
+
+          <Input
             placeholder="Số chứng từ"
             value={filters.soChungTu ?? ''}
             onChange={(e) =>
               handleFilterChange({ soChungTu: e.target.value || undefined })
+            }
+          />
+
+          <Input
+            placeholder="Số phiếu SC/hãng"
+            value={filters.soPhieuScNk ?? ''}
+            onChange={(e) =>
+              handleFilterChange({ soPhieuScNk: e.target.value || undefined })
             }
           />
 
@@ -396,6 +376,22 @@ export default function ThuChiPage() {
             value={filters.noiDung ?? ''}
             onChange={(e) =>
               handleFilterChange({ noiDung: e.target.value || undefined })
+            }
+          />
+
+          <Input
+            placeholder="Người tạo"
+            value={filters.nguoiTao ?? ''}
+            onChange={(e) =>
+              handleFilterChange({ nguoiTao: e.target.value || undefined })
+            }
+          />
+
+          <Input
+            placeholder="Đại lý"
+            value={filters.daiLy ?? ''}
+            onChange={(e) =>
+              handleFilterChange({ daiLy: e.target.value || undefined })
             }
           />
 
@@ -488,8 +484,17 @@ export default function ThuChiPage() {
                 <div className={isFetching ? 'opacity-60' : ''}>
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="ghost"
                     className="h-8 gap-1"
+                    onClick={() => void refetch()}
+                    disabled={isFetching}
+                  >
+                    Tải lại trang
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="ml-2 h-8 gap-1"
                     onClick={() => void handleExport(false)}
                   >
                     Xuất Excel

@@ -9,4 +9,8 @@ describe('Phase 2 routes', () => {
     expect(ROUTES.account).toBe('/tai-khoan')
     expect(ROUTES.newsDetail('abc')).toBe('/tin-tuc/abc')
   })
+
+  it('builds the repair edit route', () => {
+    expect(ROUTES.repairEdit('PSC-1')).toBe('/sua-chua-bao-hanh/PSC-1/sua')
+  })
 })

@@ -3,10 +3,11 @@
  * action-button state machine, Số phiếu hãng ticket-status badge, filter
  * option sets, KPI boxes.
  */
-import { describe, it, expect } from 'vitest'
-import { screen, within } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/test/render-with-providers'
+import * as exportXlsx from '@/lib/export-xlsx'
 import ThuHoiLKPage from './ThuHoiLKPage'
 
 const HEADERS_IN_ORDER = [
@@ -21,13 +22,37 @@ const HEADERS_IN_ORDER = [
   'Chi tiết',
 ]
 
+const EXPORT_HEADERS = [
+  'Tình trạng',
+  'Số phiếu cấp',
+  'Số phiếu SC',
+  'Số phiếu hãng',
+  'Model',
+  'Serial',
+  'NSX',
+  'Nhà kho',
+  'Mã hàng',
+  'Tên hàng',
+  'Kĩ thuật',
+  'Mục đích',
+  'Ngày cấp',
+  'Người cấp',
+  'Ngày giao',
+  'Ngày TX',
+  'Người TX',
+  'Số lượng cấp',
+  'SL Trả',
+]
+
 describe('ThuHoiLKPage (Danh sách sử dụng linh kiện)', () => {
   it('renders the page title + breadcrumb', () => {
     renderWithProviders(<ThuHoiLKPage />)
     expect(
       screen.getByRole('heading', { name: 'Danh sách sử dụng linh kiện' }),
     ).toBeInTheDocument()
-    expect(screen.getAllByText('Danh sách sử dụng linh kiện').length).toBeGreaterThan(0)
+    expect(
+      screen.getAllByText('Danh sách sử dụng linh kiện').length,
+    ).toBeGreaterThan(0)
   })
 
   it('renders the grouped column headers in order', async () => {
@@ -43,11 +68,15 @@ describe('ThuHoiLKPage (Danh sách sử dụng linh kiện)', () => {
     renderWithProviders(<ThuHoiLKPage />)
     await screen.findAllByRole('columnheader')
     await screen.findAllByRole('button', { name: /Thu xác LK|In Tem Trả Xác/ })
-    const hasIssuedButtons = screen.queryAllByRole('button', { name: 'Thu xác LK' })
+    const hasIssuedButtons = screen.queryAllByRole('button', {
+      name: 'Thu xác LK',
+    })
     const hasReturnedLabel = screen.queryAllByText('Đã trả xác')
     expect(hasIssuedButtons.length + hasReturnedLabel.length).toBeGreaterThan(0)
     if (hasIssuedButtons.length > 0) {
-      expect(screen.queryAllByRole('button', { name: 'Trả Linh kiện' }).length).toBeGreaterThan(0)
+      expect(
+        screen.queryAllByRole('button', { name: 'Trả Linh kiện' }).length,
+      ).toBeGreaterThan(0)
     }
     if (hasReturnedLabel.length > 0) {
       expect(
@@ -91,5 +120,19 @@ describe('ThuHoiLKPage (Danh sách sử dụng linh kiện)', () => {
     expect(screen.getByText('Tổng cấp')).toBeInTheDocument()
     expect(screen.getByText('Tổng tiền LK chưa giao')).toBeInTheDocument()
     expect(screen.getByText('Tổng tiền LK đã giao')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
+  })
+
+  it('exports the exact legacy data-column order', async () => {
+    const user = userEvent.setup()
+    const spy = vi.spyOn(exportXlsx, 'exportToXlsx').mockResolvedValue()
+    renderWithProviders(<ThuHoiLKPage />)
+
+    await user.click(screen.getByRole('button', { name: 'Xuất ra Excel' }))
+
+    await waitFor(() => expect(spy).toHaveBeenCalledTimes(1))
+    expect(spy.mock.calls[0][0].columns.map((column) => column.header)).toEqual(
+      EXPORT_HEADERS,
+    )
   })
 })

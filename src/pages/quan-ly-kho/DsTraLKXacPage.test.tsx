@@ -1,5 +1,5 @@
 /**
- * Spec: DSTraLKXac (new page) — grouped header incl. Mã vận đơn, bulk Trả hàng
+ * Spec: DSTraLKXac (new page) — grouped header incl. Mã vận đơn, bulk Trả hãng
  * empty-selection alert, status labels, In BB Kỹ Thuật + In Phiếu Trả Hãng
  * empty-selection alerts, Xuất ra Excel, Tổng số LK KPI.
  */
@@ -50,11 +50,11 @@ describe('DsTraLKXacPage', () => {
     })
   })
 
-  it('alerts "Vui lòng chọn phiếu để trả" when Trả hàng is clicked with no selection', async () => {
+  it('alerts "Vui lòng chọn phiếu để trả" when Trả hãng is clicked with no selection', async () => {
     const user = userEvent.setup()
     renderWithProviders(<DsTraLKXacPage />)
     await screen.findAllByRole('columnheader')
-    await user.click(screen.getByRole('button', { name: 'Trả hàng' }))
+    await user.click(screen.getByRole('button', { name: 'Trả hãng' }))
     expect(notifyError).toHaveBeenCalledWith('Vui lòng chọn phiếu để trả')
   })
 
@@ -91,5 +91,6 @@ describe('DsTraLKXacPage', () => {
     expect(
       screen.getByRole('button', { name: 'Xuất Excel' }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
   })
 })

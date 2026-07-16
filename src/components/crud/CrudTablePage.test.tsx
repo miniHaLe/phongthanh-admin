@@ -60,6 +60,17 @@ describe('CrudTablePage cell rendering', () => {
     expect(screen.getAllByText('—')).toHaveLength(2)
   })
 
+  it('uses the legacy default add label', async () => {
+    renderWithProviders(
+      <CrudTablePage config={config} routePattern="/crud-cell-regression" />,
+      { route: '/crud-cell-regression' },
+    )
+
+    expect(
+      await screen.findByRole('button', { name: 'Thêm Mới' }),
+    ).toBeInTheDocument()
+  })
+
   it('uses the shared current-page export path and standardized label', async () => {
     const user = userEvent.setup()
     const exportConfig = { ...config, export: true }
@@ -99,6 +110,7 @@ describe('CrudTablePage cell rendering', () => {
     expect(input).toHaveValue('Minh')
 
     const clearButton = screen.getByRole('button', { name: 'Xóa bộ lọc' })
+    expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
     await waitFor(() => expect(clearButton).toBeEnabled())
     await user.click(clearButton)
     expect(input).toHaveValue('')

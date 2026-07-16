@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/test/render-with-providers'
 import { BanHangFilters } from './ban-hang-filters'
@@ -33,7 +34,7 @@ describe('stockout filters', () => {
   })
 
   it('normalizes Cấp linh kiện labels and responsive widths', () => {
-    const { container } = render(
+    const { container } = renderWithProviders(
       <CapLinhKienFilters
         filters={{ soPhieuCap: 'CLK-001' }}
         onChange={vi.fn()}
@@ -41,12 +42,31 @@ describe('stockout filters', () => {
     )
     expectResponsiveFields(container.firstElementChild as HTMLElement, [
       'Chi nhánh',
+      'Nhà kho',
       'Kỹ thuật viên',
+      'Mục đích',
       'Số phiếu cấp',
+      'Số phiếu SC',
+      'Mã sản phẩm',
+      'Tên NSX',
       'Từ ngày',
       'Đến ngày',
     ])
     expect(screen.getByLabelText('Số phiếu cấp')).toHaveValue('CLK-001')
+  })
+
+  it('keeps the exact Cấp linh kiện purpose options', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<CapLinhKienFilters filters={{}} onChange={vi.fn()} />)
+
+    await user.click(screen.getByLabelText('Mục đích'))
+
+    expect(
+      screen
+        .getAllByRole('option')
+        .slice(1)
+        .map((option) => option.textContent),
+    ).toEqual(['Sữa chữa dịch vụ', 'Bảo hành', 'Kỹ thuật mượn'])
   })
 
   it('normalizes Chuyển kho labels and responsive widths', () => {

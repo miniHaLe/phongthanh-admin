@@ -33,7 +33,7 @@ import {
 } from '@/features/stockout/chuyen-kho-filters'
 import { ChuyenKhoBatchToolbar } from '@/features/stockout/chuyen-kho-batch-toolbar'
 
-import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 function applyClientFilters(rows: MovingSlip[], f: ChuyenKhoFilterValues): MovingSlip[] {

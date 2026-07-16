@@ -21,7 +21,7 @@ import {
 } from '@/components/shared'
 import { BRANCHES } from '@/mock/seed/branches'
 import { KHU_VUC_ROWS } from '@/mock/masterdata/khu-vuc.mock'
-import type { CreateRepairFormValues } from '../RepairCreateForm'
+import type { RepairFormValues } from '../repair-form-contract'
 import { QuickCreateKhuVuc } from '../quick-create/QuickCreateKhuVuc'
 
 const HINH_THUC_OPTIONS = [
@@ -32,7 +32,7 @@ const HINH_THUC_OPTIONS = [
 
 const LOAI_BAO_HANH_OPTIONS = [
   { value: 'tai_ttbh', label: 'Tại TTBH' },
-  { value: 'tai_nha', label: 'Tại Nhà' },
+  { value: 'tai_nha', label: 'Tại Nhà Khách' },
 ] as const
 
 function normalizeSearchValue(value: string): string {
@@ -58,12 +58,16 @@ async function searchKhuVuc(query: string): Promise<AutocompleteOption[]> {
 const UNSET = '__none__'
 
 interface TicketInfoSectionProps {
-  errors: FieldErrors<CreateRepairFormValues>
+  errors: FieldErrors<RepairFormValues>
+  ticketNumber?: string
 }
 
-export function TicketInfoSection({ errors }: TicketInfoSectionProps) {
+export function TicketInfoSection({
+  errors,
+  ticketNumber,
+}: TicketInfoSectionProps) {
   const { control, register, watch, setValue } =
-    useFormContext<CreateRepairFormValues>()
+    useFormContext<RepairFormValues>()
 
   const branchId = watch('branchId')
 
@@ -71,7 +75,7 @@ export function TicketInfoSection({ errors }: TicketInfoSectionProps) {
     <section aria-labelledby="section-ticket-info">
       <h2
         id="section-ticket-info"
-        className="sticky top-16 z-10 -mx-6 mb-4 bg-background/95 px-6 py-2 text-base font-semibold backdrop-blur"
+        className="-mx-4 mb-4 bg-background/95 px-4 py-2 text-base font-semibold backdrop-blur sm:sticky sm:top-16 sm:-mx-6 sm:px-6"
       >
         Thông tin phiếu
       </h2>
@@ -104,7 +108,11 @@ export function TicketInfoSection({ errors }: TicketInfoSectionProps) {
           <Label htmlFor="soPhieu" className="mb-1.5 block text-sm">
             Số phiếu
           </Label>
-          <Input id="soPhieu" value="<<Phát sinh tự động>>" readOnly disabled />
+          <Input
+            id="soPhieu"
+            value={ticketNumber ?? '<<Phát sinh tự động>>'}
+            readOnly
+          />
         </div>
 
         {/* Số phiếu hãng */}

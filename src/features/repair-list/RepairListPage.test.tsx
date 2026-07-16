@@ -25,7 +25,7 @@ function LocationProbe() {
 }
 
 describe('RepairListPage actions', () => {
-  it('owns one Lập phiếu header action and has no reload or zero-selection bulk bar', async () => {
+  it('owns one Lập phiếu action plus legacy search/reload controls', async () => {
     const user = userEvent.setup()
     renderWithProviders(
       <>
@@ -37,9 +37,10 @@ describe('RepairListPage actions', () => {
 
     const createButtons = screen.getAllByRole('button', { name: 'Lập phiếu' })
     expect(createButtons).toHaveLength(1)
+    expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: 'Tải lại trang' }),
-    ).not.toBeInTheDocument()
+      screen.getByRole('button', { name: 'Tải lại trang' }),
+    ).toBeInTheDocument()
     expect(
       screen.queryByRole('region', { name: 'Thao tác hàng loạt' }),
     ).not.toBeInTheDocument()

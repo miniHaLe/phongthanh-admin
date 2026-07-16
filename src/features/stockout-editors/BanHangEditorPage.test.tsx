@@ -97,6 +97,15 @@ describe('BanHangEditorPage — create mode', () => {
 
     await waitFor(() => {
       expect(SELLING_ROWS[0].branchId).toBe('dak-nong')
+      expect(SELLING_ROWS[0].hinhThucThanhToan).toBe('Tiền mặt')
+      expect(SELLING_ROWS[0].lines).toHaveLength(1)
+      expect(SELLING_ROWS[0].lines[0]).toMatchObject({
+        hangHoaId: expect.any(String),
+        maHang: expect.any(String),
+        khoId: expect.any(String),
+        giaVon: expect.any(Number),
+        giaBan: expect.any(Number),
+      })
       expect(invalidate).toHaveBeenCalledWith({ queryKey: ['ban-hang-list'] })
     })
   })
@@ -117,5 +126,9 @@ describe('BanHangEditorPage — edit mode', () => {
     expect(
       await screen.findByText('Chỉnh sửa phiếu bán hàng'),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('combobox', { name: 'Hình thức thanh toán' }),
+    ).toHaveTextContent(existing.hinhThucThanhToan)
+    expect(await screen.findByText(existing.lines[0].tenHang)).toBeInTheDocument()
   })
 })

@@ -4,11 +4,12 @@
  * Lương / 1 Ngày variants).
  */
 import { describe, it, expect } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Routes, Route } from 'react-router-dom'
 import { renderWithProviders } from '@/test/render-with-providers'
 import { ROUTES } from '@/constants/routes'
+import * as exportXlsx from '@/lib/export-xlsx'
 import KpiTiepNhanReportPage from './KpiTiepNhanReportPage'
 
 describe('KpiTiepNhanReportPage', () => {
@@ -49,11 +50,50 @@ describe('KpiTiepNhanReportPage', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('exports the receiver report through the XLSX helper', async () => {
+    const user = userEvent.setup()
+    const spy = vi.spyOn(exportXlsx, 'exportToXlsx').mockResolvedValue()
+    renderWithProviders(<KpiTiepNhanReportPage />)
+    await user.click(screen.getByRole('button', { name: /Xuất Excel/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'Xuất Excel File' }))
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({ filename: 'kpi-tiep-nhan-bao-cao.xlsx' }),
+    )
+  })
+
   it('renders the Nhóm sản phẩm multi-select and Tìm kiếm button', () => {
     renderWithProviders(<KpiTiepNhanReportPage />)
     expect(
       screen.getByRole('combobox', { name: 'Nhóm sản phẩm' }),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tìm kiếm' })).toBeInTheDocument()
+  })
+
+  it('renders the exact Tiếp tân aging pivot after searching', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<KpiTiepNhanReportPage />)
+    await user.click(screen.getByRole('button', { name: 'Tìm kiếm' }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('columnheader', { name: 'Tiếp tân' }),
+      ).toBeInTheDocument()
+    })
+    expect(
+      screen.getAllByRole('columnheader').map((header) => header.textContent),
+    ).toEqual([
+      'STT',
+      'Tiếp tân',
+      '1 ngày',
+      '2 ngày',
+      '3 ngày',
+      '4 ngày',
+      '5 ngày',
+      '6 ngày',
+      '7 ngày',
+      '>7 ngày',
+      'Tổng',
+    ])
   })
 })

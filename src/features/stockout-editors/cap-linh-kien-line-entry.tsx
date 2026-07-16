@@ -29,12 +29,7 @@ import {
   type RepairTicketOption,
 } from './cap-linh-kien-repair-lookup'
 import type { CapLinhKienLine } from './stockout-editor-types'
-
-export const MUC_DICH_OPTIONS = [
-  'Sữa chữa dịch vụ',
-  'Bảo hành',
-  'Kỹ thuật mượn',
-] as const
+import { CAP_LINH_KIEN_MUC_DICH_OPTIONS } from '@/domains/warehouse/types'
 
 type PriceKind = 'ban' | 'si' | 'mua'
 
@@ -89,9 +84,13 @@ export function CapLinhKienLineEntry({ onAdd }: CapLinhKienLineEntryProps) {
       notify.error('Vui lòng chọn hàng hóa!')
       return
     }
+    if (!mucDich) {
+      notify.error('Vui lòng chọn mục đích!')
+      return
+    }
     const qty = Number(soLuong) || 0
     const kho = nhaKhoRows[0]
-    const nganChua = nganChuaRows[0]
+    const nganChua = nganChuaRows.find((row) => row.nhaKhoId === kho?.id)
     onAdd({
       serial: theoSerial ? ticket.serial : '',
       soPhieuSC: ticket.soPhieu,
@@ -99,13 +98,17 @@ export function CapLinhKienLineEntry({ onAdd }: CapLinhKienLineEntryProps) {
       tenHang: selectedHang.tenHH,
       nhaSanXuat: ticket.nhaSanXuat,
       model: ticket.model,
+      khoId: kho?.id ?? '',
       khoTen: kho?.tenNhaKho ?? '',
+      nganChuaId: nganChua?.id ?? '',
       nganChua: nganChua?.tenNgan ?? '',
+      mucDich,
       gia: priceValue,
       soLuong: qty,
       thanhTien: qty * priceValue,
     })
     reset()
+    setMucDich('')
   }
 
   return (
@@ -136,7 +139,7 @@ export function CapLinhKienLineEntry({ onAdd }: CapLinhKienLineEntryProps) {
               <SelectValue placeholder="Chọn mục đích" />
             </SelectTrigger>
             <SelectContent>
-              {MUC_DICH_OPTIONS.map((m) => (
+              {CAP_LINH_KIEN_MUC_DICH_OPTIONS.map((m) => (
                 <SelectItem key={m} value={m}>
                   {m}
                 </SelectItem>

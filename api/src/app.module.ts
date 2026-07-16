@@ -27,6 +27,7 @@ import { PhiGiaoModule } from './phi-giao/phi-giao.module'
 import { PhuongXaModule } from './phuong-xa/phuong-xa.module'
 import { SanPhamModule } from './san-pham/san-pham.module'
 import { ThoiHanModule } from './thoi-han/thoi-han.module'
+import { TinTucModule } from './tin-tuc/tin-tuc.module'
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { ThoiHanModule } from './thoi-han/thoi-han.module'
     ModelModule,
     PhiGiaoModule,
     NganHangModule,
+    TinTucModule,
   ],
   providers: [
     {

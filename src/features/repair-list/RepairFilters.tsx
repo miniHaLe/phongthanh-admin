@@ -29,6 +29,8 @@ interface RepairFiltersProps {
   activeFilterCount: number
   onChange: (next: Partial<RepairListFilters>) => void
   onClear: () => void
+  onSearch: () => void
+  onReload: () => void
 }
 
 const STATUS_UNSET = '__all__'
@@ -38,6 +40,8 @@ export function RepairFilters({
   activeFilterCount,
   onChange,
   onClear,
+  onSearch,
+  onReload,
 }: RepairFiltersProps) {
   const uid = useId()
   const [advancedOpen, setAdvancedOpen] = useState(false)
@@ -53,6 +57,7 @@ export function RepairFilters({
       <FilterPanel
         filterCount={activeFilterCount}
         onClear={onClear}
+        onSearch={onSearch}
         defaultExpanded
         contentClassName="block space-y-3"
         savedViewsSlot={
@@ -169,6 +174,16 @@ export function RepairFilters({
                 advancedOpen && 'rotate-180',
               )}
             />
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-11 md:h-8"
+            onClick={onReload}
+          >
+            Tải lại trang
           </Button>
         </div>
 

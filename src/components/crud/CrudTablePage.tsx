@@ -227,7 +227,7 @@ export function CrudTablePage<T extends { id: string }>({
               }}
             >
               <Plus className="h-4 w-4" />
-              {config.addLabel ?? 'Thêm'}
+              {config.addLabel ?? 'Thêm Mới'}
             </Button>
           )}
         </div>
@@ -246,6 +246,7 @@ export function CrudTablePage<T extends { id: string }>({
         <FilterPanel
           filterCount={activeFilterCount}
           onClear={() => setFilters({})}
+          onSearch={() => void listQuery.refetch()}
         >
           <CrudFilterFields
             filters={config.filters}

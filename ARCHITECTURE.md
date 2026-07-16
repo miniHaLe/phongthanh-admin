@@ -98,10 +98,10 @@ src/
 ## Real API Boundary
 
 `src/api/api-for.ts` chọn API thật hoặc mock theo từng `resourceKey`. Release hiện
-tại yêu cầu 20 resource thật trong production:
+tại yêu cầu 21 resource thật trong production:
 
 ```text
-khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao,ngan-hang,dia-ly
+khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-hoa,nha-san-xuat,thoi-han,nha-kho,phuong-xa,khu-vuc,loi-sua-chua,ngan-chua,san-pham,hang-hoa,model,phi-giao,ngan-hang,dia-ly,tin-tuc
 ```
 
 | Resource       | Phạm vi                    | Hành vi chính                                     |
@@ -110,6 +110,7 @@ khach-hang,nguoi-dung,nhom-quyen,chi-nhanh,don-vi-tinh,nhom-san-pham,nhom-hang-h
 | `nha-san-xuat` | Dùng chung                 | CRUD danh mục hãng                                |
 | `san-pham`     | Dùng chung                 | CRUD danh mục sản phẩm                            |
 | `model`        | Dùng chung                 | CRUD; FK bắt buộc tới hãng và sản phẩm            |
+| `tin-tuc`      | Dùng chung, sau JWT        | CRUD tin nội bộ; tác giả do server đóng dấu       |
 | `ngan-hang`    | Dùng chung                 | CRUD; form khách hàng chỉ lấy ngân hàng hoạt động |
 | `dia-ly`       | Dùng chung, chỉ đọc        | Snapshot Tỉnh/Thành phố + Phường/Xã hiện hành     |
 

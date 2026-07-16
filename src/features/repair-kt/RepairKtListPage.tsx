@@ -33,7 +33,7 @@ import { RepairKtFilters } from './RepairKtFilters'
 import { useRepairKtColumns, TABLE_ID } from './hooks/use-repair-kt-columns'
 import { REPAIR_KT_BREADCRUMB_LABEL } from './repair-kt-constants'
 
-import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 const EMPTY_FILTERS: RepairListFilters = {}

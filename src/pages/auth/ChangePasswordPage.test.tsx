@@ -63,7 +63,7 @@ describe('ChangePasswordPage', () => {
     await user.type(screen.getByLabelText('Mật khẩu cũ'), 'OldPassword1')
     await user.type(screen.getByLabelText('Mật khẩu mới'), 'NewPassword1')
     await user.type(
-      screen.getByLabelText('Xác nhận mật khẩu mới'),
+      screen.getByLabelText('Nhập lại mật khẩu'),
       'NewPassword1',
     )
     await user.click(screen.getByRole('button', { name: 'Lưu mật khẩu' }))

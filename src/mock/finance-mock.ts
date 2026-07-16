@@ -19,10 +19,12 @@ import { BRANCHES } from '@/mock/seed/branches'
 import { CHUNG_TU } from '@/mock/seed/chung-tu'
 import { CONG_NO } from '@/mock/seed/cong-no'
 import { MOCK_TICKETS } from '@/domains/repair/mock-data'
+import { MANUFACTURERS } from '@/domains/repair/reference-data'
 import { CURRENT_USER } from '@/mock/current-user-mock'
 import type { ThuChi, CongNo, HoaDon, HoaDonItem, FinanceKpi } from '@/types/finance-types'
 
 const TICKET_BY_SO_PHIEU = new Map(MOCK_TICKETS.map((t) => [t.soPhieu, t]))
+const MANUFACTURER_BY_ID = new Map(MANUFACTURERS.map((item) => [item.id, item.ten]))
 
 // ─── Thu Chi (Chứng từ) ───────────────────────────────────────────────────
 
@@ -53,8 +55,12 @@ export const THU_CHI_ROWS: ThuChi[] = CHUNG_TU.map((c) => {
     tinhTrang: c.tinhTrang,
     hinhThucId: c.hinhThucId,
     soPhieuScNk: c.soPhieuScNk,
+    soPhieuHang: ticket?.soPhieuHang ?? null,
     kyThuatId: c.kyThuatId,
     kyThuat: ticket ? ticket.kyThuat : null,
+    nhaSanXuat: ticket
+      ? (MANUFACTURER_BY_ID.get(ticket.nhaSanXuatId) ?? null)
+      : null,
     daiLy: ticket ? (ticket.khachHang.daiLy ?? null) : null,
     // The P1 seed's tenKhachHang carries a real customer name only on
     // ticket-linked rows; non-ticket rows there hold a content string, not a
@@ -140,6 +146,7 @@ export async function thanhToanCongNo(input: ThanhToanCongNoInput): Promise<ThuC
   const now = nowDate.toISOString()
   // Phiếu Thu Sửa Chữa(3) for repair receivables, Phiếu Thu Bán Hàng(5) for sales.
   const loaiThuChi = row.loaiPhieu === 'Phiếu sửa chữa' ? 3 : 5
+  const ticket = TICKET_BY_SO_PHIEU.get(row.soPhieu)
 
   const voucher: ThuChi = {
     id: `tc-settle-${chungTuSettleSeq}`,
@@ -152,8 +159,12 @@ export async function thanhToanCongNo(input: ThanhToanCongNoInput): Promise<ThuC
     tinhTrang: 2, // Đã thu
     hinhThucId: input.hinhThucId,
     soPhieuScNk: row.soPhieu,
+    soPhieuHang: ticket?.soPhieuHang ?? null,
     kyThuatId: row.kyThuatId,
     kyThuat: row.kyThuat,
+    nhaSanXuat: ticket
+      ? (MANUFACTURER_BY_ID.get(ticket.nhaSanXuatId) ?? null)
+      : null,
     daiLy: null,
     tenKhachHang: row.tenKhachHang,
     ngayLap: now,
@@ -199,8 +210,10 @@ export async function createPhieuThu(input: LapPhieuInput): Promise<ThuChi> {
     tinhTrang: 2,
     hinhThucId: input.hinhThucId,
     soPhieuScNk: null,
+    soPhieuHang: null,
     kyThuatId: null,
     kyThuat: null,
+    nhaSanXuat: null,
     daiLy: null,
     tenKhachHang: input.tenKhachHang,
     ngayLap: now,
@@ -237,8 +250,10 @@ export async function createPhieuChi(input: LapPhieuInput): Promise<ThuChi> {
     tinhTrang: 4,
     hinhThucId: input.hinhThucId,
     soPhieuScNk: null,
+    soPhieuHang: null,
     kyThuatId: null,
     kyThuat: null,
+    nhaSanXuat: null,
     daiLy: null,
     tenKhachHang: input.tenKhachHang,
     ngayLap: now,
@@ -333,7 +348,45 @@ export const HOA_DON_ROWS: HoaDon[] = Array.from({ length: 55 }, (_, i) => {
   }
 })
 
-export const hoaDonApi = makeMockApi<HoaDon>(HOA_DON_ROWS)
+export interface HoaDonDateFilters {
+  tuNgay?: string
+  denNgay?: string
+}
+
+export function filterHoaDonRows(
+  rows: HoaDon[],
+  filters: HoaDonDateFilters,
+): HoaDon[] {
+  const from = filters.tuNgay ? new Date(filters.tuNgay).getTime() : null
+  const toExclusive = filters.denNgay
+    ? new Date(filters.denNgay).getTime() + 86_400_000
+    : null
+
+  return rows.filter((row) => {
+    const value = new Date(row.ngayXuat).getTime()
+    if (from != null && value < from) return false
+    if (toExclusive != null && value >= toExclusive) return false
+    return true
+  })
+}
+
+const baseHoaDonApi = makeMockApi<HoaDon>(HOA_DON_ROWS)
+
+export const hoaDonApi = {
+  ...baseHoaDonApi,
+  async list(params: Parameters<typeof baseHoaDonApi.list>[0]) {
+    const { tuNgay, denNgay, ...remainingFilters } = params.filters ?? {}
+    const rows = filterHoaDonRows(HOA_DON_ROWS, {
+      tuNgay: typeof tuNgay === 'string' ? tuNgay : undefined,
+      denNgay: typeof denNgay === 'string' ? denNgay : undefined,
+    })
+    return makeMockApi(rows).list({
+      ...params,
+      filters:
+        Object.keys(remainingFilters).length > 0 ? remainingFilters : undefined,
+    })
+  },
+}
 
 export interface CreateHoaDonInput {
   soHoaDon: string

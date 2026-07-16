@@ -14,12 +14,16 @@ describe('RepairFilters', () => {
     const user = userEvent.setup()
     const onChange = vi.fn()
     const onClear = vi.fn()
+    const onSearch = vi.fn()
+    const onReload = vi.fn()
     render(
       <RepairFilters
         filters={{ soPhieu: 'PSC-001' }}
         activeFilterCount={1}
         onChange={onChange}
         onClear={onClear}
+        onSearch={onSearch}
+        onReload={onReload}
       />,
     )
 
@@ -55,9 +59,14 @@ describe('RepairFilters', () => {
       'aria-hidden',
       'false',
     )
+    expect(screen.getByLabelText('Tên khu vực')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Xóa bộ lọc' }))
     expect(onClear).toHaveBeenCalledOnce()
+    await user.click(screen.getByRole('button', { name: 'Tìm kiếm' }))
+    expect(onSearch).toHaveBeenCalledOnce()
+    await user.click(screen.getByRole('button', { name: 'Tải lại trang' }))
+    expect(onReload).toHaveBeenCalledOnce()
   })
 
   it('continues to apply saved repair filter views', async () => {
@@ -82,6 +91,8 @@ describe('RepairFilters', () => {
         activeFilterCount={0}
         onChange={onChange}
         onClear={vi.fn()}
+        onSearch={vi.fn()}
+        onReload={vi.fn()}
       />,
     )
 

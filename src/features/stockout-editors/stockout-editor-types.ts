@@ -14,8 +14,11 @@ export interface CapLinhKienLine {
   tenHang: string
   nhaSanXuat: string
   model: string
+  khoId: string
   khoTen: string
+  nganChuaId: string
   nganChua: string
+  mucDich: string
   gia: number
   soLuong: number
   thanhTien: number
@@ -23,15 +26,7 @@ export interface CapLinhKienLine {
 
 // ── Bán Hàng (sales order line) ────────────────────────────────────────────
 
-export interface BanHangLine {
-  serial: string
-  ten: string
-  model: string
-  capNhatGia: boolean
-  gia: number
-  soLuong: number
-  thanhTien: number
-}
+export type { SellingLine as BanHangLine } from '@/domains/warehouse/types'
 
 // ── Trả Hàng (return line) ─────────────────────────────────────────────────
 

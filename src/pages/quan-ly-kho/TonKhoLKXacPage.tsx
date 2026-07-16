@@ -5,7 +5,7 @@
  * "Tổng tiền" (19 columns) — the KPI trio also hides its Tổng tiền box.
  * `Tổng tồn` can render negative here (a carcass-heavy period): no clamp.
  */
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { PackageCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/dialog'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
+import { exportToXlsx, type ExportColumn } from '@/lib/export-xlsx'
 import { formatNumber } from '@/lib/format'
 import { fetchInventory } from '@/domains/warehouse/mock-data'
 import { BRANCHES } from '@/mock/seed/branches'
@@ -59,9 +60,35 @@ const NHOM_HANG_OPTIONS = [
 import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const UNSET = '__all__'
 
+const EXPORT_COLUMNS: ExportColumn<InventoryRow>[] = [
+  {
+    header: 'Chi nhánh',
+    accessor: (row) =>
+      BRANCHES.find((branch) => branch.id === row.branchId)?.name ??
+      row.branchId,
+  },
+  { header: 'Mã hàng', accessor: (row) => row.maHang },
+  { header: 'Tên hàng', accessor: (row) => row.tenHang },
+  { header: 'Nhóm hàng', accessor: (row) => row.nhomHang },
+  { header: 'Model', accessor: (row) => row.model },
+  { header: 'Giá vốn đầu kỳ', accessor: (row) => row.giaVonDauKy },
+  { header: 'Tồn đầu kỳ', accessor: (row) => row.tonDauKy },
+  { header: 'Nhập trong kỳ', accessor: (row) => row.nhapTrongKy },
+  { header: 'Xuất trong kỳ', accessor: (row) => row.xuatTrongKy },
+  { header: 'Tồn', accessor: (row) => row.ton },
+  { header: 'Giá vốn trong kỳ', accessor: (row) => row.giaVonTrongKy },
+  { header: 'Tồn cuối kỳ', accessor: (row) => row.tonCuoiKy },
+  { header: 'Nhà sản xuất', accessor: (row) => row.nhaSanXuat },
+  { header: 'Nhà kho', accessor: (row) => row.khoTen },
+  { header: 'Ngăn chứa', accessor: (row) => row.nganChua },
+  { header: 'Kỳ', accessor: (row) => row.kyLabel },
+  { header: 'Có serial', accessor: (row) => (row.coSerial ? 'Có' : 'Không') },
+]
+
 interface TonKhoLKXacFilters {
   branchId: string | null
   khoId: string | null
+  nganChuaId: string | null
   nhomHang: string | null
   nhaSanXuat: string | null
   model: string | null
@@ -75,6 +102,7 @@ function defaultFilters(): TonKhoLKXacFilters {
   return {
     branchId: null,
     khoId: null,
+    nganChuaId: null,
     nhomHang: null,
     nhaSanXuat: null,
     model: null,
@@ -87,6 +115,8 @@ function defaultFilters(): TonKhoLKXacFilters {
 export default function TonKhoLKXacPage() {
   const navigate = useNavigate()
   const { rows: nhaKhoRows } = useLookup('nha-kho')
+  const { rows: nganChuaRows } = useLookup('ngan-chua')
+  const filterId = useId()
   const [filters, setFilters] = useState<TonKhoLKXacFilters>(defaultFilters)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
@@ -114,6 +144,7 @@ export default function TonKhoLKXacPage() {
       kyId: filters.denKy ?? undefined,
       branchId: filters.branchId ?? undefined,
       khoId: filters.khoId ?? undefined,
+      nganChuaId: filters.nganChuaId ?? undefined,
       nhomHang: filters.nhomHang ?? undefined,
       nhaSanXuat: filters.nhaSanXuat ?? undefined,
       model: filters.model ?? undefined,
@@ -137,6 +168,34 @@ export default function TonKhoLKXacPage() {
   function handleFilterChange(next: Partial<TonKhoLKXacFilters>) {
     setFilters((f) => ({ ...f, ...next }))
     setPage(1)
+  }
+
+  function handleWarehouseChange(khoId: string | null) {
+    const keepsCabinet = nganChuaRows.some(
+      (row) => row.id === filters.nganChuaId && row.nhaKhoId === khoId,
+    )
+    handleFilterChange({
+      khoId,
+      nganChuaId: keepsCabinet ? filters.nganChuaId : null,
+    })
+  }
+
+  const filteredCabinets = filters.khoId
+    ? nganChuaRows.filter((row) => row.nhaKhoId === filters.khoId)
+    : []
+
+  async function handleExport() {
+    const result = await fetchInventory({
+      ...queryParams,
+      page: 1,
+      pageSize: Math.max(total, 300),
+    })
+    await exportToXlsx({
+      filename: 'ton-kho-linh-kien-xac',
+      sheetName: 'Tồn kho LK xác',
+      columns: EXPORT_COLUMNS,
+      rows: result.rows,
+    })
   }
 
   const columns = useInventoryCompositeColumns({
@@ -189,14 +248,14 @@ export default function TonKhoLKXacPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label>Nhà kho</Label>
+            <Label htmlFor={`${filterId}-warehouse`}>Nhà kho</Label>
             <Select
               value={filters.khoId ?? UNSET}
               onValueChange={(v) =>
-                handleFilterChange({ khoId: v === UNSET ? null : v })
+                handleWarehouseChange(v === UNSET ? null : v)
               }
             >
-              <SelectTrigger className="h-9">
+              <SelectTrigger id={`${filterId}-warehouse`} className="h-9">
                 <SelectValue placeholder="Tất cả nhà kho" />
               </SelectTrigger>
               <SelectContent>
@@ -204,6 +263,31 @@ export default function TonKhoLKXacPage() {
                 {nhaKhoRows.map((k) => (
                   <SelectItem key={k.id} value={k.id}>
                     {k.tenNhaKho}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`${filterId}-cabinet`}>Ngăn chứa</Label>
+            <Select
+              value={filters.nganChuaId ?? UNSET}
+              onValueChange={(v) =>
+                handleFilterChange({
+                  nganChuaId: v === UNSET ? null : v,
+                })
+              }
+              disabled={!filters.khoId}
+            >
+              <SelectTrigger id={`${filterId}-cabinet`} className="h-9">
+                <SelectValue placeholder="Tất cả ngăn chứa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={UNSET}>Tất cả ngăn chứa</SelectItem>
+                {filteredCabinets.map((cabinet) => (
+                  <SelectItem key={cabinet.id} value={cabinet.id}>
+                    {cabinet.tenNgan}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -297,6 +381,24 @@ export default function TonKhoLKXacPage() {
             value={filters.denKy ?? undefined}
             onChange={(kyId) => handleFilterChange({ denKy: kyId })}
           />
+        </div>
+
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            className="mr-2"
+            onClick={() => void refetch()}
+          >
+            Tìm kiếm
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleExport()}
+          >
+            Xuất ra Excel
+          </Button>
         </div>
 
         <DataTable

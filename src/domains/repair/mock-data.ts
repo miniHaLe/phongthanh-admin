@@ -185,6 +185,14 @@ const STATUS_PIPELINE: readonly RepairStatusId[] = [
   1, 2, 15, 4, 6, 7, 13, 9, 10,
 ]
 
+export const REPAIR_MOCK_REFERENCE_EPOCH_MS = Date.parse(
+  '2026-07-15T12:00:00.000Z',
+)
+
+const CURRENT_STATUS_AGE_DAYS = [
+  0, 1, 2, 3, 4, 7, 8, 14, 15, 21, 22, 30, 31, 45, 60,
+] as const
+
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 const rng = new SeededRandom(42)
@@ -237,6 +245,7 @@ function randomParts(): RepairPart[] {
 function randomStatusHistory(
   finalStatus: RepairStatusId,
   ngayNhan: string,
+  currentStatusChangedAt: string,
 ): StatusHistoryEntry[] {
   const tech = rng.pick(TECHNICIANS)
   // Build a logical progression ending at finalStatus along the legacy pipeline.
@@ -249,13 +258,12 @@ function randomStatusHistory(
         : [1, finalStatus]
 
   const baseMs = new Date(ngayNhan).getTime()
-  // Accumulate a strictly non-decreasing offset so the history is chronological.
-  let offsetMs = 0
+  const finalMs = Math.max(baseMs, new Date(currentStatusChangedAt).getTime())
   return statuses.map((status, i) => {
-    if (i > 0) offsetMs += rng.int(1, 12) * 3_600_000
+    const progress = statuses.length === 1 ? 1 : i / (statuses.length - 1)
     return {
       status,
-      changedAt: new Date(baseMs + offsetMs).toISOString(),
+      changedAt: new Date(baseMs + (finalMs - baseMs) * progress).toISOString(),
       changedBy: tech.ten,
       note:
         i === statuses.length - 1 && rng.bool(0.4)
@@ -289,8 +297,18 @@ function generateTicket(idx: number): RepairTicket {
   const branchTechs = TECHNICIANS.filter((t) => t.branchId === branchId)
   const tech = rng.pick(branchTechs.length ? branchTechs : TECHNICIANS)
 
-  const ngayNhan = rng.isoDateWithin(90)
   const isFinished = FINISHED_STATUS_IDS.includes(status)
+  const currentStatusAgeDays =
+    CURRENT_STATUS_AGE_DAYS[(idx - 1) % CURRENT_STATUS_AGE_DAYS.length]
+  const currentStatusChangedAtMs =
+    REPAIR_MOCK_REFERENCE_EPOCH_MS - currentStatusAgeDays * 86_400_000
+  const receiveLeadDays = isFinished ? ((idx - 1) % 8) + 1 : rng.int(1, 20)
+  const ngayNhan = new Date(
+    currentStatusChangedAtMs - receiveLeadDays * 86_400_000,
+  ).toISOString()
+  const currentStatusChangedAt = new Date(
+    currentStatusChangedAtMs,
+  ).toISOString()
   // Overdue is a seeded field, not a wall-clock compare: only open tickets can
   // be overdue, ~18% of them are. Deterministic via the ticket RNG.
   const isOverdue = !isFinished && rng.bool(0.18)
@@ -313,12 +331,13 @@ function generateTicket(idx: number): RepairTicket {
   const ngayNhanMs = new Date(ngayNhan).getTime()
   const isRepaired = [9, 10].includes(status)
   const ngaySuaXong = isRepaired
-    ? new Date(ngayNhanMs + rng.int(1, 15) * 86_400_000).toISOString()
+    ? new Date(
+        status === 9
+          ? currentStatusChangedAtMs
+          : Math.max(ngayNhanMs, currentStatusChangedAtMs - 86_400_000),
+      ).toISOString()
     : undefined
-  const ngayGiao =
-    status === 10
-      ? new Date(ngayNhanMs + rng.int(16, 25) * 86_400_000).toISOString()
-      : undefined
+  const ngayGiao = status === 10 ? currentStatusChangedAt : undefined
 
   return {
     id,
@@ -377,20 +396,21 @@ function generateTicket(idx: number): RepairTicket {
     ngayNhan,
     ngayHenTra: rng.bool(0.6)
       ? new Date(
-          new Date(ngayNhan).getTime() + rng.int(3, 14) * 86_400_000,
+          Math.min(
+            REPAIR_MOCK_REFERENCE_EPOCH_MS,
+            new Date(ngayNhan).getTime() + rng.int(3, 14) * 86_400_000,
+          ),
         ).toISOString()
       : undefined,
-    ngayHoanThanh: isFinished
-      ? new Date(
-          new Date(ngayNhan).getTime() + rng.int(1, 20) * 86_400_000,
-        ).toISOString()
-      : undefined,
-    statusHistory: randomStatusHistory(status, ngayNhan),
+    ngayHoanThanh: isFinished ? currentStatusChangedAt : undefined,
+    statusHistory: randomStatusHistory(
+      status,
+      ngayNhan,
+      currentStatusChangedAt,
+    ),
     parts,
     createdAt: ngayNhan,
-    updatedAt: new Date(
-      new Date(ngayNhan).getTime() + rng.int(0, 5) * 86_400_000,
-    ).toISOString(),
+    updatedAt: currentStatusChangedAt,
   }
 }
 
@@ -519,6 +539,10 @@ function applyNonStatusFilters(
   }
   if (params.huyen) {
     results = results.filter((t) => t.khachHang.huyen === params.huyen)
+  }
+  if (params.khuVuc) {
+    const q = params.khuVuc.toLowerCase()
+    results = results.filter((t) => t.khuVuc?.toLowerCase().includes(q))
   }
   if (params.tuyen) {
     const q = params.tuyen.toLowerCase()
@@ -696,17 +720,34 @@ export async function createRepairTicket(
     diaChi: input.diaChi ?? '',
     tinh: '',
     huyen: '',
+    tuyen: input.tuyen,
+    daiLy: input.daiLy,
+    daiLyId: input.daiLyId,
+    dienThoai2: input.dienThoai2,
+    email: input.email,
   }
 
   const ticket: RepairTicket = {
     id,
     soPhieu: id,
+    soPhieuHang: input.soPhieuHang,
+    soPhieuDaiLy: input.soPhieuDaiLy,
     soSerial: input.soSerial,
     branchId: input.branchId,
     hinhThuc: input.hinhThuc,
-    loaiBaoHanh: input.loaiBaoHanh as RepairTicket['loaiBaoHanh'],
+    loaiBaoHanh: input.loaiBaoHanh,
+    warrantyAt: input.warrantyAt,
     tinhTrang: 1,
     isOverdue: false,
+    isQuick: input.isQuick,
+    khuVuc: input.khuVuc,
+    ghiChuNhaSanXuat: input.ghiChuNhaSanXuat,
+    ghiChuModel: input.ghiChuModel,
+    tuyen: input.tuyen,
+    daiLyId: input.daiLyId,
+    daiLy: input.daiLy,
+    dienThoai2: input.dienThoai2,
+    email: input.email,
     khachHangId: customer.id,
     khachHang: customer,
     nhaSanXuatId: input.nhaSanXuatId,
@@ -718,6 +759,9 @@ export async function createRepairTicket(
     kyThuatId: input.kyThuatId,
     kyThuat: tech?.ten ?? input.kyThuatId,
     moTaLoi: input.moTaLoi,
+    phuKienKemTheo: input.phuKienKemTheo,
+    ngayMua: input.ngayMua,
+    noiMua: input.noiMua,
     loiSuaChua: input.loiSuaChua ?? [],
     chiPhiDuKien: input.chiPhiDuKien,
     chiPhiThucTe: 0,

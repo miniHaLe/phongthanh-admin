@@ -19,17 +19,17 @@ verified in shipped rebuild code · **likely** = strong inference from a _named_
 observed artifact · **unconfirmed** = not provable by read-only recon → requires an
 authorized pentest.
 
-**Rebuild honesty note.** The "Rebuild handling" column describes a **mock/in-memory
-prototype** (no backend; writes lost on reload; permission matrix has no
-enforcement). Where the rebuild "fixes" something, it does so in the prototype — not
-in a shipped production system.
+**Historical rebuild honesty note.** The original 2026-07-07 "Rebuild handling"
+column described a **mock/in-memory prototype** (no backend; writes lost on
+reload; permission matrix has no enforcement).
 
-> **Current rebuild status — 2026-07-15.** The preceding honesty note and the
+> **Current rebuild status — 2026-07-16.** The preceding honesty note and the
 > historical "Rebuild handling" cells describe the 2026-07-07 comparison
-> baseline. The repo now has a NestJS/Postgres backend for auth and 18 release
+> baseline. The repo now has a NestJS/Postgres backend for auth and 21 release
 > resources; most repair, warehouse, finance, HR, and report workflows remain
 > mock-backed. Full permission-matrix enforcement remains deferred. Legacy
-> findings and historical handling cells below are intentionally unchanged.
+> findings stay unchanged; current rebuild behavior is reconciled where the
+> implementation has materially changed.
 
 ---
 
@@ -95,10 +95,10 @@ prototype behavior.
 |---|---|---|---|---|
 | U-1 | **Popup windows** for editors and prints — blocker-fragile, no back-button, not deep-linkable. | `section-repair-main.md`; evidence #9 | confirmed | SPA routes + dialogs; deep-linkable, back-button works. |
 | U-2 | **No bulk operations** on most lists — one-at-a-time actions. | gap matrix (repeated "no bulk delete" across catalog/HR/warehouse) | confirmed | DataTable bulk-select + `BulkActionsBar` (delete, batch status/tech, duyệt) where reference has the need. |
-| U-3 | **Full-page reloads** — every search/filter is a server round-trip behind a mandatory "Tìm kiếm" button. | `section-repair-main.md`, warehouse/stock-out specs | confirmed | As-you-type client filtering + TanStack Query cache invalidation; no full reload. (Deliberate deviation — see comparison §4.) |
+| U-3 | **Full-page reloads** — every search/filter is a server round-trip behind a mandatory "Tìm kiếm" button. | `section-repair-main.md`, warehouse/stock-out specs | confirmed | Live filtering + TanStack Query cache invalidation avoid full reloads, while an explicit `Tìm kiếm` control preserves the legacy affordance. (Capability superset — see comparison §4.) |
 | U-4 | **Dual pagination** (top + bottom pagers) — UI noise from long reload-heavy pages. | multiple section specs ("dual pager" lows) | confirmed | Single bottom pager + page-size selector. |
-| U-5 | **Mandatory "Tìm kiếm" button** before any results — extra interaction on every query. | `section-repair-main.md` | confirmed | Results filter live; button not required. |
-| U-6 | **Dual "Tìm kiếm" / "Tìm chi tiết"** searches with unclear difference. | `section-warehouse.md`, `section-stock-out.md` | likely | Rebuild keeps both labels but they produce the same result locally (documented deviation — the distinct detail shape wasn't mirrored). |
+| U-5 | **Mandatory "Tìm kiếm" button** before any results — extra interaction on every query. | `section-repair-main.md` | confirmed | Results still filter live; the restored button is available but not required before results update. |
+| U-6 | **Dual "Tìm kiếm" / "Tìm chi tiết"** searches with unclear difference. | `section-warehouse.md`, `section-stock-out.md` | likely | `Tìm kiếm` refreshes voucher rows; `Tìm chi tiết` opens filtered line-level receiving/stock-out results. |
 
 ---
 
@@ -128,7 +128,7 @@ numbers/claims. Result: **consistent**. Reconciled points:
 | Claim | comparison.md | appendix | this catalog | evidence | Status |
 |---|---|---|---|---|---|
 | Gap severity totals | 88H / 121M / 75L | 88H / 121M / 75L (per-section sums match) | — | — | ✅ agree |
-| Test count | 440 (deterministic) | 440 (P7) | — | — | ✅ agree |
+| Test count | 440 historical baseline; current gates 214 files / 785 tests | Historical snapshot plus current status note | Current frontend/API/Playwright totals reconciled | — | ✅ agree: 214/785 frontend, 16/115 API, 223/223 Playwright |
 | 15-status vocab + KT subset `[2,4,6,7,8,9,13,15,16,17]` | §Exec / §3 | §2, §3 | — | — | ✅ agree |
 | `/RoleFunction` HTTP 500 + stack-trace leak | §1.3 D-2 | §12 low + §1 | F-1 / S-2 | #5 | ✅ agree |
 | Formula-injection = **unconfirmed** (no triggering cell), LOW/self-inflicted, scoped to `ExcelRepairingList` | §1.3 D-3 | §8 note | S-4 / F-6 | #7 | ✅ agree — not inflated, not "safe" |

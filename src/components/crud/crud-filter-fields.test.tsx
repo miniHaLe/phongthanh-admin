@@ -10,6 +10,7 @@ import { countActiveFilterValues } from './crud-filter-values'
 interface TestRow {
   name: string
   category: string
+  createdAt: string
 }
 
 const filters: FilterConfig<TestRow>[] = [
@@ -19,6 +20,13 @@ const filters: FilterConfig<TestRow>[] = [
     label: 'Nhóm',
     type: 'select',
     options: [{ label: 'Nhóm A', value: 'a' }],
+  },
+  {
+    key: 'createdAt',
+    label: 'Ngày tạo',
+    type: 'date-range',
+    fromKey: 'tuNgay',
+    toKey: 'denNgay',
   },
 ]
 
@@ -68,5 +76,25 @@ describe('CrudFilterFields', () => {
         disabled: false,
       }),
     ).toBe(2)
+  })
+
+  it('renders an accessible two-input date range using the public filter keys', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<FilterFieldsHarness />)
+
+    const from = screen.getByLabelText('Từ ngày')
+    const to = screen.getByLabelText('Đến ngày')
+    expect(from).toHaveAttribute('type', 'date')
+    expect(to).toHaveAttribute('type', 'date')
+
+    await user.type(from, '2026-07-01')
+    await user.type(to, '2026-07-15')
+
+    expect(screen.getByTestId('filter-value')).toHaveTextContent(
+      '"tuNgay":"2026-07-01"',
+    )
+    expect(screen.getByTestId('filter-value')).toHaveTextContent(
+      '"denNgay":"2026-07-15"',
+    )
   })
 })

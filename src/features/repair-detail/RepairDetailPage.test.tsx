@@ -112,6 +112,10 @@ describe('RepairDetailPage', () => {
       'href',
       ROUTES.repairCreate,
     )
+    expect(screen.getByRole('link', { name: 'Chỉnh sửa' })).toHaveAttribute(
+      'href',
+      ROUTES.repairEdit(ticket.id),
+    )
     expect(
       screen.getByRole('button', { name: 'In Tem Sửa Chữa' }),
     ).toBeInTheDocument()

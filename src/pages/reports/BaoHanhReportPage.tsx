@@ -15,7 +15,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ReportResultsTable } from '@/components/reports/report-results-table'
 import { ReportEmptyState } from '@/components/reports/report-empty-state'
-import { MOCK_TICKETS } from '@/domains/repair/mock-data'
+import {
+  MOCK_TICKETS,
+  REPAIR_MOCK_REFERENCE_EPOCH_MS,
+} from '@/domains/repair/mock-data'
 import { TECHNICIANS } from '@/domains/repair/reference-data'
 import { formatVND } from '@/lib/format'
 import { mockDelay } from '@/lib/mock-delay'
@@ -24,15 +27,13 @@ import type { ColumnDef } from '@tanstack/react-table'
 import type { ReportRow } from '@/mock/reports/report-types'
 
 function defaultFromIso(): string {
-  const d = new Date()
+  const d = new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS)
   d.setMonth(d.getMonth() - 1)
   return d.toISOString().slice(0, 10)
 }
 
-function defaultToIso(fromIso: string): string {
-  const d = new Date(fromIso)
-  d.setMonth(d.getMonth() + 1)
-  return d.toISOString().slice(0, 10)
+function defaultToIso(): string {
+  return new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS).toISOString().slice(0, 10)
 }
 
 interface BaoHanhParams {
@@ -120,7 +121,7 @@ const EXPORT_COLUMNS = [
 export default function BaoHanhReportPage() {
   const [kyThuat, setKyThuat] = useState<AutocompleteOption | null>(null)
   const [tuNgay, setTuNgay] = useState(defaultFromIso())
-  const [denNgay, setDenNgay] = useState(defaultToIso(defaultFromIso()))
+  const [denNgay, setDenNgay] = useState(defaultToIso())
   const [hasRun, setHasRun] = useState(false)
   const [submitted, setSubmitted] = useState<BaoHanhParams | null>(null)
 

@@ -36,6 +36,13 @@ describe('KyThuatReportPage', () => {
         screen.getByText('Báo cáo kỹ thuật tình trạng Sửa Xong'),
       ).toBeInTheDocument(),
     )
+    expect(screen.queryByText('Không có dữ liệu')).not.toBeInTheDocument()
+  })
+
+  it('anchors its default range to the deterministic repair epoch', () => {
+    renderWithProviders(<KyThuatReportPage />)
+    expect(screen.getByLabelText('Từ ngày')).toHaveValue('2026-06-15')
+    expect(screen.getByLabelText('Đến ngày')).toHaveValue('2026-07-15')
   })
 
   it('renders the Xem button', async () => {

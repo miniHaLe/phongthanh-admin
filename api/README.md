@@ -121,7 +121,7 @@ All resource endpoints require JWT. List responses use:
 
 List query contract:
 
-- `page` starts at 1; `pageSize` is `1..200`.
+- `page` starts at 1; `pageSize` is `1..300`.
 - `sort`, `filters[key]`, and `search` are checked against each resource's
   allowlists before query construction.
 - Text search escapes `%`, `_`, and `\`; text sort uses Vietnamese ICU collation.

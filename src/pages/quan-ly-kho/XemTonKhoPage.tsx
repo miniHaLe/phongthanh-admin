@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/dialog'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
+import { exportToXlsx, type ExportColumn } from '@/lib/export-xlsx'
 import { formatVND, formatNumber } from '@/lib/format'
 import { fetchInventory } from '@/domains/warehouse/mock-data'
 import { BRANCHES } from '@/mock/seed/branches'
@@ -63,6 +64,7 @@ const UNSET = '__all__'
 interface XemTonKhoFilters {
   branchId: string | null
   khoId: string | null
+  nganChuaId: string | null
   nhomHang: string | null
   nhaSanXuat: string | null
   model: string | null
@@ -76,6 +78,7 @@ function defaultFilters(): XemTonKhoFilters {
   return {
     branchId: null,
     khoId: null,
+    nganChuaId: null,
     nhomHang: null,
     nhaSanXuat: null,
     model: null,
@@ -87,6 +90,32 @@ function defaultFilters(): XemTonKhoFilters {
 
 const DEFAULT_FILTERS = defaultFilters()
 
+const EXPORT_COLUMNS: ExportColumn<InventoryRow>[] = [
+  {
+    header: 'Chi nhánh',
+    accessor: (row) =>
+      BRANCHES.find((branch) => branch.id === row.branchId)?.name ??
+      row.branchId,
+  },
+  { header: 'Mã hàng', accessor: (row) => row.maHang },
+  { header: 'Tên hàng', accessor: (row) => row.tenHang },
+  { header: 'Nhóm hàng', accessor: (row) => row.nhomHang },
+  { header: 'Model', accessor: (row) => row.model },
+  { header: 'Giá vốn đầu kỳ', accessor: (row) => row.giaVonDauKy },
+  { header: 'Tồn đầu kỳ', accessor: (row) => row.tonDauKy },
+  { header: 'Nhập trong kỳ', accessor: (row) => row.nhapTrongKy },
+  { header: 'Xuất trong kỳ', accessor: (row) => row.xuatTrongKy },
+  { header: 'Tồn', accessor: (row) => row.ton },
+  { header: 'Giá vốn trong kỳ', accessor: (row) => row.giaVonTrongKy },
+  { header: 'Tồn cuối kỳ', accessor: (row) => row.tonCuoiKy },
+  { header: 'Tổng tiền', accessor: (row) => row.tongTien },
+  { header: 'Nhà sản xuất', accessor: (row) => row.nhaSanXuat },
+  { header: 'Nhà kho', accessor: (row) => row.khoTen },
+  { header: 'Ngăn chứa', accessor: (row) => row.nganChua },
+  { header: 'Kỳ', accessor: (row) => row.kyLabel },
+  { header: 'Có serial', accessor: (row) => (row.coSerial ? 'Có' : 'Không') },
+]
+
 function countChangedFilters(filters: XemTonKhoFilters): number {
   return (Object.keys(DEFAULT_FILTERS) as (keyof XemTonKhoFilters)[]).filter(
     (key) => filters[key] !== DEFAULT_FILTERS[key],
@@ -96,6 +125,7 @@ function countChangedFilters(filters: XemTonKhoFilters): number {
 export default function XemTonKhoPage() {
   const navigate = useNavigate()
   const { rows: nhaKhoRows } = useLookup('nha-kho')
+  const { rows: nganChuaRows } = useLookup('ngan-chua')
   const filterId = useId()
   const [filters, setFilters] = useState<XemTonKhoFilters>(() => ({
     ...DEFAULT_FILTERS,
@@ -126,6 +156,7 @@ export default function XemTonKhoPage() {
       kyId: filters.denKy ?? undefined,
       branchId: filters.branchId ?? undefined,
       khoId: filters.khoId ?? undefined,
+      nganChuaId: filters.nganChuaId ?? undefined,
       nhomHang: filters.nhomHang ?? undefined,
       nhaSanXuat: filters.nhaSanXuat ?? undefined,
       model: filters.model ?? undefined,
@@ -151,9 +182,37 @@ export default function XemTonKhoPage() {
     setPage(1)
   }
 
+  function handleWarehouseChange(khoId: string | null) {
+    const keepsCabinet = nganChuaRows.some(
+      (row) => row.id === filters.nganChuaId && row.nhaKhoId === khoId,
+    )
+    handleFilterChange({
+      khoId,
+      nganChuaId: keepsCabinet ? filters.nganChuaId : null,
+    })
+  }
+
+  const filteredCabinets = filters.khoId
+    ? nganChuaRows.filter((row) => row.nhaKhoId === filters.khoId)
+    : []
+
   function clearFilters() {
     setFilters({ ...DEFAULT_FILTERS })
     setPage(1)
+  }
+
+  async function handleExport() {
+    const result = await fetchInventory({
+      ...queryParams,
+      page: 1,
+      pageSize: Math.max(total, 300),
+    })
+    await exportToXlsx({
+      filename: 'xem-ton-kho',
+      sheetName: 'Xem tồn kho',
+      columns: EXPORT_COLUMNS,
+      rows: result.rows,
+    })
   }
 
   const columns = useInventoryCompositeColumns({
@@ -184,6 +243,7 @@ export default function XemTonKhoPage() {
           defaultExpanded
           filterCount={countChangedFilters(filters)}
           onClear={clearFilters}
+          onSearch={() => void refetch()}
           contentClassName="lg:grid-cols-4"
         >
           <FilterField label="Chi nhánh" htmlFor={`${filterId}-branch`}>
@@ -214,7 +274,7 @@ export default function XemTonKhoPage() {
             <Select
               value={filters.khoId ?? UNSET}
               onValueChange={(v) =>
-                handleFilterChange({ khoId: v === UNSET ? null : v })
+                handleWarehouseChange(v === UNSET ? null : v)
               }
             >
               <SelectTrigger
@@ -228,6 +288,33 @@ export default function XemTonKhoPage() {
                 {nhaKhoRows.map((k) => (
                   <SelectItem key={k.id} value={k.id}>
                     {k.tenNhaKho}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterField>
+
+          <FilterField label="Ngăn chứa" htmlFor={`${filterId}-cabinet`}>
+            <Select
+              value={filters.nganChuaId ?? UNSET}
+              onValueChange={(v) =>
+                handleFilterChange({
+                  nganChuaId: v === UNSET ? null : v,
+                })
+              }
+              disabled={!filters.khoId}
+            >
+              <SelectTrigger
+                id={`${filterId}-cabinet`}
+                className={filterControlClassName}
+              >
+                <SelectValue placeholder="Tất cả ngăn chứa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={UNSET}>Tất cả ngăn chứa</SelectItem>
+                {filteredCabinets.map((cabinet) => (
+                  <SelectItem key={cabinet.id} value={cabinet.id}>
+                    {cabinet.tenNgan}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -361,6 +448,16 @@ export default function XemTonKhoPage() {
             </Select>
           </FilterField>
         </FilterPanel>
+
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleExport()}
+          >
+            Xuất ra Excel
+          </Button>
+        </div>
 
         <DataTable
           tableId="xem-ton-kho"

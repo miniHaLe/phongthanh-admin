@@ -29,6 +29,13 @@
       "when": 1784116759002,
       "tag": "0003_masterdata_catalogs",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784130653566,
+      "tag": "0004_tin_tuc",
+      "breakpoints": true
     }
   ]
 }

@@ -24,11 +24,26 @@ export const DISPATCH_LOG_HEADERS = [
   'Người hủy',
 ] as const
 
+export const EDIT_DISPATCH_LOG_HEADERS = [
+  'STT',
+  'Kỹ thuật',
+  'Ngày tạo',
+  'Người tạo',
+  'Tình trạng',
+  'Ngày hủy',
+  'Người hủy',
+] as const
+
 export function DispatchLogTable({
   entries,
+  showLaborCost = true,
 }: {
   entries: DispatchLogEntry[]
+  showLaborCost?: boolean
 }) {
+  const headers = showLaborCost
+    ? DISPATCH_LOG_HEADERS
+    : EDIT_DISPATCH_LOG_HEADERS
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -43,7 +58,7 @@ export function DispatchLogTable({
           <Table>
             <TableHeader>
               <TableRow>
-                {DISPATCH_LOG_HEADERS.map((h) => (
+                {headers.map((h) => (
                   <TableHead key={h}>{h}</TableHead>
                 ))}
               </TableRow>
@@ -55,7 +70,9 @@ export function DispatchLogTable({
                   <TableCell>{entry.kyThuat}</TableCell>
                   <TableCell>{formatDateTime(entry.ngayTao)}</TableCell>
                   <TableCell>{entry.nguoiTao}</TableCell>
-                  <TableCell>{formatVND(entry.tienCong)}</TableCell>
+                  {showLaborCost && (
+                    <TableCell>{formatVND(entry.tienCong)}</TableCell>
+                  )}
                   <TableCell>
                     <span
                       className="rounded px-1.5 py-0.5 text-xs font-medium"

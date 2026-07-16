@@ -35,8 +35,11 @@ function makeEmptyLine(): CapLinhKienLine {
     tenHang: '',
     nhaSanXuat: '',
     model: '',
+    khoId: '',
     khoTen: '',
+    nganChuaId: '',
     nganChua: '',
+    mucDich: '',
     gia: 0,
     soLuong: 1,
     thanhTien: 0,
@@ -76,13 +79,21 @@ export default function CapLinhKienCreatePage() {
   function handleSave({ saveAndNew }: { saveAndNew: boolean }) {
     if (!validate()) return
 
-    const slip = createCheckout({
-      kyThuat: header.kyThuat!.label,
-      ghiChu: header.ghiChu,
-      nguoiLap: CURRENT_USER.hoVaTen,
-      branchId: BRANCHES[0].id,
-      lines,
-    })
+    let slip
+    try {
+      slip = createCheckout({
+        kyThuat: header.kyThuat!.label,
+        ghiChu: header.ghiChu,
+        nguoiLap: CURRENT_USER.hoVaTen,
+        branchId: BRANCHES[0].id,
+        lines,
+      })
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : 'Không thể lưu phiếu cấp',
+      )
+      return
+    }
 
     notify.success(`Đã lưu phiếu cấp linh kiện ${slip.soPhieuCap}`)
 

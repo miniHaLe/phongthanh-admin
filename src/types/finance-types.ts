@@ -22,10 +22,12 @@ export interface ThuChi {
    * Source document code — a repair ticket's `soPhieu` for repair-thu rows
    * (resolvable via MOCK_TICKETS, opens /Repairing/Detail in a new tab),
    * null otherwise.
-   */
+  */
   soPhieuScNk: string | null
+  soPhieuHang: string | null
   kyThuatId: string | null
   kyThuat: string | null
+  nhaSanXuat: string | null
   /** Đại lý/Trạm — only populated for repair-sourced rows with a dealer. */
   daiLy: string | null
   tenKhachHang: string

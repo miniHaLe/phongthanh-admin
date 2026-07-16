@@ -1,6 +1,10 @@
 /** Spec: repair mock mutations update fields + append history; delete shrinks. */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { MOCK_TICKETS, fetchRepairList } from './mock-data'
+import {
+  MOCK_TICKETS,
+  REPAIR_MOCK_REFERENCE_EPOCH_MS,
+  fetchRepairList,
+} from './mock-data'
 import {
   updateTicketStatus,
   dispatchTechnician,
@@ -8,8 +12,10 @@ import {
   transferBranch,
   deleteTickets,
   checkoutDelivery,
+  updateRepairTicket,
 } from './mock-mutations'
 import { TECHNICIANS } from './reference-data'
+import { computeMayTonAging } from '@/domains/reports/aging-buckets'
 
 describe('mock mutations', () => {
   it('updateTicketStatus sets status + appends a history entry', () => {
@@ -51,6 +57,26 @@ describe('mock mutations', () => {
     expect(t.ngayGiao).toBe('2024-07-01')
   })
 
+  it('uses the report epoch for a new status transition', () => {
+    const ticket = MOCK_TICKETS[5]
+    const original = structuredClone(ticket)
+    try {
+      updateTicketStatus([ticket.id], 4)
+
+      expect(ticket.statusHistory.at(-1)?.changedAt).toBe(
+        new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS).toISOString(),
+      )
+      const row = computeMayTonAging(
+        [ticket],
+        new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS),
+      ).find((candidate) => candidate.statusId === 4)!
+      expect(row.day1).toBe(1)
+      expect(row.day31Plus).toBe(0)
+    } finally {
+      Object.assign(ticket, original)
+    }
+  })
+
   it('deleteTickets removes rows from the store', () => {
     const before = MOCK_TICKETS.length
     const victim = MOCK_TICKETS[MOCK_TICKETS.length - 1].id
@@ -58,6 +84,97 @@ describe('mock mutations', () => {
     expect(removed).toBe(1)
     expect(MOCK_TICKETS.length).toBe(before - 1)
     expect(MOCK_TICKETS.some((t) => t.id === victim)).toBe(false)
+  })
+
+  it('updates editable ticket fields without creating phantom status history', async () => {
+    const ticket = MOCK_TICKETS[0]
+    const original = structuredClone(ticket)
+    try {
+      const historyBefore = structuredClone(ticket.statusHistory)
+      const updated = await updateRepairTicket(ticket.id, {
+        khachHangId: ticket.khachHangId,
+        tenKhach: 'Khách đã sửa',
+        sdt: '0900000001',
+        diaChi: 'Địa chỉ mới',
+        branchId: ticket.branchId,
+        nhaSanXuatId: ticket.nhaSanXuatId,
+        sanPhamId: ticket.sanPhamId,
+        modelId: ticket.modelId,
+        soSerial: 'SERIAL-EDIT',
+        hinhThuc: ticket.hinhThuc,
+        loaiBaoHanh: 'nha_khach',
+        warrantyAt: 1,
+        ngayNhan: ticket.ngayNhan,
+        ngayHenTra: ticket.ngayHenTra,
+        moTaLoi: 'Mô tả đã sửa',
+        ghiChuNhaSanXuat: 'Ghi chú NSX',
+        ghiChuModel: 'Ghi chú model',
+        tuyen: 'Tuyến 3',
+        daiLyId: 'kh-2',
+        daiLy: 'Đại lý A',
+        dienThoai2: '0900000002',
+        email: 'edited@example.com',
+      })
+
+      expect(updated).toMatchObject({
+        soSerial: 'SERIAL-EDIT',
+        moTaLoi: 'Mô tả đã sửa',
+        ghiChuNhaSanXuat: 'Ghi chú NSX',
+        ghiChuModel: 'Ghi chú model',
+        tuyen: 'Tuyến 3',
+        daiLyId: 'kh-2',
+        dienThoai2: '0900000002',
+        email: 'edited@example.com',
+      })
+      expect(updated.statusHistory).toEqual(historyBefore)
+      expect(updated.tinhTrang).toBe(original.tinhTrang)
+      expect(updated.chiPhiThucTe).toBe(original.chiPhiThucTe)
+      expect(updated.parts).toEqual(original.parts)
+    } finally {
+      Object.assign(ticket, original)
+    }
+  })
+
+  it('applies explicit null clears from the edit contract', async () => {
+    const ticket = MOCK_TICKETS[6]
+    const original = structuredClone(ticket)
+    try {
+      ticket.ghiChu = 'Ghi chú cũ'
+      ticket.daiLyId = 'kh-2'
+      ticket.daiLy = 'Đại lý A'
+      ticket.email = 'old@example.com'
+
+      await updateRepairTicket(ticket.id, {
+        khachHangId: ticket.khachHangId,
+        tenKhach: ticket.khachHang.ten,
+        sdt: ticket.khachHang.sdt,
+        diaChi: ticket.khachHang.diaChi,
+        branchId: ticket.branchId,
+        nhaSanXuatId: ticket.nhaSanXuatId,
+        sanPhamId: ticket.sanPhamId,
+        modelId: ticket.modelId,
+        hinhThuc: ticket.hinhThuc,
+        loaiBaoHanh: ticket.loaiBaoHanh,
+        warrantyAt: ticket.warrantyAt,
+        isQuick: ticket.isQuick,
+        khuVuc: ticket.khuVuc ?? null,
+        ngayNhan: ticket.ngayNhan,
+        moTaLoi: ticket.moTaLoi,
+        ghiChu: null,
+        daiLyId: null,
+        daiLy: null,
+        email: null,
+      })
+
+      expect(ticket).toMatchObject({
+        ghiChu: undefined,
+        daiLyId: undefined,
+        daiLy: undefined,
+        email: undefined,
+      })
+    } finally {
+      Object.assign(ticket, original)
+    }
   })
 })
 

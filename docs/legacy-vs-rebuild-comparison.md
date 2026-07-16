@@ -14,18 +14,19 @@ vendor "Phần Mềm Quốc Bảo") · **Rebuild:** React 18 + Vite + TypeScript
 > **[the evidence appendix](./assets/legacy-audit-evidence.md)**. Vietnamese
 > load-bearing strings come from **[the glossary](./assets/vi-term-glossary.md)**.
 
-> **Current rebuild status — 2026-07-15.** Blanket statements below that call the
+> **Current rebuild status — 2026-07-16.** Blanket statements below that call the
 > rebuild "100% mock" or say it has "no backend" describe the preserved
-> 2026-07-07 comparison baseline. The repo is now hybrid: auth plus 18 release
-> resources use NestJS/Postgres, including Khách hàng, Người dùng, read-only Nhóm
-> quyền, Chi nhánh, and 14 catalog resources. Repair, warehouse, finance, HR, and
+> 2026-07-07 comparison baseline. The repo is now hybrid: auth plus 21 release
+> resources use NestJS/Postgres, including Tin Tuc. Repair, warehouse, finance, HR, and
 > report workflows remain mostly mock-backed. The permission matrix still has no
 > server-side enforcement; historical tables, counts, and `Closed (mock)` labels
-> remain unchanged for audit traceability.
+> remain unchanged for audit traceability. Final release gates passed with 214
+> Vitest files / 785 tests, 223/223 Playwright cases, and 16 API suites / 115
+> tests.
 
 ---
 
-## Tóm tắt điều hành (Executive Summary — tiếng Việt)
+## Tóm tắt điều hành (mốc so sánh 2026-07-07)
 
 **Bối cảnh.** App gốc là hệ quản trị sửa chữa–bảo hành viết trên ASP.NET MVC (nền
 tảng khoảng 2014: IIS 8.5, .NET 4, jQuery/AdminLTE2). Bản dựng lại (repo này) là
@@ -53,10 +54,10 @@ hai hệ với dữ liệu thật.
 | Bài kiểm thử | 440 (xác định) | Kiểm thử tính năng đã dựng — không đo mức tương đương với app gốc |
 | Primitive dùng chung | F7/F8/F9 | In phiếu / xuất Excel / mở link ngoài đã được làm cứng an ninh |
 
-**Một lưu ý trung thực (bắt buộc).** Bản dựng là **toàn bộ dữ liệu mô phỏng (mock)
-trong bộ nhớ — mọi thay đổi mất khi tải lại trang; không có backend.** Ma trận phân
-quyền chỉ là mô phỏng giao diện, **không có hiệu lực thực thi**. Đây là **giai đoạn
-nguyên mẫu**, không phải sản phẩm production.
+**Lưu ý lịch sử.** Ở mốc so sánh 2026-07-07, bản dựng là **toàn bộ dữ liệu mô
+phỏng (mock) trong bộ nhớ — mọi thay đổi mất khi tải lại trang; chưa có backend.**
+Trạng thái release hiện tại là hybrid như ghi ở đầu tài liệu; ma trận phân quyền
+vẫn chỉ mô phỏng giao diện và **không có hiệu lực thực thi**.
 
 ---
 
@@ -78,11 +79,11 @@ alone; the live pass sharpens it.
 
 Every gap row uses: **Gap (old) | Severity | Confidence | Rebuild status | Note | Source**.
 
-- **Rebuild status** ∈ exactly three buckets (glossary §1):
-  **Closed (mock)** = _Đã xử lý (chỉ trong bản mô phỏng)_ — the mock qualifier is
-  mandatory; **Deliberate deviation** = _Lệch có chủ đích_;
-  **Deferred** = _Hoãn lại (kèm lý do)_. There is no fourth "done" bucket — this
-  forces honesty about the in-memory nature.
+- **Rebuild status** uses four evidence-bearing buckets (glossary §1):
+  **Closed (mock)** = _Đã xử lý trong bản mô phỏng_; **Closed (real)** = _Đã xử
+  lý qua API/persistence thật_; **Deliberate deviation** = _Lệch có chủ đích_;
+  **Deferred** = _Hoãn lại (kèm lý do)_. The qualifier is mandatory so real and
+  in-memory behavior are never conflated.
 - **Confidence** ∈ {`confirmed`, `likely`, `unconfirmed`} on **all** rows, not
   security-only. Any gap whose source section-file marked the old-site spec
   "inferred / not captured / unverified" inherits `likely` — never asserted as
@@ -115,15 +116,15 @@ columns (flagged per section); status-vocabulary and shipped-code facts are
 
 | # | Section | Sev (H/M/L) | Rollup — rebuild handling | Section confidence |
 |---|---|---|---|---|
-| 1 | Shell / nav / layout | 4 / 6 / 6 | **Closed (mock):** RepairingM KT board route, notification bell → history list, News dropdown + list/detail, call-center demo toast (Ctrl+Shift+G), User-Detail profile, branch-map modal, footer. **Deliberate deviation:** flat frequency-ranked IA kept (D1) instead of the accordion tree. | confirmed (nav facts) |
-| 2 | Repair workspace (Index_8) | 8 / 8 / 3 | **Closed (mock):** 15-status legend w/ live counts, 14-col table, 7 row-action modals, dispatch lifecycle, báo giá flow, batch toolbar (5 prints + SMS-as-toast + Chuyển CN), 22-field filter set (incl. the `soPhieuHang` bug **fixed**), Excel export. **Deliberate deviation:** as-you-type filtering (no "Tìm kiếm" button); no row-click. | confirmed |
+| 1 | Shell / nav / layout | 4 / 6 / 6 | **Closed:** RepairingM KT board route, notification bell → history list, authenticated Tin nhắn list/search/create/detail, call-center demo toast (Ctrl+Shift+G), User-Detail profile, branch-map modal, footer. **Deliberate deviation:** flat frequency-ranked IA kept (D1) instead of the accordion tree. | confirmed (nav facts) |
+| 2 | Repair workspace (Index_8) | 8 / 8 / 3 | **Closed (mock):** 15-status legend w/ live counts, 14-col table, 7 row-action modals, dispatch lifecycle, báo giá flow, batch toolbar (5 prints + SMS-as-toast + Chuyển CN), 22-field filter set (incl. the `soPhieuHang` bug **fixed**), explicit `Tìm kiếm`, Excel export. **Deliberate deviation:** filters also keep live apply; no row-click. | confirmed |
 | 3 | Repair KT dashboard (/RepairingM) | 3 / 5 / 2 | **Closed (mock):** whole technician board built, 10-status subset `[2,4,6,7,8,9,13,15,16,17]`, 14 cols, photo-upload modal. **Deliberate deviation:** plan-calendar "Kế hoạch của bạn" folded into the dashboard as a tab (D1), not the home page. | confirmed (status), likely (KT cols) |
 | 4 | Customer (/Customer/Index) | 3 / 5 / 4 | **Closed (mock):** reference column set, 9-value Nhóm KH taxonomy, Thêm Đại Lý second create flow, phone2/location/đại lý fields; Excel export. **Deferred:** bulk-select scoped to delete-only (open decision #4). | likely (some cols inferred) |
 | 5 | Finance (ChungTu/CongNo/Invoice) | 9 / 9 / 6 | **Closed (mock):** ChungTu 12-type + 5-state collection, Phiếu Thu/Chi flows, per-row print, per-ticket Công nợ + settle-debt modal, Invoice composer w/ MST + VAT. **Deliberate deviation:** invented approval `Trạng thái` dropped; Công nợ has no Hạn TT/overdue (reference removed it). | likely (ChungTu form inferred) |
 | 6 | Catalog A (Hàng hóa, Sản phẩm…) | 5 / 14 / 16 | **Closed (mock):** Hàng hóa reference cols + 3 price tiers + NSX/Model, Kho xác flag, Tiền khoán on Sản phẩm, In Barcode; app-wide bulk-delete + Lưu&Thêm + Excel. | likely (AJAX cols) |
 | 7 | Catalog B (Khu vực, Phí giao…) | 7 / 11 / 7 | **Closed (mock):** Tỉnh→Quận→Xã hierarchy (P1 TUYEN), Phí giao product-linked (Cộng/Trừ/Công), Lỗi SC labor prices, Thời hạn Tháng/Năm (soNgay deleted). **Deliberate deviation:** `KhuVuc` symbol kept, only its fields re-modeled (avoids barrel collision). | likely |
 | 8 | Warehouse | 14 / 20 / 6 | **Closed (mock):** 6 full-page line-item editors, 4 inventory views w/ Kỳ + technician axis + Giá vốn, DSCapLK usage list re-modeled, DSTraLK duyệt flow, **new DSTraLKXac** (trả hãng + Mã vận đơn), Kỳ carry-forward math. | likely (result cols unverified) |
-| 9 | Stock-out | 10 / 11 / 4 | **Closed (mock):** Cấp LK / Bán hàng / Trả hàng (4 hình thức) / Chuyển kho (×2 dual editors) full-page editors, prints, exports. **Deliberate deviation:** "Tìm kiếm" vs "Tìm chi tiết" produce the same result locally. | likely |
+| 9 | Stock-out | 10 / 11 / 4 | **Closed (mock):** Cấp LK / Bán hàng / Trả hàng (4 hình thức) / Chuyển kho (×2 dual editors) full-page editors, prints, exports. `Tìm kiếm` refreshes vouchers while `Tìm chi tiết` opens filtered line-level results; Bán hàng also has snapshot profit reporting. | likely |
 | 10 | HR (10 pages) | 11 / 13 / 6 | **Closed (mock):** 4 stub pages built (Ngân hàng, Phụ cấp, Loại Phạt Thưởng, Ứng lương), NhanVien full editor + Khóa toggle, Bảng lương 17-col + totals, Chấm công exception model, Kỳ entity. **Deferred:** payroll **Tổng/Thực lãnh formula** (static sum shipped). | confirmed (build), likely (cols) |
 | 11 | Reports (6 canonical) | 8 / 9 / 8 | **Closed (mock):** 6 reference reports (Tình trạng KT/chung, Máy tồn, KPI KTV/Tiếp nhận, SCBH KT) w/ charts + drill-down + tri-mode period. **Deliberate deviation:** local Doanh thu/Xuất kho reports **kept** alongside (V5). | likely (result cols mock) |
 | 12 | Admin / Permissions / Account | 6 / 10 / 7 | **Closed (mock):** Chi nhánh full fields + map, Người dùng Khóa toggle + Chi nhánh phụ, menu-tree (~50 nodes) + **202-checkbox function matrix**. **Known limitation:** the matrix is **UI-only, no enforcement**; ChucNang taxonomy reconstructed because the reference RoleFunction page is HTTP 500. | confirmed (build), likely (taxonomy est.) |
@@ -132,13 +133,30 @@ columns (flagged per section); status-vocabulary and shipped-code facts are
 majority are **Closed (mock)** — verified in-memory only — with the deviations and
 deferrals named per section above and detailed in the appendix.
 
+### Repairing Index / Index_8 delta audit (2026-07-15)
+
+Authenticated inventory sections `Repairing_Index` and `Repairing_Index_8` were
+diffed field-by-field rather than assuming the two legacy views were identical.
+
+| Delta | `Index` | `Index_8` | Rebuild disposition |
+|---|---|---|---|
+| Toolbar | No standalone `In tem` button | Adds `In tem` | Function retained in the merged repair-list print menu as `In Tem Dán Máy`; presentation is consolidated, not missing. |
+| Status option order | `Báo Giá` before `Chờ Báo Giá`; `Đã Đặt Linh Kiện` before `Chờ Linh Kiện`; `Chờ Phiếu Hãng`/`Trả Lại` before `Hỏng Khách Trả Lại` | Reverses those local orderings | Membership is the same 15 statuses. Rebuild keeps one canonical status order; recorded as a presentation deviation, not a functional gap. |
+| Index-only filter | `Tên khu vực` | Absent | Restored in the merged repair filters by parity Phase 2. |
+| Index_8-only filters | Absent | `Tuyến`, `Đại lý`, `Địa chỉ` | Already present in the merged Index_8-style filter surface. |
+| Shared surface | Same title, branch/warranty/date selects, table columns, labels, and all remaining placeholders | Same | No additional functional gap found. |
+
+Result: the merged route loses no separate Index workflow. The restored
+`Tên khu vực` filter, standalone `In tem` placement, and status-option
+ordering remain documented capability-consolidation deviations.
+
 ---
 
 ## 3. "Closed (mock)" cross-check + the two live residuals
 
 Every "Closed (mock)" claim is backed by **both** a phase completion note **and** a
-shipped code file (verified present in the `src/` tree, 569 TS/TSX files). Examples
-of the code-file anchors:
+shipped code file verified present in the `src/` tree. Examples of the
+code-file anchors:
 
 | Closed claim | Phase note | Shipped code file (verified present) |
 |---|---|---|
@@ -172,11 +190,15 @@ of the code-file anchors:
 |---|---|---|
 | **Flat IA (D1)** | Kept the flat frequency-ranked sidebar + section tabs instead of the reference accordion tree. | Fewer clicks to frequent pages; missing routes were _added into_ the flat structure, so no content parity was lost — only nav cosmetics differ. |
 | **SPA routes vs popup windows** | Repair detail/create and all editors are SPA routes, not `window.open` popups. | No popup-blocker fragility, back-button works, deep-linkable. Legacy popups are an era-2014 constraint. |
-| **As-you-type filtering** | Lists filter as you type instead of requiring a "Tìm kiếm" button. | Lower interaction cost; reference's mandatory-button pattern is a full-page-reload artifact. |
+| **Live filters plus submit** | Filtered lists keep live apply and also expose the legacy `Tìm kiếm` submit affordance. | Preserves the faster interaction without removing the verified legacy control. |
+| **WarrantyType multi-select** | Repair warranty-type filtering accepts multiple values although the legacy control is narrower. | A capability superset; selected values still map to the canonical three-value taxonomy. |
+| **Command palette** | `Cmd+K` / `Ctrl+K` route search remains available in addition to sidebar navigation. | Additive keyboard navigation; it does not remove or rename legacy destinations. |
+| **Composite repair columns** | Dense repair fields render in grouped cells while legacy field ids remain available as sort-only metadata. | Keeps mobile/readability gains without dropping legacy sorting contracts. |
+| **Chấm công quantity** | Attendance exceptions use one numeric `Số lượng` plus unit instead of reproducing a richer legacy entry surface. | The stored value covers the implemented exception/payroll summaries; the simplification stays explicitly documented. |
 | **Single pagination** | One bottom pager + page-size selector instead of dual top/bottom pagers. | Reduces UI noise; dual pagers were a workaround for long reload-heavy pages. |
 | **Corrected legacy typos (D3)** | Rendered "Mở" (not the legacy typo "Mỡ"), "Sản phẩm" (not "Sản phầm"). | Data fidelity, not bug-for-bug mimicry. The legacy strings are documented in the defect catalog. |
 | **Dropped invented features** | Removed the rebuild's own earlier inventions: approval-state pills, day-matrix chấm công, invented `Trạng thái` columns, snake_case statuses, per-ticket overdue clock. | These never existed in the reference; keeping them would have been _reverse_ drift. |
-| **Loại bảo hành label split** | Index_8 filter uses "Tại Trạm/Nhà Khách"; create form uses "Tại TTBH/Tại Nhà". | Each matches its own reference screen verbatim — faithful, though internally inconsistent (a legacy trait, preserved). |
+| **Loại bảo hành label split** | Index_8 filter uses "Tại Trạm/Nhà Khách"; create form uses "Tại TTBH/Tại Nhà Khách". | Each matches its own reference screen verbatim — faithful, though internally inconsistent (a legacy trait, preserved). |
 
 ---
 
@@ -185,29 +207,32 @@ of the code-file anchors:
 All five honesty flags apply to this deliverable and the whole doc-set (VI strings
 in [glossary §3](./assets/vi-term-glossary.md)):
 
-1. **Mock-only.** 100% mock/in-memory. Every create/update/delete is lost on any
-   page reload — there is **no backend**. This is a prototype.
+1. **Hybrid persistence.** JWT auth and 21 release resources, including Tin Tuc,
+   use the real API. Repair tickets and most operational vouchers remain
+   in-memory and are lost on reload.
 2. **Permission matrix has no enforcement.** UI mock only (see §3 residual 2).
 3. **Payroll Tổng/Thực lãnh = documented static sum.** Bảng lương ships static
    seeded rows; the real payroll-derivation formula is **deferred** until specified.
-4. **Some report result-columns are plausible-mock, unverified.** Several report
-   result tables (KPI KTV, KPI Tiếp nhận, Máy tồn, SCBH) were built from inferred
-   columns because the reference renders them via AJAX partials not mirrored in 260703.
+4. **Some report semantics remain evidence-gated.** Visible KPI, Máy tồn, and
+   drill-down headers were captured, but Máy tồn bucket boundaries and the KPI
+   Lương/1 Ngày workbook schemas remain unverified. Those two exports stay
+   disabled instead of aliasing the verified main pivot.
 5. **Security claims are recon-level.** Anything not provable by read-only recon is
    tagged `likely/unconfirmed; requires authorized pentest` — see the defect catalog.
 
 ### Deferred gaps (explicit)
 
 - Payroll formula (above).
-- Reference report result-column verification (mock vs live AJAX) — spot-check
-  deferred; rows stay `likely` where unverified.
-- Full backend/persistence — out of scope for the prototype by design.
+- Máy tồn boundary hand-count and KPI Lương/1 Ngày workbook capture.
+- Repair and remaining operational persistence beyond the 21 real resources.
 
 ---
 
 ## 6. Scope & distribution
 
-- **Documentation only** — no code files were touched producing this doc-set.
+- The original 2026-07-07 comparison corpus was documentation-only. The
+  2026-07-16 refresh reconciles that historical record with the shipped hybrid
+  implementation and final verification evidence.
 - The **[defect catalog](./legacy-defect-catalog.md)** and the **screenshots** are
   **internal-distribution only** pending owner sign-off: they reproduce a named
   third-party vendor's ("Phần Mềm Quốc Bảo") branded UI and recon-level security

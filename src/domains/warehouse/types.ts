@@ -17,6 +17,7 @@ export interface InventoryRow {
   nhaSanXuat: string
   khoId: string
   khoTen: string
+  nganChuaId: string
   nganChua: string
   kyId: string
   kyLabel: string
@@ -52,6 +53,7 @@ export type InventoryKind = 'ton-kho' | 'ton-kho-lk-xac' | 'ton-kho-ky-thuat'
 export interface ReceivingLine {
   ma: string
   ten: string
+  nganChuaId: string
   nganChua: string
   soLuong: number
   donGia: number
@@ -66,7 +68,9 @@ export interface ReceivingVoucher {
   soDatHang: string
   soHoaDon: string
   nhaCungCap: string
+  nhaCungCapSdt: string
   hinhThucThanhToan: string
+  khoId: string
   khoTen: string
   soTien: number
   nguoiLap: string
@@ -78,6 +82,29 @@ export interface ReceivingVoucher {
 
 // ── Cấp Linh Kiện (parts issue to technician) ──────────────────────────────
 
+export const CAP_LINH_KIEN_MUC_DICH_OPTIONS = [
+  'Sữa chữa dịch vụ',
+  'Bảo hành',
+  'Kỹ thuật mượn',
+] as const
+
+export interface CheckOutLine {
+  serial: string
+  soPhieuSC: string
+  maHang: string
+  tenHang: string
+  nhaSanXuat: string
+  model: string
+  khoId: string
+  khoTen: string
+  nganChuaId: string
+  nganChua: string
+  mucDich: string
+  gia: number
+  soLuong: number
+  thanhTien: number
+}
+
 export interface CheckOutSlip {
   id: string
   soPhieuCap: string
@@ -87,9 +114,25 @@ export interface CheckOutSlip {
   nguoiLap: string
   ghiChu: string
   branchId: string
+  lines: CheckOutLine[]
 }
 
 // ── Bán Hàng (sales order) ─────────────────────────────────────────────────
+
+export interface SellingLine {
+  hangHoaId: string
+  maHang: string
+  tenHang: string
+  model: string
+  serial: string
+  khoId: string
+  khoTen: string
+  capNhatGia: boolean
+  giaVon: number
+  giaBan: number
+  soLuong: number
+  thanhTien: number
+}
 
 export interface SellingOrder {
   id: string
@@ -97,10 +140,12 @@ export interface SellingOrder {
   ngayLap: string
   khachHang: string
   dienThoai: string
+  hinhThucThanhToan: string
   tongTien: number
   nguoiLap: string
   ghiChu: string
   branchId: string
+  lines: SellingLine[]
 }
 
 // ── Trả Hàng (return slip) ─────────────────────────────────────────────────

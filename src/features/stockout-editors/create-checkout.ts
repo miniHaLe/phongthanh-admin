@@ -20,10 +20,52 @@ export interface CreateCheckoutInput {
   lines: CapLinhKienLine[]
 }
 
+function isTrulyBlankLine(line: CapLinhKienLine): boolean {
+  return (
+    [
+      line.serial,
+      line.soPhieuSC,
+      line.maHang,
+      line.tenHang,
+      line.nhaSanXuat,
+      line.model,
+      line.khoId,
+      line.khoTen,
+      line.nganChuaId,
+      line.nganChua,
+      line.mucDich,
+    ].every((value) => value.trim() === '') &&
+    line.gia === 0 &&
+    line.thanhTien === 0
+  )
+}
+
+function normalizeCheckoutLines(lines: CapLinhKienLine[]): CapLinhKienLine[] {
+  const nonBlankLines = lines.filter((line) => !isTrulyBlankLine(line))
+  if (nonBlankLines.length === 0) {
+    throw new Error('Vui lòng chọn sản phẩm cấp cho kỹ thuật!')
+  }
+  for (const line of nonBlankLines) {
+    if (
+      !line.soPhieuSC.trim() ||
+      !line.maHang.trim() ||
+      !line.nhaSanXuat.trim() ||
+      !line.khoId.trim() ||
+      !line.nganChuaId.trim() ||
+      !line.mucDich.trim() ||
+      line.soLuong <= 0
+    ) {
+      throw new Error('Thiếu thông tin dòng cấp linh kiện')
+    }
+  }
+  return nonBlankLines
+}
+
 export function createCheckout(input: CreateCheckoutInput): CheckOutSlip {
+  const lines = normalizeCheckoutLines(input.lines)
   checkoutIdSeq += 1
   const now = new Date()
-  const soTien = input.lines.reduce((s, l) => s + l.thanhTien, 0)
+  const soTien = lines.reduce((s, l) => s + l.thanhTien, 0)
   const slip: CheckOutSlip = {
     id: `clk-new-${checkoutIdSeq}`,
     soPhieuCap: nextVoucherCode(
@@ -37,6 +79,7 @@ export function createCheckout(input: CreateCheckoutInput): CheckOutSlip {
     nguoiLap: input.nguoiLap,
     ghiChu: input.ghiChu,
     branchId: input.branchId,
+    lines,
   }
   CHECKOUT_ROWS.unshift(slip)
   return slip

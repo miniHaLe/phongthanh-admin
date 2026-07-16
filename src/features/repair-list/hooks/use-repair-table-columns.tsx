@@ -24,10 +24,11 @@ import {
 } from '@/features/repair-shared/repair-table-page-meta-cells'
 import { DispatchCell } from '../components/dispatch-cell'
 import { RowActionsCell } from '../components/row-actions-cell'
+import { REPAIR_MOCK_REFERENCE_EPOCH_MS } from '@/domains/repair/mock-data'
 
 export const TABLE_ID = 'repair-list'
 
-const REF_NOW = Date.now()
+const REF_NOW = REPAIR_MOCK_REFERENCE_EPOCH_MS
 
 export const REPAIR_COLUMN_LABELS = SHARED_REPAIR_COLUMN_LABELS
 

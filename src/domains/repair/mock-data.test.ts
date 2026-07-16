@@ -7,7 +7,13 @@
  * Spec source: gap matrix §5b (status ids), plan §"Data-Layer Reconciliation (D5)".
  */
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { MOCK_TICKETS, createRepairTicket, fetchRepairList } from './mock-data'
+import {
+  MOCK_TICKETS,
+  REPAIR_MOCK_REFERENCE_EPOCH_MS,
+  createRepairTicket,
+  fetchRepairList,
+} from './mock-data'
+import { classifyMayTonAgeUsingUnverifiedCandidateRanges } from '@/domains/reports/aging-buckets'
 import { STATUS_LABEL, KT_BOARD_STATUS_IDS } from './status'
 import { TECHNICIANS, PRODUCTS, MODELS } from './reference-data'
 
@@ -63,6 +69,35 @@ describe('MOCK_TICKETS (live repair layer) — characterization', () => {
       }
       expect(t.statusHistory.at(-1)!.status).toBe(t.tinhTrang)
     }
+  })
+
+  it('anchors every seeded date to the fixed report reference epoch', () => {
+    for (const ticket of MOCK_TICKETS) {
+      expect(new Date(ticket.ngayNhan).getTime()).toBeLessThanOrEqual(
+        REPAIR_MOCK_REFERENCE_EPOCH_MS,
+      )
+      expect(
+        new Date(ticket.statusHistory.at(-1)!.changedAt).getTime(),
+      ).toBeLessThanOrEqual(REPAIR_MOCK_REFERENCE_EPOCH_MS)
+    }
+  })
+
+  it('populates every candidate May Ton aging bucket deterministically', () => {
+    const buckets = new Set(
+      MOCK_TICKETS.map((ticket) => {
+        const currentStatusAt = new Date(
+          ticket.statusHistory.at(-1)!.changedAt,
+        ).getTime()
+        const ageDays = Math.floor(
+          (REPAIR_MOCK_REFERENCE_EPOCH_MS - currentStatusAt) / 86_400_000,
+        )
+        return classifyMayTonAgeUsingUnverifiedCandidateRanges(ageDays)
+      }),
+    )
+
+    expect(buckets).toEqual(
+      new Set(['day1', 'day3', 'day7', 'day14', 'day21', 'day30', 'day31Plus']),
+    )
   })
 })
 
@@ -132,6 +167,25 @@ describe('fetchRepairList — characterization', () => {
     for (const t of res.data) {
       expect(t.branchId).toBe('dak-lak')
     }
+  })
+
+  it('filters the public khuVuc key by area name', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.999)
+    const khuVuc = MOCK_TICKETS.find((ticket) => ticket.khuVuc)?.khuVuc
+    expect(khuVuc).toBeTruthy()
+
+    const res = await fetchRepairList({
+      page: 1,
+      pageSize: 250,
+      khuVuc: khuVuc!.slice(0, 4),
+    })
+
+    expect(res.data.length).toBeGreaterThan(0)
+    expect(
+      res.data.every((ticket) =>
+        ticket.khuVuc?.toLowerCase().includes(khuVuc!.slice(0, 4).toLowerCase()),
+      ),
+    ).toBe(true)
   })
 })
 

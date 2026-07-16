@@ -20,7 +20,10 @@ import { StatusColumnChart } from '@/components/reports/status-column-chart'
 import { StatusPieChart } from '@/components/reports/status-pie-chart'
 import { ReportDrilldown } from '@/components/reports/report-drilldown'
 import { ReportLoadingState } from '@/components/reports/report-loading-state'
-import { MOCK_TICKETS } from '@/domains/repair/mock-data'
+import {
+  MOCK_TICKETS,
+  REPAIR_MOCK_REFERENCE_EPOCH_MS,
+} from '@/domains/repair/mock-data'
 import { MANUFACTURERS } from '@/domains/repair/reference-data'
 import {
   REPAIR_STATUS_DISPLAY_ORDER,
@@ -33,13 +36,13 @@ import type { RepairStatusId } from '@/domains/repair/status'
 import type { StatusColumnDatum } from '@/components/reports/status-column-chart'
 
 function defaultFromIso(): string {
-  const d = new Date()
+  const d = new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS)
   d.setMonth(d.getMonth() - 1)
   return d.toISOString().slice(0, 10)
 }
 
 function todayIso(): string {
-  return new Date().toISOString().slice(0, 10)
+  return new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS).toISOString().slice(0, 10)
 }
 
 interface TinhTrangChungParams {
@@ -103,9 +106,10 @@ export default function TinhTrangChungReportPage() {
   const [barStatus, setBarStatus] = useState<RepairStatusId | null>(null)
   const [pieStatus, setPieStatus] = useState<RepairStatusId | null>(null)
 
-  const [submittedParams, setSubmittedParams] = useState<TinhTrangChungParams>(
-    { tuNgay: defaultFromIso(), denNgay: todayIso() },
-  )
+  const [submittedParams, setSubmittedParams] = useState<TinhTrangChungParams>({
+    tuNgay: defaultFromIso(),
+    denNgay: todayIso(),
+  })
   const [hasRun, setHasRun] = useState(false)
 
   function handleSearch() {
@@ -174,7 +178,11 @@ export default function TinhTrangChungReportPage() {
           </div>
 
           <div className="mt-4">
-            <Button onClick={handleSearch} disabled={fetching} className="gap-1.5">
+            <Button
+              onClick={handleSearch}
+              disabled={fetching}
+              className="gap-1.5"
+            >
               {fetching ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
               ) : (

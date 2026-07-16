@@ -184,7 +184,12 @@ export default function CongNoPage() {
       />
 
       <div className="flex flex-col gap-3 p-4 sm:p-6">
-        <FilterPanel filterCount={activeFilterCount} onClear={() => setFilters(DEFAULT_FILTERS)} defaultExpanded>
+        <FilterPanel
+          filterCount={activeFilterCount}
+          onClear={() => setFilters(DEFAULT_FILTERS)}
+          onSearch={() => void refetch()}
+          defaultExpanded
+        >
           <Select
             value={filters.branchId ?? '__all__'}
             onValueChange={(v) => handleFilterChange({ branchId: v === '__all__' ? undefined : v })}

@@ -33,4 +33,17 @@ describe('FilterPanel', () => {
     await user.click(screen.getByRole('button', { name: 'Xóa bộ lọc' }))
     expect(onClear).toHaveBeenCalledOnce()
   })
+
+  it('offers an opt-in legacy search action without changing live filters', async () => {
+    const user = userEvent.setup()
+    const onSearch = vi.fn()
+    render(
+      <FilterPanel filterCount={0} onClear={vi.fn()} onSearch={onSearch}>
+        <span>Filters</span>
+      </FilterPanel>,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Tìm kiếm' }))
+    expect(onSearch).toHaveBeenCalledOnce()
+  })
 })

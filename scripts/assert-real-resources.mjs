@@ -33,9 +33,11 @@ const V1_RELEASE_RESOURCES = [
   'phi-giao',
   'ngan-hang',
   'dia-ly',
+  'tin-tuc',
 ]
 
-const isProd = process.env.NODE_ENV === 'production' || process.argv.includes('--prod')
+const isProd =
+  process.env.NODE_ENV === 'production' || process.argv.includes('--prod')
 const allowMock = process.env.ALLOW_MOCK_BUILD === '1'
 
 if (allowMock && isProd) {
@@ -46,7 +48,9 @@ if (allowMock && isProd) {
 }
 
 if (allowMock) {
-  console.log('[build-guard] ALLOW_MOCK_BUILD=1 — skipping real-resource assertion (non-prod).')
+  console.log(
+    '[build-guard] ALLOW_MOCK_BUILD=1 — skipping real-resource assertion (non-prod).',
+  )
   process.exit(0)
 }
 
@@ -71,5 +75,7 @@ if (missing.length > 0) {
 }
 
 if (isProd) {
-  console.log(`[build-guard] OK — all release resources real: ${V1_RELEASE_RESOURCES.join(', ')}`)
+  console.log(
+    `[build-guard] OK — all release resources real: ${V1_RELEASE_RESOURCES.join(', ')}`,
+  )
 }

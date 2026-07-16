@@ -1,17 +1,18 @@
-/**
- * Báo cáo máy tồn (Phase 7 — owned exclusively).
- * Stagnant/unreturned-machine list: tickets not yet handed back to the
- * customer (open statuses per OPEN_STATUS_IDS) within the selected period.
- * Filters: Chi nhánh + Day/Month/Year tri-mode (via shared PeriodModeFilter).
- */
-import { useMemo, useState } from 'react'
-import { useForm, FormProvider } from 'react-hook-form'
+import { useState } from 'react'
+import { FormProvider, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
-import { Loader2, Search, FileSpreadsheet } from 'lucide-react'
+import { FileSpreadsheet, Loader2, Search } from 'lucide-react'
 import { PageHeader } from '@/components/shared'
-import { ROUTES } from '@/constants/routes'
+import {
+  AgingPivotTable,
+  type AgingPivotColumn,
+} from '@/components/reports/aging-pivot-table'
+import { PeriodModeFilter } from '@/components/reports/period-mode-filter'
+import { ReportDrilldown } from '@/components/reports/report-drilldown'
+import { ReportEmptyState } from '@/components/reports/report-empty-state'
+import { ReportLoadingState } from '@/components/reports/report-loading-state'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
@@ -21,21 +22,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { PeriodModeFilter } from '@/components/reports/period-mode-filter'
-import { ReportResultsTable } from '@/components/reports/report-results-table'
-import { ReportEmptyState } from '@/components/reports/report-empty-state'
-import { DataTablePagination } from '@/components/shared'
-import { BRANCHES, BRANCH_NAME, type BranchId } from '@/mock/seed/branches'
-import { MOCK_TICKETS } from '@/domains/repair/mock-data'
-import { OPEN_STATUS_IDS, STATUS_LABEL } from '@/domains/repair/status'
-import { formatDate } from '@/lib/format'
-import { mockDelay } from '@/lib/mock-delay'
-import { exportToXlsx } from '@/lib/export-xlsx'
-import type { ColumnDef } from '@tanstack/react-table'
-import type { PeriodMode, ReportRow } from '@/mock/reports/report-types'
+import { ROUTES } from '@/constants/routes'
+import {
+  computeMayTonAging,
+  resolveReportPeriodBounds,
+  selectMayTonDrilldownTickets,
+  type MayTonAgingOptions,
+  type MayTonAgingRow,
+  type MayTonCellKey,
+} from '@/domains/reports/aging-buckets'
+import {
+  MOCK_TICKETS,
+  REPAIR_MOCK_REFERENCE_EPOCH_MS,
+} from '@/domains/repair/mock-data'
 import type { RepairTicket } from '@/domains/repair/types'
+import { exportToXlsx, type ExportColumn } from '@/lib/export-xlsx'
+import { BRANCHES } from '@/mock/seed/branches'
+import type { PeriodMode } from '@/mock/reports/report-types'
 
-// ── Filter schema (period fields optional — active mode validated below) ────
+const REPORT_REFERENCE_DATE = new Date(REPAIR_MOCK_REFERENCE_EPOCH_MS)
+const REPORT_REFERENCE_ISO = REPORT_REFERENCE_DATE.toISOString()
 
 const filterSchema = z.object({
   mode: z.enum(['ngay', 'thang', 'nam']),
@@ -52,12 +58,11 @@ const filterSchema = z.object({
 type FilterValues = z.infer<typeof filterSchema>
 
 function defaultValues(): FilterValues {
-  const today = new Date()
-  const from = new Date()
+  const from = new Date(REPORT_REFERENCE_DATE)
   from.setMonth(from.getMonth() - 1)
-  const tomorrow = new Date()
+  const tomorrow = new Date(REPORT_REFERENCE_DATE)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  const currentYear = today.getFullYear()
+  const currentYear = REPORT_REFERENCE_DATE.getFullYear()
   return {
     mode: 'ngay',
     chiNhanh: 'all',
@@ -71,86 +76,39 @@ function defaultValues(): FilterValues {
   }
 }
 
-/** Resolve a filter's period mode + fields into a millisecond [from, to] range. */
-function resolveRangeMs(values: FilterValues): [number, number] {
-  if (values.mode === 'thang') {
-    const year = values.nam ?? new Date().getFullYear()
-    const fromM = values.tuThang ?? 1
-    const toM = values.denThang ?? 12
-    const from = new Date(year, fromM - 1, 1).getTime()
-    const to = new Date(year, toM, 0, 23, 59, 59, 999).getTime()
-    return [from, to]
-  }
-  if (values.mode === 'nam') {
-    const fromY = values.tuNam ?? new Date().getFullYear() - 1
-    const toY = values.denNam ?? new Date().getFullYear()
-    const from = new Date(fromY, 0, 1).getTime()
-    const to = new Date(toY, 11, 31, 23, 59, 59, 999).getTime()
-    return [from, to]
-  }
-  // ngay
-  const from = values.tuNgay ? new Date(values.tuNgay).getTime() : 0
-  const to = values.denNgay
-    ? new Date(values.denNgay).getTime() + 86_400_000 - 1
-    : Date.now()
-  return [from, to]
-}
-
-type StagnantRow = ReportRow
-
-function toStagnantRow(t: RepairTicket): StagnantRow {
-  return {
-    soPhieu: t.soPhieu,
-    ngayNhan: t.ngayNhan,
-    khachHang: t.khachHang.ten,
-    thietBi: t.tenSanPham,
-    kyThuat: t.kyThuat,
-    chiNhanh: BRANCH_NAME[t.branchId as BranchId] ?? t.branchId,
-    trangThai: STATUS_LABEL[t.tinhTrang],
-  }
-}
-
-async function fetchStagnantMachines(
-  values: FilterValues,
-): Promise<StagnantRow[]> {
-  await mockDelay(200, 150)
-  const [fromMs, toMs] = resolveRangeMs(values)
-  const openSet = new Set<number>(OPEN_STATUS_IDS)
-
-  return MOCK_TICKETS.filter((t) => {
-    if (!openSet.has(t.tinhTrang)) return false
-    if (values.chiNhanh !== 'all' && t.branchId !== values.chiNhanh)
-      return false
-    const nhanMs = new Date(t.ngayNhan).getTime()
-    return nhanMs >= fromMs && nhanMs <= toMs
-  }).map(toStagnantRow)
-}
-
-const COLUMNS: ColumnDef<StagnantRow>[] = [
-  { accessorKey: 'soPhieu', header: 'Số phiếu' },
-  {
-    accessorKey: 'ngayNhan',
-    header: 'Ngày nhận',
-    cell: ({ getValue }) => formatDate(getValue() as string),
-  },
-  { accessorKey: 'khachHang', header: 'Khách hàng' },
-  { accessorKey: 'thietBi', header: 'Thiết bị' },
-  { accessorKey: 'kyThuat', header: 'Kỹ thuật' },
-  { accessorKey: 'chiNhanh', header: 'Chi nhánh' },
-  { accessorKey: 'trangThai', header: 'Tình trạng' },
+const MAY_TON_COLUMNS: readonly AgingPivotColumn<MayTonAgingRow>[] = [
+  { key: 'total', label: 'Tổng', getValue: (row) => row.total },
+  { key: 'day1', label: '1', getValue: (row) => row.day1 },
+  { key: 'day3', label: '3', getValue: (row) => row.day3 },
+  { key: 'day7', label: '7', getValue: (row) => row.day7 },
+  { key: 'day14', label: '14', getValue: (row) => row.day14 },
+  { key: 'day21', label: '21', getValue: (row) => row.day21 },
+  { key: 'day30', label: '30', getValue: (row) => row.day30 },
+  { key: 'day31Plus', label: '>=31', getValue: (row) => row.day31Plus },
 ]
 
-const EXPORT_COLUMNS = [
-  { header: 'Số phiếu', accessor: (r: StagnantRow) => r.soPhieu },
-  { header: 'Ngày nhận', accessor: (r: StagnantRow) => formatDate(r.ngayNhan as string) },
-  { header: 'Khách hàng', accessor: (r: StagnantRow) => r.khachHang },
-  { header: 'Thiết bị', accessor: (r: StagnantRow) => r.thietBi },
-  { header: 'Kỹ thuật', accessor: (r: StagnantRow) => r.kyThuat },
-  { header: 'Chi nhánh', accessor: (r: StagnantRow) => r.chiNhanh },
-  { header: 'Tình trạng', accessor: (r: StagnantRow) => r.trangThai },
-]
+function exportColumns(
+  rows: readonly MayTonAgingRow[],
+): ExportColumn<MayTonAgingRow>[] {
+  return [
+    { header: 'STT', accessor: (row) => rows.indexOf(row) + 1 },
+    { header: 'Tình trạng', accessor: (row) => row.statusLabel },
+    ...MAY_TON_COLUMNS.map((column) => ({
+      header: column.label,
+      accessor: column.getValue,
+    })),
+  ]
+}
 
-const PAGE_SIZE = 25
+interface QueryResult {
+  rows: MayTonAgingRow[]
+  options: MayTonAgingOptions
+}
+
+interface DrilldownSelection {
+  title: string
+  tickets: RepairTicket[]
+}
 
 export default function MayTonReportPage() {
   const form = useForm<FilterValues>({
@@ -160,31 +118,62 @@ export default function MayTonReportPage() {
   const [mode, setMode] = useState<PeriodMode>('ngay')
   const [hasRun, setHasRun] = useState(false)
   const [submitted, setSubmitted] = useState<FilterValues | null>(null)
-  const [page, setPage] = useState(1)
+  const [drilldown, setDrilldown] = useState<DrilldownSelection | null>(null)
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching } = useQuery<QueryResult>({
     queryKey: ['may-ton-report', submitted],
-    queryFn: () => fetchStagnantMachines(submitted!),
+    queryFn: () => {
+      const period = resolveReportPeriodBounds(
+        submitted!,
+        REPORT_REFERENCE_DATE,
+      )
+      const options: MayTonAgingOptions = {
+        ...period,
+        branchId:
+          submitted!.chiNhanh === 'all' ? undefined : submitted!.chiNhanh,
+      }
+      return Promise.resolve({
+        rows: computeMayTonAging(MOCK_TICKETS, REPORT_REFERENCE_ISO, options),
+        options,
+      })
+    },
     enabled: hasRun && submitted !== null,
   })
+
+  function handleModeChange(next: PeriodMode) {
+    setMode(next)
+    form.setValue('mode', next)
+  }
 
   function handleSearch(values: FilterValues) {
     setSubmitted({ ...values, mode })
     setHasRun(true)
-    setPage(1)
+    setDrilldown(null)
   }
 
-  const rows = useMemo(() => data ?? [], [data])
-  const pagedRows = useMemo(
-    () => rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [rows, page],
-  )
+  function handleCellClick(row: MayTonAgingRow, columnKey: string) {
+    if (!data) return
+    const bucket = columnKey as MayTonCellKey
+    const columnLabel = MAY_TON_COLUMNS.find(
+      (column) => column.key === columnKey,
+    )?.label
+    setDrilldown({
+      title: `Danh sách phiếu — ${row.statusLabel} / ${columnLabel}`,
+      tickets: selectMayTonDrilldownTickets(
+        MOCK_TICKETS,
+        REPORT_REFERENCE_ISO,
+        { ...data.options, statusId: row.statusId, bucket },
+      ),
+    })
+  }
 
-  async function handleExport() {
-    await exportToXlsx({
+  const rows = data?.rows ?? []
+
+  function handleExport() {
+    void exportToXlsx({
       filename: 'bao-cao-may-ton.xlsx',
       sheetName: 'Báo cáo máy tồn',
-      columns: EXPORT_COLUMNS,
+      columns: exportColumns(rows),
       rows,
     })
   }
@@ -210,23 +199,23 @@ export default function MayTonReportPage() {
               <Label htmlFor="may-ton-chi-nhanh">Chi nhánh</Label>
               <Select
                 value={form.watch('chiNhanh')}
-                onValueChange={(v) => form.setValue('chiNhanh', v)}
+                onValueChange={(value) => form.setValue('chiNhanh', value)}
               >
                 <SelectTrigger id="may-ton-chi-nhanh" aria-label="Chi nhánh">
                   <SelectValue placeholder="Tất cả chi nhánh" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả chi nhánh</SelectItem>
-                  {BRANCHES.map((b) => (
-                    <SelectItem key={b.id} value={b.id}>
-                      {b.name}
+                  {BRANCHES.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id}>
+                      {branch.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <PeriodModeFilter mode={mode} onModeChange={setMode} />
+            <PeriodModeFilter mode={mode} onModeChange={handleModeChange} />
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <Button type="submit" disabled={isFetching} className="gap-1.5">
@@ -251,28 +240,22 @@ export default function MayTonReportPage() {
         </FormProvider>
 
         {!hasRun && <ReportEmptyState hasRun={false} />}
-
-        {hasRun && (
-          <>
-            <ReportResultsTable
-              columns={COLUMNS}
-              data={pagedRows}
-              isLoading={isFetching}
-            />
-            {rows.length > 0 && (
-              <DataTablePagination
-                page={page}
-                pageSize={PAGE_SIZE}
-                total={rows.length}
-                onPageChange={setPage}
-                onPageSizeChange={() => {}}
-                pageSizeOptions={[PAGE_SIZE]}
-              />
-            )}
-            {!isFetching && rows.length === 0 && (
-              <ReportEmptyState hasRun={true} />
-            )}
-          </>
+        {hasRun && isFetching && <ReportLoadingState rows={15} cols={10} />}
+        {hasRun && !isFetching && data && (
+          <AgingPivotTable
+            rows={rows}
+            rowHeader="Tình trạng"
+            getRowId={(row) => row.statusId}
+            getRowLabel={(row) => row.statusLabel}
+            columns={MAY_TON_COLUMNS}
+            onCellClick={handleCellClick}
+          />
+        )}
+        {drilldown && (
+          <ReportDrilldown
+            title={drilldown.title}
+            tickets={drilldown.tickets}
+          />
         )}
       </div>
     </div>

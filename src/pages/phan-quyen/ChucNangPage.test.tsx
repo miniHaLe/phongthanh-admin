@@ -43,7 +43,7 @@ describe('ChucNangPage', () => {
   it('offers Lưu & Thêm mới in the create sheet', async () => {
     const user = userEvent.setup()
     renderWithProviders(<ChucNangPage />, { route })
-    await user.click(screen.getByRole('button', { name: 'Thêm' }))
+    await user.click(screen.getByRole('button', { name: 'Thêm Mới' }))
     expect(
       screen.getByRole('button', { name: 'Lưu & Thêm mới' }),
     ).toBeInTheDocument()

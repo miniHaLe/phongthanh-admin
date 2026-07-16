@@ -24,6 +24,7 @@ const fullReleaseSet = [
   'phi-giao',
   'ngan-hang',
   'dia-ly',
+  'tin-tuc',
 ].join(',')
 
 function runGuard({
@@ -53,7 +54,9 @@ describe('production real-resource guard', () => {
     const result = runGuard({ allowMock: true })
 
     expect(result.status).toBe(0)
-    expect(result.stdout).toContain('skipping real-resource assertion (non-prod)')
+    expect(result.stdout).toContain(
+      'skipping real-resource assertion (non-prod)',
+    )
   })
 
   it.each([
@@ -77,5 +80,19 @@ describe('production real-resource guard', () => {
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('all release resources real')
+  })
+
+  it('rejects production when tin-tuc is missing from the release set', () => {
+    const result = runGuard({
+      args: ['--prod'],
+      nodeEnv: 'production',
+      resources: fullReleaseSet
+        .split(',')
+        .filter((resource) => resource !== 'tin-tuc')
+        .join(','),
+    })
+
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('Missing from VITE_REAL_RESOURCES: tin-tuc')
   })
 })

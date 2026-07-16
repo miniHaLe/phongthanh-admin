@@ -40,6 +40,9 @@ export interface Customer {
   huyen: string
   tuyen?: string
   daiLy?: string
+  daiLyId?: string
+  dienThoai2?: string
+  email?: string
 }
 
 export interface Manufacturer {
@@ -153,6 +156,13 @@ export interface RepairTicket {
   isQuick?: boolean
   khuVuc?: string
   daiLy?: string
+  /** Stored edit-page parity snapshots; daiLyChinh stays derived. */
+  ghiChuNhaSanXuat?: string
+  ghiChuModel?: string
+  tuyen?: string
+  daiLyId?: string
+  dienThoai2?: string
+  email?: string
   /** Repeat-repair serial flag → red serial highlight. */
   laMayDaSua?: boolean
   kyId?: string
@@ -217,6 +227,7 @@ export interface RepairListFilters {
   kyThuatId?: string
   tinh?: string
   huyen?: string
+  khuVuc?: string
   tuyen?: string
   daiLy?: string
   loaiBaoHanh?: LoaiBaoHanh
@@ -254,14 +265,58 @@ export interface CreateRepairInput {
   nhaSanXuatId: string
   sanPhamId: string
   modelId: string
+  soPhieuHang?: string
+  soPhieuDaiLy?: string
   soSerial?: string
-  loaiBaoHanh?: string
+  loaiBaoHanh?: LoaiBaoHanh
+  warrantyAt?: 0 | 1
   hinhThuc: HinhThuc
+  isQuick?: boolean
+  khuVuc?: string
   kyThuatId: string
   ngayNhan: string
   ngayHenTra?: string
   moTaLoi: string
+  phuKienKemTheo?: string
+  ngayMua?: string
+  noiMua?: string
   loiSuaChua?: string[]
   chiPhiDuKien: number
   ghiChu?: string
+  ghiChuNhaSanXuat?: string
+  ghiChuModel?: string
+  tuyen?: string
+  daiLyId?: string
+  daiLy?: string
+  dienThoai2?: string
+  email?: string
 }
+
+type NullableRepairUpdateField =
+  | 'diaChi'
+  | 'soPhieuHang'
+  | 'soPhieuDaiLy'
+  | 'soSerial'
+  | 'khuVuc'
+  | 'ngayHenTra'
+  | 'phuKienKemTheo'
+  | 'ngayMua'
+  | 'noiMua'
+  | 'ghiChu'
+  | 'ghiChuNhaSanXuat'
+  | 'ghiChuModel'
+  | 'tuyen'
+  | 'daiLyId'
+  | 'daiLy'
+  | 'dienThoai2'
+  | 'email'
+
+/** Full-page edit payload; omitted values preserve, explicit null clears. */
+export type UpdateRepairInput = Omit<
+  CreateRepairInput,
+  | 'kyThuatId'
+  | 'loiSuaChua'
+  | 'chiPhiDuKien'
+  | NullableRepairUpdateField
+> &
+  Partial<Record<NullableRepairUpdateField, string | null>>

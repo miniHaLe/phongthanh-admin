@@ -5,17 +5,13 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Pencil, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/shared'
 import { fetchRepairById } from '@/domains/repair/mock-data'
-import { openPrintWindow } from '@/components/print/print-window'
-import { PrintLayout } from '@/components/print/print-layout'
-import { formatDate } from '@/lib/format'
 import { ROUTES } from '@/constants/routes'
-import type { RepairTicket } from '@/domains/repair/types'
 import { UpdateStatusModal } from '@/features/repair-shared/update-status-modal'
 import { ProductInfoSection } from './sections/ProductInfoSection'
 import { TicketInfoSection } from './sections/TicketInfoSection'
@@ -29,46 +25,7 @@ import { PartsIssuedTable } from './sections/PartsIssuedTable'
 import { PartsReturnedTable } from './sections/PartsReturnedTable'
 import { SerialHistoryPanel } from './sections/SerialHistoryPanel'
 import { printTemSuaChua } from './prints/tem-sua-chua-print'
-
-/** "In Biên Nhận" — plain receipt print built inline for the detail toolbar. */
-function printBienNhan(ticket: RepairTicket) {
-  return openPrintWindow(
-    'Biên nhận',
-    <PrintLayout
-      title="BIÊN NHẬN SỬA CHỮA"
-      signatures={['Khách hàng', 'Người nhận']}
-    >
-      <table>
-        <tbody>
-          <tr>
-            <td>Số phiếu</td>
-            <td>{ticket.soPhieu}</td>
-          </tr>
-          <tr>
-            <td>Khách hàng</td>
-            <td>{ticket.khachHang.ten}</td>
-          </tr>
-          <tr>
-            <td>Điện thoại</td>
-            <td>{ticket.khachHang.sdt}</td>
-          </tr>
-          <tr>
-            <td>Sản phẩm</td>
-            <td>{ticket.tenSanPham}</td>
-          </tr>
-          <tr>
-            <td>Mô tả hư hỏng</td>
-            <td>{ticket.moTaLoi}</td>
-          </tr>
-          <tr>
-            <td>Ngày nhận</td>
-            <td>{formatDate(ticket.ngayNhan)}</td>
-          </tr>
-        </tbody>
-      </table>
-    </PrintLayout>,
-  )
-}
+import { printBienNhan } from './prints/bien-nhan-print'
 
 /** Full-page skeleton while loading. */
 function DetailSkeleton() {
@@ -145,6 +102,12 @@ export default function RepairDetailPage() {
         </Button>
         <Button asChild variant="secondary" size="sm" className="h-8">
           <Link to={ROUTES.repairCreate}>Tạo mới</Link>
+        </Button>
+        <Button asChild variant="outline" size="sm" className="h-8">
+          <Link to={ROUTES.repairEdit(ticket.id)}>
+            <Pencil className="mr-1.5 size-4" />
+            Chỉnh sửa
+          </Link>
         </Button>
         <Button
           variant="outline"

@@ -9,11 +9,12 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ServerAutocomplete } from '@/components/shared'
 import { listCustomers } from '@/features/customer/create-customer'
-import type { CreateRepairFormValues } from '../RepairCreateForm'
+import type { RepairFormValues } from '../repair-form-contract'
 import {
   QuickCreateKhachHang,
   type CreatedKhachHang,
 } from '../quick-create/QuickCreateKhachHang'
+import { CustomerAgentFields } from './customer-agent-fields'
 
 async function searchKhachHang(query: string) {
   const result = await listCustomers({
@@ -27,21 +28,23 @@ async function searchKhachHang(query: string) {
     ten: c.tenKH,
     sdt: c.dienThoai,
     diaChi: c.diaChi ?? '',
+    dienThoai2: c.dienThoai2 ?? undefined,
+    email: c.email ?? undefined,
   }))
 }
 
 interface CustomerSectionProps {
-  errors: FieldErrors<CreateRepairFormValues>
+  errors: FieldErrors<RepairFormValues>
 }
 
 export function CustomerSection({ errors }: CustomerSectionProps) {
-  const { control, setValue } = useFormContext<CreateRepairFormValues>()
+  const { control, setValue } = useFormContext<RepairFormValues>()
 
   return (
     <section aria-labelledby="section-customer">
       <h2
         id="section-customer"
-        className="sticky top-16 z-10 -mx-6 mb-4 bg-background/95 px-6 py-2 text-base font-semibold backdrop-blur"
+        className="-mx-4 mb-4 bg-background/95 px-4 py-2 text-base font-semibold backdrop-blur sm:sticky sm:top-16 sm:-mx-6 sm:px-6"
       >
         Thông tin khách hàng
       </h2>
@@ -84,9 +87,15 @@ export function CustomerSection({ errors }: CustomerSectionProps) {
               </Label>
               <ServerAutocomplete
                 value={field.value}
-                onChange={(opt) =>
-                  field.onChange(opt as CreatedKhachHang | null)
-                }
+                onChange={(opt) => {
+                  const customer = opt as CreatedKhachHang & {
+                    dienThoai2?: string
+                    email?: string
+                  }
+                  field.onChange(customer)
+                  setValue('dienThoai2', customer?.dienThoai2 ?? '')
+                  setValue('email', customer?.email ?? '')
+                }}
                 fetchOptions={searchKhachHang}
                 placeholder="Nhập vào Tên / Số điện thoại 1-2"
                 quickCreate={{
@@ -105,6 +114,8 @@ export function CustomerSection({ errors }: CustomerSectionProps) {
           )
         }
       />
+
+      <CustomerAgentFields />
 
       <Separator className="mt-6" />
     </section>

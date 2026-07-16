@@ -29,13 +29,17 @@ import { formatVND } from '@/lib/format'
 import { useLookup } from '@/hooks/use-lookup'
 import { CURRENT_USER } from '@/mock/current-user-mock'
 import { BRANCHES } from '@/mock/seed/branches'
-import type { ReceivingLine } from '@/domains/warehouse/types'
-import { createReceiving } from './create-receiving'
+import {
+  clearIncompatibleReceivingLineCabinets,
+  createReceiving,
+  type ReceivingEditorLine,
+} from './create-receiving'
 import {
   NhapKhoHeaderFields,
   type NhapKhoHeaderValues,
 } from './nhap-kho-header-fields'
 import { NhapKhoLineEntry } from './nhap-kho-line-entry'
+import { getSupplierPhone } from './nhap-kho-suppliers'
 import { printReceiving } from '@/features/warehouse/prints/warehouse-prints'
 
 const EMPTY_HEADER: NhapKhoHeaderValues = {
@@ -52,11 +56,15 @@ const EMPTY_HEADER: NhapKhoHeaderValues = {
   ghiChu: '',
 }
 
-function makeEmptyLine(defaultNganChua: string): ReceivingLine {
+function makeEmptyLine(
+  nganChuaId: string,
+  nganChua: string,
+): ReceivingEditorLine {
   return {
     ma: '',
     ten: '',
-    nganChua: defaultNganChua,
+    nganChuaId,
+    nganChua,
     soLuong: 1,
     donGia: 0,
     thanhTien: 0,
@@ -70,16 +78,25 @@ export default function NhapKhoCreatePage() {
   const { byId: nhaKhoById } = useLookup('nha-kho')
   const { rows: nganChuaRows } = useLookup('ngan-chua')
   const [header, setHeader] = useState<NhapKhoHeaderValues>(EMPTY_HEADER)
-  const [lines, setLines] = useState<ReceivingLine[]>([])
+  const [lines, setLines] = useState<ReceivingEditorLine[]>([])
   const [errors, setErrors] = useState<
     Partial<Record<keyof NhapKhoHeaderValues, string>>
   >({})
 
   function patchHeader(patch: Partial<NhapKhoHeaderValues>) {
+    if (patch.khoId !== undefined && patch.khoId !== header.khoId) {
+      setLines((current) =>
+        clearIncompatibleReceivingLineCabinets(
+          current,
+          patch.khoId ?? '',
+          nganChuaRows,
+        ),
+      )
+    }
     setHeader((prev) => ({ ...prev, ...patch }))
   }
 
-  function updateLine(index: number, patch: Partial<ReceivingLine>) {
+  function updateLine(index: number, patch: Partial<ReceivingEditorLine>) {
     setLines((prev) =>
       prev.map((l, i) => {
         if (i !== index) return l
@@ -120,17 +137,28 @@ export default function NhapKhoCreatePage() {
     if (!validate()) return
 
     const khoTen = nhaKhoById.get(header.khoId)?.tenNhaKho ?? ''
-    const voucher = createReceiving({
-      soDatHang: header.soDatHang,
-      soHoaDon: header.soHoaDon,
-      nhaCungCap: header.nhaCungCap!.label,
-      hinhThucThanhToan: header.hinhThucThanhToan,
-      khoTen,
-      nguoiLap: CURRENT_USER.hoVaTen,
-      ghiChu: header.ghiChu,
-      branchId: BRANCHES[0].id,
-      lines,
-    })
+    let voucher
+    try {
+      voucher = createReceiving({
+        soDatHang: header.soDatHang,
+        soHoaDon: header.soHoaDon,
+        nhaCungCap: header.nhaCungCap!.label,
+        nhaCungCapSdt: getSupplierPhone(header.nhaCungCap!.id),
+        hinhThucThanhToan: header.hinhThucThanhToan,
+        khoId: header.khoId,
+        khoTen,
+        nguoiLap: CURRENT_USER.hoVaTen,
+        ghiChu: header.ghiChu,
+        branchId: BRANCHES[0].id,
+        lines,
+        cabinets: nganChuaRows,
+      })
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : 'Không thể lưu phiếu nhập kho!',
+      )
+      return
+    }
 
     notify.success(`Đã lưu phiếu nhập kho ${voucher.soPhieu}`)
 
@@ -143,13 +171,17 @@ export default function NhapKhoCreatePage() {
 
   function handlePrint() {
     const khoTen = nhaKhoById.get(header.khoId)?.tenNhaKho ?? ''
-    void printReceiving({
+    const preview = {
       id: 'preview',
       soPhieu: 'Phát sinh tự động',
       soDatHang: header.soDatHang,
       soHoaDon: header.soHoaDon,
       nhaCungCap: header.nhaCungCap?.label ?? '',
+      nhaCungCapSdt: header.nhaCungCap
+        ? getSupplierPhone(header.nhaCungCap.id)
+        : '',
       hinhThucThanhToan: header.hinhThucThanhToan,
+      khoId: header.khoId,
       khoTen,
       soTien: lines.reduce((s, l) => s + l.thanhTien, 0),
       nguoiLap: CURRENT_USER.hoVaTen,
@@ -157,14 +189,15 @@ export default function NhapKhoCreatePage() {
       ghiChu: header.ghiChu,
       branchId: BRANCHES[0].id,
       lines,
-    })
+    }
+    void printReceiving(preview)
   }
 
   // Cell handlers route through `updateLine` (index-based) rather than the
   // `update` callback LineItemEditor passes to each cell, because Thành tiền
   // must recompute from soLuong × donGia on every edit to either field —
   // logic kept in one place instead of duplicated per cell.
-  const lineColumns: LineColumn<ReceivingLine>[] = [
+  const lineColumns: LineColumn<ReceivingEditorLine>[] = [
     {
       key: 'ma',
       header: 'Mã',
@@ -194,8 +227,14 @@ export default function NhapKhoCreatePage() {
       header: 'Ngăn chứa',
       cell: (line, i) => (
         <Select
-          value={line.nganChua}
-          onValueChange={(v) => updateLine(i, { nganChua: v })}
+          value={line.nganChuaId}
+          onValueChange={(id) => {
+            const cabinet = nganChuaRows.find((row) => row.id === id)
+            updateLine(i, {
+              nganChuaId: id,
+              nganChua: cabinet?.tenNgan ?? '',
+            })
+          }}
         >
           <SelectTrigger
             className="h-8 w-28"
@@ -204,11 +243,15 @@ export default function NhapKhoCreatePage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {nganChuaRows.map((n) => (
-              <SelectItem key={n.id} value={n.tenNgan}>
-                {n.tenNgan}
-              </SelectItem>
-            ))}
+            {nganChuaRows
+              .filter(
+                (cabinet) => !header.khoId || cabinet.nhaKhoId === header.khoId,
+              )
+              .map((n) => (
+                <SelectItem key={n.id} value={n.id}>
+                  {n.tenNgan}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
       ),
@@ -310,6 +353,8 @@ export default function NhapKhoCreatePage() {
                 errors={errors}
               />
               <NhapKhoLineEntry
+                khoId={header.khoId}
+                nganChuaId={header.nganChuaId}
                 onAdd={(line) => setLines((prev) => [...prev, line])}
               />
               <h3 className="mb-2 mt-6 text-sm font-semibold text-muted-foreground">
@@ -320,7 +365,12 @@ export default function NhapKhoCreatePage() {
           columns={lineColumns}
           lines={lines}
           onLinesChange={setLines}
-          makeEmptyLine={() => makeEmptyLine(nganChuaRows[0]?.tenNgan ?? '')}
+          makeEmptyLine={() => {
+            const cabinet = nganChuaRows.find(
+              (row) => row.id === header.nganChuaId,
+            )
+            return makeEmptyLine(header.nganChuaId, cabinet?.tenNgan ?? '')
+          }}
           totals={[
             {
               key: 'total',

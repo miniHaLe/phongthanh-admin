@@ -23,10 +23,10 @@ const ROUTE_SMOKE = [
     heading: 'Sửa Chữa - Bảo Hành',
   },
   {
-    name: 'legacy-news-redirect',
+    name: 'news-list',
     path: '/tin-tuc',
-    heading: 'Thông báo',
-    expectedPath: '/thong-bao',
+    heading: 'Tin nhắn',
+    expectedPath: '/tin-tuc',
   },
   { name: 'customers', path: '/khach-hang', heading: 'Khách hàng' },
 ]
@@ -139,7 +139,34 @@ test.describe('UIUX dashboard large-screen composition', () => {
   }
 })
 
-test('legacy news URLs render only the consolidated notification surface', async ({
+test('news list opens the selected detail route', async ({ page }) => {
+  const consoleProblems = collectConsoleProblems(page)
+  await gotoProtectedRoute(page, '/tin-tuc', {
+    name: 'phone-375',
+    width: 375,
+    height: 812,
+  })
+
+  const viewButton = page.getByRole('button', { name: /^Xem / }).first()
+  await expect(viewButton).toBeVisible()
+  const viewLabel = await viewButton.getAttribute('aria-label')
+  expect(viewLabel).toMatch(/^Xem .+/)
+  const title = viewLabel!.replace(/^Xem /, '')
+
+  await viewButton.click()
+
+  await expect(page).toHaveURL(/\/tin-tuc\/[^/]+$/)
+  await expect(
+    page.getByRole('heading', { name: title }).first(),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: 'Danh sách', exact: true }),
+  ).toHaveAttribute('href', '/tin-tuc')
+  await expectNoDocumentHorizontalOverflow(page)
+  await expectNoConsoleProblems(consoleProblems)
+})
+
+test('unknown news ids render the news not-found recovery surface', async ({
   page,
 }) => {
   const consoleProblems = collectConsoleProblems(page)
@@ -149,12 +176,13 @@ test('legacy news URLs render only the consolidated notification surface', async
     height: 812,
   })
 
-  await expect(page).toHaveURL(/\/thong-bao$/)
-  await expect(page.getByRole('heading', { name: 'Thông báo' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Tin tức' })).toHaveCount(0)
+  await expect(page).toHaveURL(/\/tin-tuc\/bai-viet-cu$/)
+  await expect(page.getByText('Không tìm thấy tin nhắn')).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: 'Quay lại danh sách', exact: true }),
+  ).toHaveAttribute('href', '/tin-tuc')
   const nestedButtons = await page.locator('button button').count()
   expect(nestedButtons).toBe(0)
-  expect(
-    consoleProblems.some((text) => text.includes('validateDOMNesting')),
-  ).toBe(false)
+  await expectNoDocumentHorizontalOverflow(page)
+  await expectNoConsoleProblems(consoleProblems)
 })

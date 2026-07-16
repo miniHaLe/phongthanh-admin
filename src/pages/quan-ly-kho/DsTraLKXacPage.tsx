@@ -25,7 +25,7 @@ import {
   type PartReturnXacFilterValues,
 } from '@/features/warehouse/part-return-xac-filters'
 
-import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 function applyClientFilters(rows: PartReturnXac[], f: PartReturnXacFilterValues): PartReturnXac[] {
@@ -138,6 +138,7 @@ export default function DsTraLKXacPage() {
         <FilterPanel
           filterCount={activeFilterCount}
           onClear={() => setFilters({})}
+          onSearch={() => void refetch()}
           defaultExpanded
         >
           <PartReturnXacFilters filters={filters} onChange={handleFilterChange} />

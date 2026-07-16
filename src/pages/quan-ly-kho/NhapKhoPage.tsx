@@ -8,7 +8,12 @@ import { PackagePlus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import type { PaginationState, RowSelectionState } from '@tanstack/react-table'
-import { DataTable, DataTablePagination, PageHeader } from '@/components/shared'
+import {
+  DataTable,
+  DataTablePagination,
+  FilterPanel,
+  PageHeader,
+} from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { useRegisterCommands } from '@/components/shell/command-registry'
 import { ROUTES } from '@/constants/routes'
@@ -20,9 +25,22 @@ import {
   NHAP_KHO_TABLE_ID,
   useNhapKhoColumns,
 } from '@/features/warehouse/nhap-kho-table-columns'
+import {
+  buildReceivingDetailRows,
+  type ReceivingDetailRow,
+} from '@/features/warehouse/receiving-detail-report'
+import {
+  ReceivingFilterFields,
+  type ReceivingFilters,
+} from '@/features/warehouse/receiving-filters'
+import {
+  VoucherLineDetailDialog,
+  type VoucherLineDetailColumn,
+} from '@/features/warehouse/voucher-line-detail-dialog'
 
-import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
+const DEFAULT_FILTERS: ReceivingFilters = {}
 
 const EXPORT_COLUMNS = [
   { header: 'Số phiếu', accessor: (r: ReceivingVoucher) => r.soPhieu },
@@ -40,11 +58,28 @@ const EXPORT_COLUMNS = [
   { header: 'Ghi Chú', accessor: (r: ReceivingVoucher) => r.ghiChu },
 ]
 
+const DETAIL_COLUMNS: VoucherLineDetailColumn<ReceivingDetailRow>[] = [
+  { header: 'Số phiếu', cell: (row) => row.soPhieu },
+  { header: 'Ngày lập', cell: (row) => row.ngayLap.slice(0, 10) },
+  { header: 'Nhà cung cấp', cell: (row) => row.nhaCungCap },
+  { header: 'Nhà kho', cell: (row) => row.khoTen },
+  { header: 'Ngăn chứa', cell: (row) => row.nganChua },
+  { header: 'Mã hàng', cell: (row) => row.ma },
+  { header: 'Tên hàng', cell: (row) => row.ten },
+  { header: 'Serial', cell: (row) => row.serial || '—' },
+  { header: 'Số lượng', cell: (row) => row.soLuong },
+  { header: 'Đơn giá', cell: (row) => formatVND(row.donGia) },
+  { header: 'Thành tiền', cell: (row) => formatVND(row.thanhTien) },
+]
+
 export default function NhapKhoPage() {
   const navigate = useNavigate()
+  const [filters, setFilters] = useState<ReceivingFilters>(DEFAULT_FILTERS)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [detailRows, setDetailRows] = useState<ReceivingDetailRow[]>([])
+  const [detailOpen, setDetailOpen] = useState(false)
 
   const commands = useMemo(
     () => [
@@ -61,9 +96,14 @@ export default function NhapKhoPage() {
   )
   useRegisterCommands('page-nhap-kho', commands)
 
+  const queryParams = useMemo(
+    () => ({ ...filters, page, pageSize }),
+    [filters, page, pageSize],
+  )
+
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['receiving-list', { page, pageSize }],
-    queryFn: () => fetchReceivingList({ page, pageSize }),
+    queryKey: ['receiving-list', queryParams],
+    queryFn: () => fetchReceivingList(queryParams),
     placeholderData: keepPreviousData,
   })
 
@@ -74,15 +114,38 @@ export default function NhapKhoPage() {
   const tongTien = rows.reduce((s, r) => s + r.soTien, 0)
   const pagination: PaginationState = { pageIndex: page - 1, pageSize }
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  function handleFilterChange(patch: Partial<ReceivingFilters>) {
+    setFilters((current) => ({ ...current, ...patch }))
+    setPage(1)
+  }
+
+  function clearFilters() {
+    setFilters(DEFAULT_FILTERS)
+    setPage(1)
+  }
 
   async function handleExport() {
-    const res = await fetchReceivingList({ page: 1, pageSize: total || 1 })
+    const res = await fetchReceivingList({
+      ...queryParams,
+      page: 1,
+      pageSize: total || 1,
+    })
     await exportListXlsx({
       filename: 'nhap-kho',
       sheetName: 'Nhập Kho',
       columns: EXPORT_COLUMNS,
       rows: res.data,
     })
+  }
+
+  async function handleDetailSearch() {
+    const result = await fetchReceivingList({
+      ...filters,
+      page: 1,
+      pageSize: 300,
+    })
+    setDetailRows(buildReceivingDetailRows(result.data, filters))
+    setDetailOpen(true)
   }
 
   return (
@@ -96,6 +159,19 @@ export default function NhapKhoPage() {
       />
 
       <div className="flex flex-col gap-3 p-4 sm:p-6">
+        <FilterPanel
+          defaultExpanded
+          filterCount={Object.values(filters).filter(Boolean).length}
+          onClear={clearFilters}
+          onSearch={() => void refetch()}
+          contentClassName="lg:grid-cols-4"
+        >
+          <ReceivingFilterFields
+            filters={filters}
+            onChange={handleFilterChange}
+          />
+        </FilterPanel>
+
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
@@ -112,6 +188,14 @@ export default function NhapKhoPage() {
             onClick={() => refetch()}
           >
             Tải lại trang
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => void handleDetailSearch()}
+          >
+            Tìm chi tiết
           </Button>
           <Button
             size="sm"
@@ -162,6 +246,16 @@ export default function NhapKhoPage() {
           />
         )}
       </div>
+
+      <VoucherLineDetailDialog
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        title="Chi tiết nhập kho"
+        rows={detailRows}
+        columns={DETAIL_COLUMNS}
+        getRowId={(row) => row.id}
+        emptyMessage="Không có dòng nhập kho phù hợp"
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 /** Spec: Cấp Linh Kiện list — verified 7-column set, no checkbox, no edit. */
 import { describe, it, expect } from 'vitest'
 import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/test/render-with-providers'
 import CapLinhKienPage from './CapLinhKienPage'
 
@@ -30,7 +31,7 @@ describe('CapLinhKienPage', () => {
     expect(screen.queryByLabelText('Chọn tất cả')).not.toBeInTheDocument()
   })
 
-  it('renders Thêm phiếu cấp + Tìm kiếm/Tìm chi tiết/Xuất Excel/Báo cáo lợi nhuận', () => {
+  it('renders real detail search and omits profit without a revenue contract', () => {
     renderWithProviders(<CapLinhKienPage />)
     expect(
       screen.getByRole('button', { name: 'Thêm phiếu cấp' }),
@@ -43,7 +44,22 @@ describe('CapLinhKienPage', () => {
       screen.getByRole('button', { name: 'Xuất Excel' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Báo cáo lợi nhuận' }),
+      screen.queryByRole('button', { name: 'Báo cáo lợi nhuận' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('opens line-level detail results', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<CapLinhKienPage />)
+    await screen.findAllByLabelText('Chi tiết')
+
+    await user.click(screen.getByRole('button', { name: 'Tìm chi tiết' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Chi tiết cấp linh kiện' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('columnheader', { name: 'Mục đích' }),
     ).toBeInTheDocument()
   })
 

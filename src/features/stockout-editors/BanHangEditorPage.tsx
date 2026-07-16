@@ -46,11 +46,16 @@ const EMPTY_HEADER: BanHangHeaderValues = {
 
 function makeEmptyLine(): BanHangLine {
   return {
-    serial: '',
-    ten: '',
+    hangHoaId: '',
+    maHang: '',
+    tenHang: '',
     model: '',
+    serial: '',
+    khoId: '',
+    khoTen: '',
     capNhatGia: false,
-    gia: 0,
+    giaVon: 0,
+    giaBan: 0,
     soLuong: 1,
     thanhTien: 0,
   }
@@ -85,7 +90,7 @@ export default function BanHangEditorPage() {
       return
     }
     setHeader({
-      hinhThucThanhToan: 'Tiền mặt',
+      hinhThucThanhToan: existing.hinhThucThanhToan,
       khachHang: {
         id: existing.id,
         label: existing.khachHang,
@@ -93,6 +98,7 @@ export default function BanHangEditorPage() {
       },
       ghiChu: existing.ghiChu,
     })
+    setLines(existing.lines.map((line) => ({ ...line })))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
@@ -126,14 +132,14 @@ export default function BanHangEditorPage() {
   }
 
   function buildInput(branchId: BranchId) {
-    const tongTien = lines.reduce((s, l) => s + l.thanhTien, 0)
     return {
       khachHang: header.khachHang!.label,
       dienThoai: (header.khachHang as CustomerOption).sdt ?? '',
       ghiChu: header.ghiChu,
       nguoiLap: CURRENT_USER.hoVaTen,
       branchId,
-      tongTien,
+      hinhThucThanhToan: header.hinhThucThanhToan,
+      lines,
     }
   }
 
@@ -147,7 +153,15 @@ export default function BanHangEditorPage() {
     }
 
     const input = buildInput(branchId)
-    const order = isEdit && id ? updateSelling(id, input) : createSelling(input)
+    let order
+    try {
+      order = isEdit && id ? updateSelling(id, input) : createSelling(input)
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : 'Không thể lưu phiếu bán hàng!',
+      )
+      return
+    }
     if (!order) {
       notify.error('Không tìm thấy phiếu bán hàng!')
       return
@@ -171,23 +185,29 @@ export default function BanHangEditorPage() {
       ngayLap: new Date().toISOString(),
       khachHang: header.khachHang?.label ?? '',
       dienThoai: (header.khachHang as CustomerOption)?.sdt ?? '',
+      hinhThucThanhToan: header.hinhThucThanhToan,
       tongTien,
       nguoiLap: CURRENT_USER.hoVaTen,
       ghiChu: header.ghiChu,
       branchId: resolveSellingBranchId(activeBranch) ?? '',
+      lines,
     }
   }
 
   const lineColumns: LineColumn<BanHangLine>[] = [
     { key: 'serial', header: 'Serial', cell: (line) => line.serial || '—' },
-    { key: 'ten', header: 'Tên', cell: (line) => line.ten },
+    { key: 'tenHang', header: 'Tên', cell: (line) => line.tenHang },
     { key: 'model', header: 'Model', cell: (line) => line.model || '—' },
     {
       key: 'capNhatGia',
       header: 'Cập nhật giá',
       cell: (line) => (line.capNhatGia ? 'Có' : 'Không'),
     },
-    { key: 'gia', header: 'Giá', cell: (line) => formatVND(line.gia) },
+    {
+      key: 'giaBan',
+      header: 'Giá',
+      cell: (line) => formatVND(line.giaBan),
+    },
     { key: 'soLuong', header: 'Số lượng', cell: (line) => line.soLuong },
     {
       key: 'thanhTien',
@@ -239,6 +259,7 @@ export default function BanHangEditorPage() {
                 errors={errors}
               />
               <BanHangLineEntry
+                branchId={resolveSellingBranchId(activeBranch)}
                 onAdd={(line) => setLines((prev) => [...prev, line])}
               />
               <h3 className="mb-2 mt-6 text-sm font-semibold text-muted-foreground">

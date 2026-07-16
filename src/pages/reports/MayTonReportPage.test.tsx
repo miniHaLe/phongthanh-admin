@@ -3,7 +3,7 @@
  * calls the hardened exportToXlsx helper (spy).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/test/render-with-providers'
 import MayTonReportPage from './MayTonReportPage'
@@ -42,5 +42,48 @@ describe('MayTonReportPage', () => {
     renderWithProviders(<MayTonReportPage />)
     await user.click(screen.getByRole('button', { name: 'Xuất Excel File' }))
     expect(spy).toHaveBeenCalledTimes(1)
+  })
+
+  it('renders the exact legacy pivot and drills into exactly the selected cell count', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<MayTonReportPage />)
+    await user.click(screen.getByRole('button', { name: 'Tìm kiếm' }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('columnheader', { name: 'Tình trạng' }),
+      ).toBeInTheDocument()
+    })
+    expect(
+      screen.getAllByRole('columnheader').map((header) => header.textContent),
+    ).toEqual([
+      'STT',
+      'Tình trạng',
+      'Tổng',
+      '1',
+      '3',
+      '7',
+      '14',
+      '21',
+      '30',
+      '>=31',
+    ])
+
+    const countButton = screen
+      .getAllByRole('button', { name: /nhóm (1|3|7|14|21|30|>=31), \d+ phiếu/ })
+      .find(
+        (button) => !button.getAttribute('aria-label')?.includes(', 0 phiếu'),
+      )!
+    const count = Number(
+      countButton.getAttribute('aria-label')?.match(/(\d+) phiếu$/)?.[1],
+    )
+    await user.click(countButton)
+
+    const heading = await screen.findByRole('heading', {
+      name: /Danh sách phiếu —/,
+    })
+    expect(within(heading.parentElement!).getAllByRole('row')).toHaveLength(
+      count + 1,
+    )
   })
 })

@@ -23,14 +23,14 @@ Browser
   firewall enabled, do not forward port 3210 on the router, and expose the API
   publicly only through ngrok. Postgres is loopback-only on port 5434.
 
-Current release state on 2026-07-14:
+Last observed deployment state on 2026-07-14 (not re-probed by this docs audit):
 
 - Repository variable `vars.API_URL` is unset.
 - The previous public tunnel serves an older API and returns `404` for
   `/health/ready`.
 - A push-triggered Pages deployment therefore fails before deploy. This is
   safe: the workflow does not replace the current Pages artifact until API URL
-  validation and readiness pass.
+  validation, readiness, and release-capability checks pass.
 
 ## One-Time MacBook Setup
 
@@ -162,10 +162,14 @@ Verify the new API locally and publicly:
 curl -fsS http://127.0.0.1:3210/health
 curl -fsS http://127.0.0.1:3210/health/ready
 curl -fsS -H 'ngrok-skip-browser-warning: true' "$API_URL/health/ready"
+test "$(curl -sS -o /dev/null -w '%{http_code}' \
+  -H 'ngrok-skip-browser-warning: true' \
+  "$API_URL/api/v1/tin-tuc?page=1&pageSize=1")" = 401
 ```
 
-Expected JSON is `{"status":"ok"}` and `{"status":"ready"}`. The readiness
-endpoint checks Postgres with a three-second query timeout.
+Expected JSON is `{"status":"ok"}` and `{"status":"ready"}`. The final
+command must return status `401`, proving the compatible API exposes the
+protected Tin Tuc resource before Pages enables it.
 
 ### 6. Verify host network safety
 
@@ -204,7 +208,7 @@ Use this order:
 
 1. Pull the release on the MacBook.
 2. Install, build, migrate, seed, and start the new API.
-3. Start ngrok and make both local and public readiness checks pass.
+3. Start ngrok and make readiness plus the Tin Tuc capability check pass.
 4. Persist the public URL in GitHub.
 5. Dispatch and watch a new Pages run.
 
@@ -308,18 +312,31 @@ the exact guards in
 do not replace the guarded migration with a bulk update. Keep query output
 private because it describes live data.
 
+Confirm the additive Tin Tuc migration is also present:
+
+```bash
+docker exec -i phongthanh-db psql -U phongthanh -d phongthanh \
+  -c "SELECT to_regclass('public.tin_tuc') AS tin_tuc_table;"
+```
+
+The result must be `tin_tuc`. The public protected-route `401` check below is
+the release capability gate that proves the running API also mounted it.
+
 Restart the API only after the migration check:
 
 ```bash
 caffeinate -dimsu npm --prefix api run start:prod
 ```
 
-From another terminal, verify all three checks:
+From another terminal, verify all four checks:
 
 ```bash
 curl -fsS http://127.0.0.1:3210/health
 curl -fsS http://127.0.0.1:3210/health/ready
 curl -fsS -H 'ngrok-skip-browser-warning: true' "$API_URL/health/ready"
+test "$(curl -sS -o /dev/null -w '%{http_code}' \
+  -H 'ngrok-skip-browser-warning: true' \
+  "$API_URL/api/v1/tin-tuc?page=1&pageSize=1")" = 401
 ```
 
 If frontend code changed, dispatch and watch Pages using the commands in
@@ -330,7 +347,7 @@ If frontend code changed, dispatch and watch Pages using the commands in
 The workflow builds with:
 
 - Node.js 24 and `npm ci`;
-- all 20 release resources enabled;
+- all 21 release resources enabled;
 - `VITE_ROUTER_MODE=hash`;
 - `VITE_BASE_PATH=/phongthanh-admin/`;
 - `VITE_API_URL` from manual `api_url` or persisted `vars.API_URL`.
@@ -340,6 +357,7 @@ URL without whitespace. Normal runs then require:
 
 ```text
 GET <API_URL>/health/ready -> 2xx
+GET <API_URL>/api/v1/tin-tuc?page=1&pageSize=1 without a token -> 401
 ```
 
 ### One-run URL override
@@ -360,9 +378,9 @@ gh workflow run deploy-pages.yml --repo miniHaLe/phongthanh-admin \
   -f api_url="$API_URL" -f skip_health_gate=true
 ```
 
-`skip_health_gate=true` skips only the `/health/ready` request. URL validation
-still runs. Use this only for a known, time-bounded readiness incident; it can
-publish a frontend that points at an unavailable API.
+`skip_health_gate=true` skips readiness and release-capability requests. URL
+validation still runs. Use this only for a known, time-bounded incident; it can
+publish a frontend that points at an unavailable or incompatible API.
 
 ## Tunnel URL Stability and Rotation
 
@@ -469,8 +487,9 @@ docker exec -i phongthanh-db pg_restore \
 Start the API version matching that backup, then verify local and public
 readiness before deploying Pages.
 
-Migration `0002_backfill-khach-hang-address-codes.sql` follows `0001`, then
-`0003_masterdata_catalogs.sql` adds the remaining catalogs. The old
+Migration `0002_backfill-khach-hang-address-codes.sql` follows `0001`,
+`0003_masterdata_catalogs.sql` adds the remaining catalogs, and
+`0004_tin_tuc.sql` adds the internal-news resource. The old
 `0001_cool_sunspot.down.sql` path is unsafe after later migrations because it
 does not reconcile their ledger/data state. Do not use the `0001` down script
 as a release rollback. Use application-only rollback or restore a full, verified

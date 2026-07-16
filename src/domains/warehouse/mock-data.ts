@@ -10,7 +10,7 @@
  */
 import { SeededRandom } from '@/lib/seeded-random'
 import { mockDelay } from '@/lib/mock-delay'
-import { HANG_HOA_ROWS, NHA_KHO_ROWS } from '@/mock/masterdata'
+import { HANG_HOA_ROWS, NGAN_CHUA_ROWS, NHA_KHO_ROWS } from '@/mock/masterdata'
 import { BRANCHES } from '@/mock/seed/branches'
 import { KY } from '@/mock/seed/ky'
 import { MANUFACTURERS, MODELS } from '@/domains/repair/reference-data'
@@ -45,6 +45,7 @@ interface ProductWarehouse {
   model: string
   khoId: string
   khoTen: string
+  nganChuaId: string
   nganChua: string
   coSerial: boolean
   branchId: string
@@ -54,6 +55,8 @@ interface ProductWarehouse {
 const PRODUCTS: ProductWarehouse[] = HANG_HOA_ROWS.slice(0, 30).map((hh, i) => {
   const rng = new SeededRandom(6100 + i)
   const kho = NHA_KHO_ROWS[i % NHA_KHO_ROWS.length]
+  const nganChuaRows = NGAN_CHUA_ROWS.filter((row) => row.nhaKhoId === kho.id)
+  const nganChua = nganChuaRows[i % nganChuaRows.length]
   return {
     hangHoaId: hh.id,
     maHang: hh.maHH,
@@ -64,7 +67,8 @@ const PRODUCTS: ProductWarehouse[] = HANG_HOA_ROWS.slice(0, 30).map((hh, i) => {
     model: MODELS[i % MODELS.length].ten,
     khoId: kho.id,
     khoTen: kho.tenNhaKho,
-    nganChua: `Kệ ${String.fromCharCode(65 + (i % 5))}${(i % 4) + 1}`,
+    nganChuaId: nganChua.id,
+    nganChua: nganChua.tenNgan,
     coSerial: rng.bool(0.5),
     branchId: BRANCHES[i % BRANCHES.length].id,
     currentAvailability: Math.max(0, hh.tonKho ?? 0),
@@ -129,6 +133,7 @@ function buildRow(
     nhaSanXuat: p.nhaSanXuat,
     khoId: p.khoId,
     khoTen: p.khoTen,
+    nganChuaId: p.nganChuaId,
     nganChua: p.nganChua,
     kyId: ky.id,
     kyLabel: ky.ten,
@@ -153,6 +158,7 @@ export interface InventoryParams {
   kyId?: string
   branchId?: string
   khoId?: string
+  nganChuaId?: string
   nhomHang?: string
   maHang?: string
   nhaSanXuat?: string
@@ -177,6 +183,8 @@ export async function fetchInventory(
   // keyed by technician. Filter/scope accordingly, then apply user filters.
   if (params.branchId) rows = rows.filter((r) => r.branchId === params.branchId)
   if (params.khoId) rows = rows.filter((r) => r.khoId === params.khoId)
+  if (params.nganChuaId)
+    rows = rows.filter((r) => r.nganChuaId === params.nganChuaId)
   if (params.nhomHang) rows = rows.filter((r) => r.nhomHang === params.nhomHang)
   if (params.nhaSanXuat)
     rows = rows.filter((r) => r.nhaSanXuat === params.nhaSanXuat)

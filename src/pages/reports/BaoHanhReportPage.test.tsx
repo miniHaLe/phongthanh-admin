@@ -29,7 +29,7 @@ describe('BaoHanhReportPage', () => {
 
   it('renders the Từ ngày / Đến ngày date inputs', () => {
     renderWithProviders(<BaoHanhReportPage />)
-    expect(screen.getByLabelText('Từ ngày')).toBeInTheDocument()
-    expect(screen.getByLabelText('Đến ngày')).toBeInTheDocument()
+    expect(screen.getByLabelText('Từ ngày')).toHaveValue('2026-06-15')
+    expect(screen.getByLabelText('Đến ngày')).toHaveValue('2026-07-15')
   })
 })

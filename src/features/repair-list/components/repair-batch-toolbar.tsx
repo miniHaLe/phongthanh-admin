@@ -19,8 +19,10 @@ import {
 } from '@/components/ui/alert-dialog'
 import { BulkActionsBar, PrintMenu, notify } from '@/components/shared'
 import { exportToXlsx } from '@/lib/export-xlsx'
+import { formatDate } from '@/lib/format'
 import { STATUS_LABEL, type RepairStatusId } from '@/domains/repair/status'
 import { HINH_THUC_LABEL, type RepairTicket } from '@/domains/repair/types'
+import { LOI_SUA_CHUA } from '@/domains/repair/reference-data'
 import { deleteTickets } from '@/domains/repair/mock-mutations'
 import { fetchRepairList } from '@/domains/repair/mock-data'
 import type { RepairListFilters } from '@/domains/repair/types'
@@ -57,6 +59,44 @@ const EXPORT_COLUMNS = [
     accessor: (t: RepairTicket) => HINH_THUC_LABEL[t.hinhThuc],
   },
   { header: 'Chi phí dự kiến', accessor: (t: RepairTicket) => t.chiPhiDuKien },
+]
+
+const PRINT_EXPORT_COLUMNS = [
+  { header: 'Phiếu sửa chữa', accessor: (t: RepairTicket) => t.soPhieu },
+  {
+    header: 'Khách hàng',
+    accessor: (t: RepairTicket) => `${t.khachHang.ten} - ${t.khachHang.sdt}`,
+  },
+  {
+    header: 'Sản phẩm',
+    accessor: (t: RepairTicket) =>
+      [t.tenSanPham, t.soSerial].filter(Boolean).join(' - '),
+  },
+  { header: 'Kỹ thuật', accessor: (t: RepairTicket) => t.kyThuat },
+  {
+    header: 'Loại SC',
+    accessor: (t: RepairTicket) => HINH_THUC_LABEL[t.hinhThuc],
+  },
+  { header: 'Chi phí', accessor: (t: RepairTicket) => t.chiPhiThucTe },
+  {
+    header: 'Ngày nhận',
+    accessor: (t: RepairTicket) => formatDate(t.ngayNhan),
+  },
+  {
+    header: 'Ngày HT',
+    accessor: (t: RepairTicket) => formatDate(t.ngayHoanThanh),
+  },
+  {
+    header: 'Sửa chữa',
+    accessor: (t: RepairTicket) =>
+      t.noiDungSuaChua ||
+      t.loiSuaChua
+        .map((id) => LOI_SUA_CHUA.find((item) => item.id === id)?.ten)
+        .filter(Boolean)
+        .join(', '),
+  },
+  { header: 'Ghi chú', accessor: (t: RepairTicket) => t.ghiChu },
+  { header: 'Người nhận', accessor: (t: RepairTicket) => t.nguoiNhan },
 ]
 
 export function RepairBatchToolbar({
@@ -100,7 +140,7 @@ export function RepairBatchToolbar({
     void printLenhSuaTaiNha(selected)
   }
 
-  async function handleExport(suffix = '') {
+  async function handleExport(printLayout = false) {
     // Re-fetch the full filtered set (ignore pagination) for the export.
     const res = await fetchRepairList({
       ...filters,
@@ -108,9 +148,9 @@ export function RepairBatchToolbar({
       pageSize: total || 1,
     })
     await exportToXlsx({
-      filename: `sua-chua${suffix}`,
+      filename: printLayout ? 'sua-chua-in' : 'sua-chua',
       sheetName: 'Sửa chữa',
-      columns: EXPORT_COLUMNS,
+      columns: printLayout ? PRINT_EXPORT_COLUMNS : EXPORT_COLUMNS,
       rows: res.data,
     })
   }
@@ -158,13 +198,13 @@ export function RepairBatchToolbar({
           className="h-11 md:h-8"
           onClick={() => handleExport()}
         >
-          Xuất Excel
+          Xuất Excel File
         </Button>
         <Button
           size="sm"
           variant="outline"
           className="h-11 md:h-8"
-          onClick={() => handleExport('-in')}
+          onClick={() => handleExport(true)}
         >
           Xuất Excel In
         </Button>

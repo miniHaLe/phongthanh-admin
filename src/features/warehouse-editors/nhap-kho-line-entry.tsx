@@ -17,7 +17,7 @@ import {
 } from '@/components/shared'
 import { filterLookupOptions, useLookup } from '@/hooks/use-lookup'
 import { MANUFACTURERS, MODELS } from '@/domains/repair/reference-data'
-import type { ReceivingLine } from '@/domains/warehouse/types'
+import type { ReceivingEditorLine } from './create-receiving'
 
 let modelSeq = 0
 let hangHoaSeq = 0
@@ -133,10 +133,16 @@ function QuickCreateHangHoaForm({
 }
 
 interface NhapKhoLineEntryProps {
-  onAdd: (line: ReceivingLine) => void
+  khoId: string
+  nganChuaId: string
+  onAdd: (line: ReceivingEditorLine) => void
 }
 
-export function NhapKhoLineEntry({ onAdd }: NhapKhoLineEntryProps) {
+export function NhapKhoLineEntry({
+  khoId,
+  nganChuaId,
+  onAdd,
+}: NhapKhoLineEntryProps) {
   const { rows: hangHoaRows } = useLookup('hang-hoa')
   const { rows: nganChuaRows } = useLookup('ngan-chua')
   const [nsx, setNsx] = useState<AutocompleteOption | null>(null)
@@ -173,10 +179,14 @@ export function NhapKhoLineEntry({ onAdd }: NhapKhoLineEntryProps) {
     const qty = Number(soLuong) || 0
     const donGia = Number(giaMua) || 0
     const [maPart, tenPart] = hangHoa.label.split(' — ')
+    const cabinet = nganChuaRows.find(
+      (row) => row.id === nganChuaId && (!khoId || row.nhaKhoId === khoId),
+    )
     onAdd({
       ma: maPart ?? hangHoa.label,
       ten: tenPart ?? hangHoa.label,
-      nganChua: nganChuaRows[0]?.tenNgan ?? '',
+      nganChuaId: cabinet?.id ?? nganChuaId,
+      nganChua: cabinet?.tenNgan ?? '',
       soLuong: qty,
       donGia,
       thanhTien: qty * donGia,

@@ -1,5 +1,5 @@
 /**
- * Repair create page shell — toolbar with "Thêm phiếu" / "Danh sách phiếu"
+ * Repair create page shell — toolbar with "Thêm phiếu" / "Đóng"
  * links plus the multi-fieldset RepairCreateForm. Route: /sua-chua-bao-hanh/tao-moi
  * Phase 4 owns this file.
  */
@@ -24,7 +24,7 @@ export default function RepairCreatePage() {
           <Link to={ROUTES.repairCreate}>Thêm phiếu</Link>
         </Button>
         <Button asChild variant="outline" size="sm" className="h-8">
-          <Link to={ROUTES.repairList}>Danh sách phiếu</Link>
+          <Link to={ROUTES.repairList}>Đóng</Link>
         </Button>
       </PageHeader>
 

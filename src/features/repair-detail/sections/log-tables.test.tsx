@@ -52,15 +52,29 @@ describe('DispatchLogTable', () => {
   it('renders the exact header set', () => {
     render(<DispatchLogTable entries={[dispatchEntry]} />)
     const headers = screen.getAllByRole('columnheader')
-    expect(headers.map((h) => h.textContent)).toEqual([
-      ...DISPATCH_LOG_HEADERS,
-    ])
+    expect(headers.map((h) => h.textContent)).toEqual([...DISPATCH_LOG_HEADERS])
   })
 
   it('renders row data', () => {
     render(<DispatchLogTable entries={[dispatchEntry]} />)
     expect(screen.getByText('Kỹ thuật A')).toBeInTheDocument()
     expect(screen.getByText('100.000 ₫')).toBeInTheDocument()
+  })
+
+  it('omits the labor-cost column on the edit page variant', () => {
+    render(<DispatchLogTable entries={[dispatchEntry]} showLaborCost={false} />)
+    expect(
+      screen.getAllByRole('columnheader').map((h) => h.textContent),
+    ).toEqual([
+      'STT',
+      'Kỹ thuật',
+      'Ngày tạo',
+      'Người tạo',
+      'Tình trạng',
+      'Ngày hủy',
+      'Người hủy',
+    ])
+    expect(screen.queryByText('100.000 ₫')).not.toBeInTheDocument()
   })
 
   it('shows the shared empty state when there is no dispatch log', () => {

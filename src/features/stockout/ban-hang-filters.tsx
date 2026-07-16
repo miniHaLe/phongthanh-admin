@@ -1,10 +1,8 @@
 /**
  * Filter bar for Bán Hàng (7 reference filters: Chi nhánh, Nhà kho, Hình thức
  * thu chi, Số phiếu/Ghi chú, Tên khách hàng, Mã hàng/Tên hàng, date range).
- * `SellingOrder` only carries branchId/khachHang/soPhieu/ghiChu server-side —
- * Nhà kho/Hình thức thu chi/Mã hàng render as UI-only selectors that don't
- * currently narrow the fetched rows, since the slip-level type has no such
- * fields.
+ * Header fields and persisted sales lines both feed the list query, so the
+ * warehouse/payment/product filters narrow real voucher data.
  */
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'

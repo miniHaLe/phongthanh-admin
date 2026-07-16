@@ -37,13 +37,14 @@ import { Loader2, Search } from 'lucide-react'
 import { BRANCHES } from '@/mock/seed/branches'
 import { PeriodModeFilter } from '@/components/reports/period-mode-filter'
 import { ExportExcelMenu } from '@/components/reports/export-excel-menu'
-import { mockCsvDownload } from '@/components/reports/export-excel-menu'
+import { exportToXlsx, type ExportColumn } from '@/lib/export-xlsx'
 import {
   KPI_TECHNICIAN_OPTIONS,
   KPI_NHOM_SAN_PHAM_OPTIONS,
   type KpiPersonOption,
 } from '@/mock/reports/kpi-mock'
 import type { KpiFilterParams, PeriodMode } from '@/mock/reports/report-types'
+import type { KpiAgingRow } from '@/domains/reports/aging-buckets'
 
 // ── Reusable multi-select combobox (checkbox popover — R4/R5 shared) ────────
 
@@ -189,9 +190,8 @@ type KpiFormValues = z.infer<typeof kpiFilterSchema>
 
 // ── Default values ────────────────────────────────────────────────────────────
 
-function getDefaultValues(): KpiFormValues {
-  const today = new Date()
-  const from = new Date()
+function getDefaultValuesForDate(today: Date): KpiFormValues {
+  const from = new Date(today)
   from.setDate(from.getDate() - 30)
   const currentYear = today.getFullYear()
   return {
@@ -209,29 +209,77 @@ function getDefaultValues(): KpiFormValues {
   }
 }
 
+function getDefaultValues(): KpiFormValues {
+  return getDefaultValuesForDate(new Date())
+}
+
 // ── KPI export groups (3 items: File, Lương, 1 Ngày) ─────────────────────────
 
-function buildKpiExportGroups(mode: PeriodMode) {
+const KPI_EXPORT_BUCKET_COLUMNS: readonly ExportColumn<KpiAgingRow>[] = [
+  { header: '1 ngày', accessor: (row) => row.day1 },
+  { header: '2 ngày', accessor: (row) => row.day2 },
+  { header: '3 ngày', accessor: (row) => row.day3 },
+  { header: '4 ngày', accessor: (row) => row.day4 },
+  { header: '5 ngày', accessor: (row) => row.day5 },
+  { header: '6 ngày', accessor: (row) => row.day6 },
+  { header: '7 ngày', accessor: (row) => row.day7 },
+  { header: '>7 ngày', accessor: (row) => row.over7 },
+  { header: 'Tổng', accessor: (row) => row.total },
+]
+
+function kpiExportColumns(
+  personLabel: string,
+  rows: readonly KpiAgingRow[],
+): ExportColumn<KpiAgingRow>[] {
+  return [
+    { header: 'STT', accessor: (row) => rows.indexOf(row) + 1 },
+    { header: personLabel, accessor: (row) => row.personName },
+    ...KPI_EXPORT_BUCKET_COLUMNS,
+  ]
+}
+
+function buildKpiExportGroups(
+  rows: readonly KpiAgingRow[],
+  personLabel: string,
+  reportKind: 'technician' | 'receiver',
+) {
+  const columns = kpiExportColumns(personLabel, rows)
+  const mainExport = {
+    label: 'Xuất Excel File',
+    onExport: () =>
+      void exportToXlsx({
+        filename:
+          reportKind === 'technician'
+            ? 'kpi-bao-cao.xlsx'
+            : 'kpi-tiep-nhan-bao-cao.xlsx',
+        sheetName:
+          reportKind === 'technician' ? 'Báo Cáo KPI' : 'KPI Tiếp Nhận',
+        columns,
+        rows: [...rows],
+      }),
+  }
+
   return [
     {
       label: 'File báo cáo',
-      items: [
-        {
-          label: 'Xuất Excel File',
-          onExport: () => mockCsvDownload('kpi-bao-cao.csv', 'Báo Cáo KPI'),
-        },
-        {
-          label: 'Xuất Excel Luong',
-          onExport: () => mockCsvDownload('kpi-luong.csv', 'Báo Cáo Lương KPI'),
-        },
-        {
-          label: 'Xuất Excel 1 Ngày',
-          disabledWhen: mode !== 'ngay',
-          disabledTooltip: 'Chỉ khả dụng khi xem theo ngày',
-          onExport: () =>
-            mockCsvDownload('kpi-1-ngay.csv', 'Báo Cáo KPI 1 Ngày'),
-        },
-      ],
+      items:
+        reportKind === 'receiver'
+          ? [mainExport]
+          : [
+              mainExport,
+              {
+                label: 'Xuất Excel Luong',
+                disabledWhen: true,
+                disabledTooltip: 'Chưa xác minh cấu trúc workbook legacy',
+                onExport: () => undefined,
+              },
+              {
+                label: 'Xuất Excel 1 Ngày',
+                disabledWhen: true,
+                disabledTooltip: 'Chưa xác minh cấu trúc workbook legacy',
+                onExport: () => undefined,
+              },
+            ],
     },
   ]
 }
@@ -241,6 +289,12 @@ function buildKpiExportGroups(mode: PeriodMode) {
 interface KpiReportFilterFormProps {
   onSubmit: (params: KpiFilterParams) => void
   isLoading: boolean
+  exportRows?: readonly KpiAgingRow[]
+  personLabel?: 'Kỹ thuật' | 'Tiếp tân'
+  personOptions?: KpiPersonOption[]
+  selectAllLabel?: string
+  reportKind?: 'technician' | 'receiver'
+  referenceDate?: Date
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -248,13 +302,21 @@ interface KpiReportFilterFormProps {
 export function KpiReportFilterForm({
   onSubmit,
   isLoading,
+  exportRows = [],
+  personLabel = 'Kỹ thuật',
+  personOptions = KPI_TECHNICIAN_OPTIONS,
+  selectAllLabel = 'Tất cả kỹ thuật',
+  reportKind = 'technician',
+  referenceDate,
 }: KpiReportFilterFormProps) {
   // Local mode state drives radio + conditional rendering; kept in sync with form field
   const [mode, setMode] = useState<PeriodMode>('ngay')
 
   const form = useForm<KpiFormValues>({
     resolver: zodResolver(kpiFilterSchema),
-    defaultValues: getDefaultValues(),
+    defaultValues: referenceDate
+      ? getDefaultValuesForDate(referenceDate)
+      : getDefaultValues(),
     mode: 'onSubmit',
   })
 
@@ -285,7 +347,11 @@ export function KpiReportFilterForm({
     onSubmit(base)
   }
 
-  const exportGroups = buildKpiExportGroups(mode)
+  const exportGroups = buildKpiExportGroups(
+    exportRows,
+    personLabel,
+    reportKind,
+  )
 
   return (
     <div className="rounded-lg border bg-card p-4 shadow-sm">
@@ -332,14 +398,14 @@ export function KpiReportFilterForm({
               name="personIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kỹ thuật</FormLabel>
+                  <FormLabel>{personLabel}</FormLabel>
                   <FormControl>
                     <KpiMultiSelect
-                      ariaLabel="Kỹ thuật"
-                      options={KPI_TECHNICIAN_OPTIONS}
+                      ariaLabel={personLabel}
+                      options={personOptions}
                       value={field.value}
                       onChange={field.onChange}
-                      selectAllLabel="Tất cả kỹ thuật"
+                      selectAllLabel={selectAllLabel}
                     />
                   </FormControl>
                   <FormMessage />

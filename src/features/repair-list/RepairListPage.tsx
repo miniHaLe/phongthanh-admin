@@ -44,7 +44,7 @@ import { RepairBatchToolbar } from './components/repair-batch-toolbar'
 import { RowActionsCell } from './components/row-actions-cell'
 import { cn } from '@/lib/utils'
 
-import { COMPACT_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
+import { STANDARD_PAGE_SIZE_OPTIONS as PAGE_SIZE_OPTIONS } from '@/components/shared/data-table/page-size-options'
 const DEFAULT_PAGE_SIZE = 20
 
 const REPAIR_SORT_FIELD_MAP: Record<string, keyof RepairTicket> = {
@@ -225,6 +225,11 @@ export default function RepairListPage() {
           activeFilterCount={activeFilterCount}
           onChange={handleFilterChange}
           onClear={handleClear}
+          onSearch={() => {
+            setPage(1)
+            void refetch()
+          }}
+          onReload={() => void refetch()}
         />
 
         {/* Status legend with live counts */}

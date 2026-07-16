@@ -127,7 +127,7 @@ export default function ChangePasswordPage() {
 
               {/* Confirm password */}
               <div className="space-y-1.5">
-                <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
+                <Label htmlFor="confirmPassword">Nhập lại mật khẩu</Label>
                 <Input
                   id="confirmPassword"
                   type="password"

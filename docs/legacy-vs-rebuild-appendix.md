@@ -18,9 +18,9 @@ Lows (75 total) are cosmetic/intentional-IA and summarized per section, not tabl
 Source files (read-only): `plans/reports/ref-ui-parity-sections/section-*.md`,
 `plans/reports/brainstorm-260703-reference-ui-parity-gap-matrix.md`.
 
-> **Current rebuild status — 2026-07-15.** The `Closed (mock)` labels below are a
+> **Current rebuild status — 2026-07-16.** The `Closed (mock)` labels below are a
 > preserved 2026-07-07 parity snapshot, not a current blanket architecture claim.
-> Auth plus 18 release resources now use NestJS/Postgres; most repair, warehouse,
+> Auth plus 21 release resources now use NestJS/Postgres; most repair, warehouse,
 > finance, HR, and report workflows remain mock-backed, and the permission matrix
 > still has no server-side enforcement. Historical rows remain unchanged for
 > traceability.
@@ -36,7 +36,7 @@ Src: `section-shell-nav-layout.md`
 | 'Sửa Chữa-Bảo Hành KT' (/RepairingM) nav/route/page missing entirely | high | confirmed | Closed (mock) | Built as RepairKtListPage (P4), added to flat IA |
 | SignalR call-center missing (toast "Có cuộc gọi mới !" → Tiếp nhận → intake) | high | confirmed | Closed (mock) | Demo toast via Ctrl+Shift+G → repair intake (P2); real SignalR replaced by demo trigger (D4) |
 | Notification bell not wired to RepairingStatusHistory | high | confirmed | Closed (mock) | Bell → notification store + /thong-bao list page (P2) |
-| News/messages dropdown (unread badge, mark-seen, list/detail) missing | high | confirmed | Closed (mock) | News dropdown + /tin-tuc list/detail (P2) |
+| News/messages dropdown (unread badge, mark-seen, list/detail) missing | high | confirmed | Closed (real API) | `/tin-tuc` list/search/create/detail uses authenticated CRUD; notification seen-state remains client-side |
 | 'Danh sách trả LK xác' nav child + route missing | med | confirmed | Closed (mock) | DSTraLKXac page built (P5) |
 | 'Thông Tin Tài Khoản' (/User/Detail) profile page missing | med | confirmed | Closed (mock) | /tai-khoan read-only profile (P2/P7) |
 | 'Bản đồ chi nhánh' Google Maps modal missing globally | med | likely | Closed (mock) | BranchMapModal w/ OSM embed (P2); Places search not mirrored |
@@ -208,7 +208,7 @@ Src: `section-warehouse.md`
 | Gap (old) | Sev | Conf | Rebuild status | Note |
 |---|---|---|---|---|
 | Nhập Kho full-page voucher w/ line items missing | high | confirmed | Closed (mock) | line-item editor (P5) |
-| Nhập Kho dual search 'Tìm kiếm'/'Tìm chi tiết' missing | high | confirmed | Deliberate deviation | both present but produce same result locally (P5) |
+| Nhập Kho dual search 'Tìm kiếm'/'Tìm chi tiết' missing | high | confirmed | Closed (mock) | `Tìm kiếm` refreshes vouchers; `Tìm chi tiết` opens filtered receiving-line results |
 | Nhập Kho ~8 filters missing | med | likely | Closed (mock) | filter set (P5); AJAX-exact inferred |
 | Nhập Kho Excel + row actions missing | med | likely | Closed (mock) | Excel via F8; row actions inferred (P5) |
 | Xem Tồn Kho missing 10 columns (Chi nhánh, Model, Giá vốn đầu/trong kỳ, Tồn, Tổng tiền, NSX, Ngăn chứa, Kỳ, serial) | high | likely | Closed (mock) | 20-col view (P5) |
@@ -243,12 +243,12 @@ Src: `section-stock-out.md`
 | Gap (old) | Sev | Conf | Rebuild status | Note |
 |---|---|---|---|---|
 | Cấp Linh Kiện full-page dispatch slip w/ line items missing | high | confirmed | Closed (mock) | line-item editor (P5) |
-| Cấp LK dual search Tìm kiếm/Tìm chi tiết missing | high | confirmed | Deliberate deviation | same result locally (P5) |
-| Cấp LK ~6 filters (incl. Mục Đích) + Excel + Báo cáo lợi nhuận | med | likely | Closed (mock) | 3 mediums; profit report placeholder (P5) |
+| Cấp LK dual search Tìm kiếm/Tìm chi tiết missing | high | confirmed | Closed (mock) | `Tìm kiếm` refreshes slips; `Tìm chi tiết` opens filtered issued-line results |
+| Cấp LK ~6 filters (incl. Mục Đích) + Excel + Báo cáo lợi nhuận | med | likely | Closed (mock) | filters + Excel implemented; unsupported profit stub removed rather than shipped non-functional |
 | Bán Hàng wrong columns (missing ĐT, Người lập, Ghi chú; invents Trạng thái) | high | likely | Closed (mock) | 8-col; invented Trạng thái dropped (P5) |
 | Bán Hàng row actions (Xuất kho print, Chi tiết modal, Thêm hình) missing | high | confirmed | Closed (mock) | print + detail + upload (P5) |
 | Bán Hàng full-page order create/edit missing | high | confirmed | Closed (mock) | create/edit editor (P5) |
-| Bán Hàng filters + bulk + Tìm chi tiết + 2 exports | med | likely | Closed (mock) | 3 mediums (P5) |
+| Bán Hàng filters + bulk + Tìm chi tiết + 2 exports | med | likely | Closed (mock) | line-detail dialog, voucher export, and snapshot profit report implemented |
 | Trả Hàng 'Hình thức trả' 4-type axis missing (local invents refund model) | high | confirmed | Closed (mock) | 4-type reshape; invented refund model removed (P5) |
 | Trả Hàng wrong columns (Hình thức trả, Người lập) | high | likely | Closed (mock) | reshaped (P5) |
 | Trả Hàng print + Chi tiết modal + full-page editor missing | high | confirmed | Closed (mock) | all built (P5) |
@@ -314,6 +314,11 @@ Src: `section-reports.md`
 **Lows (8):** auto-run search, default date ranges, button labels, server paging,
 all ref result-table columns unverified (AJAX partials) → report result columns are
 **plausible-mock** (honesty flag 4).
+
+Current evidence gate: captured KPI/Máy tồn headers, pivots, and drill-downs are
+implemented and tested, but exact Máy tồn window/`30`/`>=31` semantics remain
+unverified. The legacy KPI `Lương` and `1 Ngày` workbook schemas are unavailable,
+so those two export actions remain disabled rather than reusing the main pivot.
 
 ---
 
