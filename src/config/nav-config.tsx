@@ -10,6 +10,7 @@ import {
   UserCog,
   ShieldCheck,
   Lock,
+  Newspaper,
   type LucideIcon,
 } from 'lucide-react'
 import { ROUTES } from '@/constants/routes'
@@ -192,6 +193,14 @@ export const NAV_ITEMS: NavItem[] = [
       { label: 'Chi nhánh', path: ROUTES.manageBranches },
       { label: 'Người dùng', path: ROUTES.manageUsers },
     ],
+  },
+  {
+    id: 'news',
+    label: 'Tin Nhắn',
+    path: ROUTES.news,
+    icon: Newspaper,
+    group: 'admin',
+    keywords: ['tin nhan', 'tin tuc', 'news', 'thong bao noi bo'],
   },
   {
     id: 'permissions',
