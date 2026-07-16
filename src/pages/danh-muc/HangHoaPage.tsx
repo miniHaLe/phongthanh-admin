@@ -24,12 +24,15 @@ import {
 import { CrudFilterFields } from '@/components/crud/crud-filter-fields'
 import { countActiveFilterValues } from '@/components/crud/crud-filter-values'
 import { CrudDeleteDialog } from '@/components/crud/CrudDeleteDialog'
+import {
+  buildCrudColumnDescriptors,
+  buildCrudConfigColumns,
+} from '@/components/crud/build-crud-columns'
 import { useCrud } from '@/hooks/use-crud'
 import { hangHoaConfig } from '@/config/crud-configs/hang-hoa.config'
 import { ROUTES } from '@/constants/routes'
 import { exportListXlsx } from '@/lib/export-list-xlsx'
 import type { HangHoa } from '@/types/masterdata-types'
-import type { ColumnConfig } from '@/types/crud-types'
 import { openPrintWindow } from '@/components/print/print-window'
 import { PrintLayout } from '@/components/print/print-layout'
 import { getVisibleRowNumber } from '@/components/shared/data-table/visible-row-number'
@@ -89,24 +92,7 @@ export default function HangHoaPage(): ReactElement {
         enableSorting: false,
         size: 56,
       },
-      ...config.columns.map(
-        (col: ColumnConfig<HangHoa>): ColumnDef<HangHoa, unknown> => ({
-          id: String(col.key),
-          accessorKey: col.key as string,
-          header: col.header,
-          enableSorting: col.sortable ?? false,
-          size: col.width,
-          cell: col.renderCell
-            ? ({ row }) =>
-                col.renderCell!(
-                  (row.original as unknown as Record<string, unknown>)[
-                    String(col.key)
-                  ] as HangHoa[keyof HangHoa],
-                  row.original,
-                )
-            : undefined,
-        }),
-      ),
+      ...buildCrudConfigColumns(config),
       {
         id: '_actions',
         header: '',
@@ -143,11 +129,11 @@ export default function HangHoaPage(): ReactElement {
       },
     ]
     return cols
-  }, [config.columns, navigate, params.page, params.pageSize])
+  }, [config, navigate, params.page, params.pageSize])
 
   const columnDescriptors = useMemo(
-    () => config.columns.map((c) => ({ id: String(c.key), label: c.header })),
-    [config.columns],
+    () => buildCrudColumnDescriptors(config),
+    [config],
   )
 
   function handleBulkDeleteConfirm() {
