@@ -26,6 +26,22 @@ describe('hangHoaConfig', () => {
     expect(hangHoaConfig.addLabel).toBe(false)
   })
 
+  it('demotes only the sparse Model-dùng-chung column below the 1366px fold', () => {
+    const hidden = hangHoaConfig.columns
+      .filter((c) => c.hidden)
+      .map((c) => c.key)
+    expect(hidden).toEqual(['modelDungChungText'])
+  })
+
+  it('keeps the Phase-2 restored plain-accessor columns visible by default', () => {
+    const byKey = Object.fromEntries(
+      hangHoaConfig.columns.map((c) => [c.key, c]),
+    )
+    for (const key of ['maHH', 'maHHPhu', 'tenHH', 'tenTiengAnh', 'nguoiTao']) {
+      expect(byKey[key]?.hidden).toBeFalsy()
+    }
+  })
+
   it('the 3 price tiers are money fields for the full-page editor', () => {
     const byKey = Object.fromEntries(hangHoaConfig.fields.map((f) => [f.key, f]))
     expect(byKey.giaMua?.type).toBe('money')

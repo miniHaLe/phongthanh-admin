@@ -26,6 +26,44 @@ export function buildCrudColumnDescriptors<T extends { id: string }>(
   }))
 }
 
+/**
+ * Map a config's `columns` to TanStack `ColumnDef`s — the shared source of
+ * truth for the config-driven middle columns. The `cell` renderer is spread in
+ * CONDITIONALLY: a column without `renderCell` keeps TanStack's default
+ * `renderValue()` cell. Setting `cell: undefined` explicitly (as a bespoke
+ * inline map once did) survives the `{...defaultColumn, ...columnDef}` merge
+ * and erases that default, blanking every plain accessor column to an em dash —
+ * so this helper never emits the key when there is no custom renderer.
+ *
+ * Bespoke pages (e.g. HangHoaPage) that own their own selection/STT/action
+ * columns compose this for the data columns instead of duplicating the mapping.
+ */
+export function buildCrudConfigColumns<T extends { id: string }>(
+  config: CrudConfig<T>,
+  lookups?: CrudLookups,
+): ColumnDef<T, unknown>[] {
+  return config.columns.map((column): ColumnDef<T, unknown> => ({
+    id: String(column.key),
+    accessorKey: column.key as string,
+    header: column.header,
+    enableSorting: column.sortable ?? false,
+    size: column.width,
+    meta: { initiallyHidden: column.hidden },
+    ...(column.renderCell
+      ? {
+          cell: ({ row }) =>
+            column.renderCell!(
+              (row.original as Record<string, unknown>)[
+                String(column.key)
+              ] as T[keyof T],
+              row.original,
+              lookups,
+            ),
+        }
+      : {}),
+  }))
+}
+
 export function buildCrudColumns<T extends { id: string }>(
   config: CrudConfig<T>,
   params: Pick<ListParams, 'page' | 'pageSize'>,
@@ -46,26 +84,7 @@ export function buildCrudColumns<T extends { id: string }>(
       size: 56,
       meta: { sticky: true },
     },
-    ...config.columns.map((column): ColumnDef<T, unknown> => ({
-      id: String(column.key),
-      accessorKey: column.key as string,
-      header: column.header,
-      enableSorting: column.sortable ?? false,
-      size: column.width,
-      meta: { initiallyHidden: column.hidden },
-      ...(column.renderCell
-        ? {
-            cell: ({ row }) =>
-              column.renderCell!(
-                (row.original as Record<string, unknown>)[
-                  String(column.key)
-                ] as T[keyof T],
-                row.original,
-                lookups,
-              ),
-          }
-        : {}),
-    })),
+    ...buildCrudConfigColumns(config, lookups),
     ...(actionCount > 0
       ? [
           {

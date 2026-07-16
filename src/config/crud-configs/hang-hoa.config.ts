@@ -61,6 +61,9 @@ export const hangHoaConfig: CrudConfig<HangHoa> = {
       key: 'modelDungChungText',
       header: 'Model dùng chung',
       width: 200,
+      // Sparsely populated free-text; demoted below the 1366px fold by default
+      // to reduce overflow. Restorable via the "Cột" menu; kept in Excel export.
+      hidden: true,
       renderCell: (v) => (v as string | undefined) ?? '',
     },
     {

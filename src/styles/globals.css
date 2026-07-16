@@ -137,6 +137,27 @@
   }
 }
 
+/* Native date inputs — calendar indicator right-alignment.
+   The shared Input (`src/components/ui/input.tsx`) sets `display: flex`, which
+   suppresses Chromium's internal expansion of the date field wrapper, so the
+   ::-webkit-calendar-picker-indicator stops hugging the inline-end and floats
+   mid-field (worse the wider the input). Resetting date inputs to `display:
+   block` restores the native layout that pins the picker to the right padding
+   edge at every viewport (verified empirically 390–2560px). Height (`h-11 /
+   md:h-9`), width (`w-full`), and padding utilities are unaffected by display.
+   Why this overrides the `.flex` utility without `!important`: the
+   `input[type='date']` selector has specificity 0,1,1 (type + attribute),
+   which outranks `.flex` at 0,1,0 (single class) — a plain specificity win.
+   (Tailwind v3 flattens its `@layer` directives at build time, so there are no
+   real cascade layers at runtime; verified this rule also emits after `.flex`
+   in the compiled CSS, but specificity already decides it.) Keep it out of
+   `@apply`/utility composition so the raw selector specificity is preserved.
+   Webkit picker pseudo-elements are inert in Firefox/Gecko (native
+   right-aligned there already). */
+input[type='date'] {
+  display: block;
+}
+
 /* ── Print foundation (real browser print via @media print) ─────────────────
    Elements marked data-print-hide are removed; a container marked
    .print-area is isolated. Later phases add print templates that opt in. */

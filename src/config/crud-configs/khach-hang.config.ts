@@ -55,7 +55,8 @@ export const khachHangConfig: CrudConfig<KhachHang> = {
   columns: [
     { key: 'tenKH', header: 'Tên khách hàng', sortable: true, width: 200 },
     { key: 'dienThoai', header: 'Điện thoại', width: 120 },
-    { key: 'dienThoai2', header: 'Điện thoại 2', width: 120 },
+    // Demoted below the 1366px fold by default; restorable via the "Cột" menu.
+    { key: 'dienThoai2', header: 'Điện thoại 2', width: 120, hidden: true },
     { key: 'diaChi', header: 'Địa chỉ', width: 200 },
     {
       key: 'phuongXaCode',
@@ -72,14 +73,15 @@ export const khachHangConfig: CrudConfig<KhachHang> = {
         tinhName(v as string | undefined, row.tinhId, lookups),
     },
     { key: 'email', header: 'Email', width: 180 },
-    { key: 'maSoThue', header: 'Mã số thuế', width: 140 },
+    { key: 'maSoThue', header: 'Mã số thuế', width: 140, hidden: true },
     {
       key: 'nganHangId',
       header: 'Ngân hàng',
       width: 160,
+      hidden: true,
       renderCell: (_v, row) => row.nganHangTen ?? '—',
     },
-    { key: 'soTaiKhoan', header: 'Số tài khoản', width: 160 },
+    { key: 'soTaiKhoan', header: 'Số tài khoản', width: 160, hidden: true },
     {
       key: 'loaiKhachHangId',
       header: 'Loại',
@@ -92,7 +94,7 @@ export const khachHangConfig: CrudConfig<KhachHang> = {
       width: 160,
       renderCell: (_v, row) => row.daiLyTen ?? '—',
     },
-    { key: 'nguoiTao', header: 'Người tạo', width: 150 },
+    { key: 'nguoiTao', header: 'Người tạo', width: 150, hidden: true },
     {
       key: 'createdAt',
       header: 'Ngày tạo',

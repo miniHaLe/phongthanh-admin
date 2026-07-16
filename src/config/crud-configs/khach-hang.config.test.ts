@@ -66,6 +66,38 @@ describe('khachHangConfig', () => {
     })
   })
 
+  it('demotes low-priority columns below the 1366px fold (restorable via "Cột")', () => {
+    const hidden = khachHangConfig.columns
+      .filter((c) => c.hidden)
+      .map((c) => c.key)
+    expect(hidden).toEqual([
+      'dienThoai2',
+      'maSoThue',
+      'nganHangId',
+      'soTaiKhoan',
+      'nguoiTao',
+    ])
+  })
+
+  it('keeps the primary working-set columns visible by default', () => {
+    const byKey = Object.fromEntries(
+      khachHangConfig.columns.map((c) => [c.key, c]),
+    )
+    for (const key of [
+      'tenKH',
+      'dienThoai',
+      'diaChi',
+      'phuongXaCode',
+      'tinhThanhCode',
+      'email',
+      'loaiKhachHangId',
+      'daiLyId',
+      'createdAt',
+    ]) {
+      expect(byKey[key]?.hidden).toBeFalsy()
+    }
+  })
+
   it('renders modern geography, then legacy names, then an em dash', () => {
     const lookups: CrudLookups = {
       customerProvinceNames: new Map([['66', 'Tên tỉnh từ API']]),
