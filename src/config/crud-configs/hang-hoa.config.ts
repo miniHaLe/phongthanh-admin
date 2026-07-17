@@ -79,12 +79,18 @@ export const hangHoaConfig: CrudConfig<HangHoa> = {
       header: 'Ngày tạo',
       sortable: true,
       width: 110,
+      // Demoted below the 1366px fold by default to remove horizontal
+      // overflow. Restorable via the "Cột" menu; kept in Excel export.
+      hidden: true,
       renderCell: (v) => formatDate(v as string),
     },
     {
       key: 'coSerial',
       header: 'Serial',
       width: 80,
+      // Demoted below the 1366px fold by default to remove horizontal
+      // overflow. Restorable via the "Cột" menu; kept in Excel export.
+      hidden: true,
       renderCell: (v) => (v ? 'Có' : '-'),
     },
   ],

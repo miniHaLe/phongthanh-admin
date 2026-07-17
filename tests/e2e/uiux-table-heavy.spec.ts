@@ -23,6 +23,14 @@ import {
 
 const TABLE_HEAVY_ROUTES = [
   ...COMPOSITE_TABLE_ROUTES,
+  // Residual 1366px overflow accepted on these two (24px / 70px):
+  // expectAccessibleTableScrollRegion proves the scroll affordance works.
+  { name: 'catalog-hang-hoa', path: '/danh-muc/hang-hoa' },
+  { name: 'permissions-menu', path: '/phan-quyen/menu' },
+  // khach-hang: 5 demoted columns auto-show at ≥1920 — the 1920 fit
+  // assertion locks the wide-viewport legacy-parity contract. The table is
+  // hidden below md (mobile card list), so skip phone viewports.
+  { name: 'catalog-khach-hang', path: '/khach-hang', minWidth: 768 },
   { name: 'warehouse-ton-kho-ky-thuat', path: '/quan-ly-kho/ton-kho-ky-thuat' },
   { name: 'warehouse-nhap-kho', path: '/quan-ly-kho/nhap-kho' },
   { name: 'stockout-cap-linh-kien', path: '/xuat-kho/cap-linh-kien' },

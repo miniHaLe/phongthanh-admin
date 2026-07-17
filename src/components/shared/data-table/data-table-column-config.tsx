@@ -1,4 +1,5 @@
 import { Settings2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
@@ -11,6 +12,7 @@ import {
   useTableState,
   type Density,
 } from '@/components/shared/data-table/use-table-state'
+import { useWideViewport } from './use-wide-viewport'
 import type { ColumnPresentation } from './data-table'
 
 export interface ColumnDescriptor {
@@ -41,19 +43,36 @@ export function DataTableColumnConfig({
   const visibleColumns = columns.filter(
     (column) => column.presentation !== 'sort-only',
   )
+  // Must mirror data-table.tsx's columnVisibility memo: initiallyHidden only
+  // seeds `false` below the wide breakpoint; persisted entries always win.
+  const isWideViewport = useWideViewport()
 
   /**
    * A column is considered visible unless `columnVisibility[id]` is explicitly
    * `false` (matching TanStack Table convention).
    */
   function isVisible(column: ColumnDescriptor): boolean {
-    return columnVisibility[column.id] ?? !column.initiallyHidden
+    return (
+      columnVisibility[column.id] ??
+      (isWideViewport || !column.initiallyHidden)
+    )
   }
 
   function toggleColumn(column: ColumnDescriptor) {
     setColumnVisibility(tableId, {
       ...columnVisibility,
       [column.id]: !isVisible(column),
+    })
+  }
+
+  const hiddenColumns = visibleColumns.filter((column) => !isVisible(column))
+  const hiddenCount = hiddenColumns.length
+
+  /** Persist an explicit `true` per hidden id so the choice survives reloads. */
+  function showAllColumns() {
+    setColumnVisibility(tableId, {
+      ...columnVisibility,
+      ...Object.fromEntries(hiddenColumns.map((column) => [column.id, true])),
     })
   }
 
@@ -68,11 +87,29 @@ export function DataTableColumnConfig({
           variant="outline"
           size="sm"
           className="h-11 gap-1.5 lg:h-8"
-          title="Cấu hình cột"
-          aria-label="Cấu hình cột"
+          title={
+            hiddenCount > 0
+              ? `Cấu hình cột (${hiddenCount} cột đang ẩn)`
+              : 'Cấu hình cột'
+          }
+          aria-label={
+            hiddenCount > 0
+              ? `Cấu hình cột (${hiddenCount} cột đang ẩn)`
+              : 'Cấu hình cột'
+          }
         >
           <Settings2 className="h-4 w-4" />
           <span className="hidden sm:inline">Cột</span>
+          {/* Badge hidden below sm — icon-only state conveys the count via
+              aria-label/title, keeping the 390px compact toolbar intact. */}
+          {hiddenCount > 0 && (
+            <Badge
+              variant="secondary"
+              className="hidden h-5 min-w-[20px] px-1.5 text-xs sm:inline-flex"
+            >
+              {hiddenCount} ẩn
+            </Badge>
+          )}
         </Button>
       </PopoverTrigger>
 
@@ -126,7 +163,16 @@ export function DataTableColumnConfig({
 
         <Separator className="my-3" />
 
-        {/* Reset */}
+        {/* Show all + Reset */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full text-sm md:text-xs"
+          disabled={hiddenCount === 0}
+          onClick={showAllColumns}
+        >
+          Hiện tất cả
+        </Button>
         <Button
           variant="ghost"
           size="sm"

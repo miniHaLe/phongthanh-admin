@@ -1,6 +1,6 @@
 /** Characterization: DataTable core behavior survives the row-selection add. */
-import { beforeEach, describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ColumnDef } from '@tanstack/react-table'
 import { DataTable } from './data-table'
@@ -335,6 +335,101 @@ describe('DataTable (characterization)', () => {
     expect(screen.getByText('Mã')).toBeInTheDocument()
   })
 
+  describe('width-aware default visibility', () => {
+    const hiddenColumns: ColumnDef<Row, unknown>[] = [
+      { id: 'name', accessorKey: 'name', header: 'Tên' },
+      {
+        id: 'id',
+        accessorKey: 'id',
+        header: 'Mã',
+        meta: { initiallyHidden: true },
+      },
+    ]
+
+    function stubWideViewport(matches: boolean) {
+      const listeners = new Set<(event: { matches: boolean }) => void>()
+      const mql = {
+        matches,
+        media: '(min-width: 1920px)',
+        addEventListener: (
+          _type: string,
+          listener: (event: { matches: boolean }) => void,
+        ) => listeners.add(listener),
+        removeEventListener: (
+          _type: string,
+          listener: (event: { matches: boolean }) => void,
+        ) => listeners.delete(listener),
+      }
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn(() => mql),
+      )
+      return {
+        setMatches(next: boolean) {
+          mql.matches = next
+          listeners.forEach((listener) => listener({ matches: next }))
+        },
+      }
+    }
+
+    afterEach(() => vi.unstubAllGlobals())
+
+    it('shows initiallyHidden columns by default at wide viewports', () => {
+      stubWideViewport(true)
+      render(
+        <DataTable tableId="wide-default" columns={hiddenColumns} data={data} />,
+      )
+      expect(screen.getByText('Mã')).toBeInTheDocument()
+    })
+
+    it('keeps a persisted false hidden even at wide viewports', () => {
+      stubWideViewport(true)
+      useTableState
+        .getState()
+        .setColumnVisibility('wide-persisted', { id: false })
+      render(
+        <DataTable
+          tableId="wide-persisted"
+          columns={hiddenColumns}
+          data={data}
+        />,
+      )
+      expect(screen.queryByText('Mã')).not.toBeInTheDocument()
+    })
+
+    it('flips only non-persisted columns when crossing the breakpoint', () => {
+      const media = stubWideViewport(false)
+      useTableState
+        .getState()
+        .setColumnVisibility('resize-flip', { name: true })
+      render(
+        <DataTable tableId="resize-flip" columns={hiddenColumns} data={data} />,
+      )
+      expect(screen.queryByText('Mã')).not.toBeInTheDocument()
+
+      act(() => media.setMatches(true))
+      expect(screen.getByText('Mã')).toBeInTheDocument()
+
+      act(() => media.setMatches(false))
+      expect(screen.queryByText('Mã')).not.toBeInTheDocument()
+    })
+
+    it('config popover fallback matches the table at wide viewports', () => {
+      stubWideViewport(true)
+      render(
+        <DataTableColumnConfig
+          tableId="wide-config"
+          columns={[
+            { id: 'name', label: 'Tên' },
+            { id: 'id', label: 'Mã', initiallyHidden: true },
+          ]}
+        />,
+      )
+      // Wide default = visible, so no hidden-count badge.
+      expect(screen.queryByText(/ẩn/)).not.toBeInTheDocument()
+    })
+  })
+
   it('omits sort-only descriptors from config and resets group visibility', async () => {
     const user = userEvent.setup()
     useTableState.getState().setColumnVisibility('config-groups', {
@@ -356,7 +451,9 @@ describe('DataTable (characterization)', () => {
       />,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Cấu hình cột' }))
+    await user.click(
+      screen.getByRole('button', { name: 'Cấu hình cột (1 cột đang ẩn)' }),
+    )
     expect(screen.getByLabelText('Phiếu sửa chữa')).not.toBeChecked()
     expect(screen.queryByText('Legacy sort')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Gọn' })).toHaveClass(
@@ -385,7 +482,9 @@ describe('DataTable (characterization)', () => {
       />,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Cấu hình cột' }))
+    await user.click(
+      screen.getByRole('button', { name: 'Cấu hình cột (1 cột đang ẩn)' }),
+    )
     expect(screen.getByLabelText('Ghi chú')).not.toBeChecked()
     await user.click(screen.getByLabelText('Ghi chú'))
     expect(

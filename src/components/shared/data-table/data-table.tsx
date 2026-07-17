@@ -34,6 +34,7 @@ import {
   LoaderCircle,
 } from 'lucide-react'
 import { useTableState } from './use-table-state'
+import { useWideViewport } from './use-wide-viewport'
 import { Button } from '@/components/ui/button'
 import {
   CompositeSortHeader,
@@ -186,13 +187,26 @@ export function DataTable<TData>({
       }),
     [flatColumns],
   )
+  // Wide viewports get legacy parity: initiallyHidden is a 1366px-fit
+  // demotion, so its `false` seed only applies below the wide breakpoint.
+  // Persisted user choices override in both cases.
+  const isWideViewport = useWideViewport()
   const columnVisibility: VisibilityState = useMemo(
     () => ({
-      ...Object.fromEntries(initiallyHiddenColumnIds.map((id) => [id, false])),
+      ...(isWideViewport
+        ? {}
+        : Object.fromEntries(
+            initiallyHiddenColumnIds.map((id) => [id, false]),
+          )),
       ...(persisted?.columnVisibility ?? {}),
       ...Object.fromEntries(sortOnlyColumnIds.map((id) => [id, false])),
     }),
-    [initiallyHiddenColumnIds, persisted?.columnVisibility, sortOnlyColumnIds],
+    [
+      initiallyHiddenColumnIds,
+      isWideViewport,
+      persisted?.columnVisibility,
+      sortOnlyColumnIds,
+    ],
   )
 
   const table = useReactTable({
