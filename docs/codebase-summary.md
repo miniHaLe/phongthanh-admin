@@ -27,7 +27,13 @@ exposed through ngrok. Pages deploys only after its selected API URL passes
   and the reusable data-table system. Tables support pagination, stable visible
   row numbering, density/column preferences, mobile cards, bounded horizontal
   scroll, export, and print contracts. Shared list selectors expose the legacy
-  `20/30/50/100/150/200/300` page sizes.
+  `20/30/50/100/150/200/300` page sizes. Column defaults are width-aware
+  (`use-wide-viewport.ts`): `initiallyHidden` demotions apply below 1920px,
+  wide screens show all columns by default, and persisted per-user choices in
+  `pt-table-state` win at every width. The "Cột" popover shows a hidden-count
+  badge and a one-click "Hiện tất cả". Lookup cells (`lookup-label.tsx`) never
+  render raw FK ids — blank while loading, `—` with a `title={id}` tooltip
+  when unresolved.
 - Branch scope: `src/api/jwt-claims.ts`, `src/store/app-store.ts`,
   `src/components/shared/branch-switcher.tsx`, and `src/routes/RequireAuth.tsx`
   expose only authorized branches. A persisted unauthorized branch is
