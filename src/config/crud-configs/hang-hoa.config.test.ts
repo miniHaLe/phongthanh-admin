@@ -26,11 +26,11 @@ describe('hangHoaConfig', () => {
     expect(hangHoaConfig.addLabel).toBe(false)
   })
 
-  it('demotes only the sparse Model-dùng-chung column below the 1366px fold', () => {
+  it('demotes the sparse/secondary columns below the 1366px fold', () => {
     const hidden = hangHoaConfig.columns
       .filter((c) => c.hidden)
       .map((c) => c.key)
-    expect(hidden).toEqual(['modelDungChungText'])
+    expect(hidden).toEqual(['modelDungChungText', 'createdAt', 'coSerial'])
   })
 
   it('keeps the Phase-2 restored plain-accessor columns visible by default', () => {
