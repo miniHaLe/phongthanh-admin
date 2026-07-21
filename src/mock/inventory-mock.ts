@@ -85,12 +85,12 @@ export const tonKhoApi = makeMockApi<TonKho>(TON_KHO_ROWS)
 const rngNK = new SeededRandom(3002)
 
 const NHA_CUNG_CAP = [
-  'Công ty TNHH Điện Tử Sài Gòn',
+  'Công ty TNHH Điện Lạnh Sài Gòn',
   'Nhà cung cấp Minh Phát',
-  'Công ty CP Linh Kiện Việt',
-  'Đại lý Apple chính hãng',
-  'Nhà nhập khẩu Samsung VN',
-  'Cty TNHH Phụ Kiện Điện Thoại',
+  'Công ty CP Linh Kiện Điện Lạnh Việt',
+  'Đại lý gas lạnh chính hãng',
+  'Nhà nhập khẩu Block Điện Lạnh VN',
+  'Cty TNHH Vật Tư Điện Lạnh',
 ]
 const TRANG_THAI_NK: Array<'Cho duyet' | 'Da duyet'> = [
   'Da duyet',

@@ -23,13 +23,13 @@ export interface SeedProduct extends BaseEntity {
 
 const rng = new SeededRandom(8003)
 
-// Map sanPhamId on model → nhomSanPhamId
+// Map appliance-category sanPhamId on model → nhomSanPhamId
 const SANPHAM_TO_NHOM: Record<string, string> = {
-  'sp-dienthoai': 'nsp-dienthoai',
-  'sp-maytinhbang': 'nsp-maytinhbang',
-  'sp-dongho': 'nsp-dongho',
-  'sp-taiphone': 'nsp-taiphone',
-  'sp-phuongkien': 'nsp-phuongkien',
+  'sp-tulanh': 'nsp-tulanh',
+  'sp-maylanh': 'nsp-maylanh',
+  'sp-maygiat': 'nsp-maygiat',
+  'sp-tivi': 'nsp-tivi',
+  'sp-giadung': 'nsp-giadung',
 }
 
 const BASE_TIMESTAMP = 1_719_792_000_000
@@ -40,10 +40,10 @@ export const SEED_PRODUCTS: SeedProduct[] = Array.from(
     const model = rng.pick(MODELS)
     const nsx =
       NHA_SAN_XUAT.find((n) => n.id === model.nhaSxId) ?? NHA_SAN_XUAT[0]
-    const nhomSPId = SANPHAM_TO_NHOM[model.sanPhamId] ?? 'nsp-dienthoai'
+    const nhomSPId = SANPHAM_TO_NHOM[model.sanPhamId] ?? 'nsp-giadung'
     const nhomSP =
       NHOM_SAN_PHAM.find((n) => n.id === nhomSPId) ?? NHOM_SAN_PHAM[0]
-    const dvt = nhomSPId === 'nsp-phuongkien' ? DON_VI_TINH[0] : DON_VI_TINH[1] // cái vs chiếc
+    const dvt = nhomSPId === 'nsp-giadung' ? DON_VI_TINH[0] : DON_VI_TINH[1] // cái vs chiếc
     const giaBan = rng.int(2, 50) * 500_000
     const giaNhap = Math.round(giaBan * (0.65 + rng.float() * 0.2))
     const createdMs = BASE_TIMESTAMP - rng.int(0, 700) * 86_400_000

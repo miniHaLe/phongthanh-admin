@@ -277,16 +277,16 @@ export async function createPhieuChi(input: LapPhieuInput): Promise<ThuChi> {
 const rngHD = new SeededRandom(5003)
 
 const HANG_HOA_LIST = [
-  { ma: 'HH00001', ten: 'Pin iPhone 15', dvt: 'Cái', gia: 450000 },
-  { ma: 'HH00002', ten: 'Pin iPhone 14', dvt: 'Cái', gia: 380000 },
-  { ma: 'HH00003', ten: 'Màn hình iPhone 15', dvt: 'Cái', gia: 1800000 },
-  { ma: 'HH00004', ten: 'Màn hình Samsung S24', dvt: 'Cái', gia: 1500000 },
-  { ma: 'HH00005', ten: 'Camera sau iPhone 15', dvt: 'Cái', gia: 2200000 },
-  { ma: 'HH00006', ten: 'Cáp sạc Lightning', dvt: 'Cái', gia: 120000 },
-  { ma: 'HH00007', ten: 'Sạc nhanh 65W', dvt: 'Cái', gia: 350000 },
-  { ma: 'HH00008', ten: 'Kính cường lực 9H', dvt: 'Cái', gia: 80000 },
-  { ma: 'HH00009', ten: 'Ốp lưng silicon', dvt: 'Cái', gia: 65000 },
-  { ma: 'HH00010', ten: 'Vỏ iPhone 14 Pro', dvt: 'Bộ', gia: 980000 },
+  { ma: 'HH00001', ten: 'Block máy lạnh 1HP', dvt: 'Cái', gia: 1450000 },
+  { ma: 'HH00002', ten: 'Block tủ lạnh 1/5HP', dvt: 'Cái', gia: 980000 },
+  { ma: 'HH00003', ten: 'Board điều khiển tủ lạnh', dvt: 'Cái', gia: 850000 },
+  { ma: 'HH00004', ten: 'Board máy giặt cửa trước', dvt: 'Cái', gia: 1200000 },
+  { ma: 'HH00005', ten: 'Motor quạt dàn nóng', dvt: 'Cái', gia: 620000 },
+  { ma: 'HH00006', ten: 'Gas lạnh R32 bình 3kg', dvt: 'Bình', gia: 1350000 },
+  { ma: 'HH00007', ten: 'Tụ đề block 35uF', dvt: 'Cái', gia: 95000 },
+  { ma: 'HH00008', ten: 'Gioăng cửa tủ lạnh', dvt: 'Cái', gia: 180000 },
+  { ma: 'HH00009', ten: 'Remote điều hòa universal', dvt: 'Cái', gia: 75000 },
+  { ma: 'HH00010', ten: 'Dây curoa máy giặt', dvt: 'Bộ', gia: 145000 },
 ]
 
 const NGUOI_LAP_LIST = ['Nguyễn Thị Thu Ngân', 'Trần Văn Ngân', 'Lê Thị Kế Toán']

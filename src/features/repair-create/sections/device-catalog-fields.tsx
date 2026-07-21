@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { ServerAutocomplete } from '@/components/shared'
 import type { RepairFormValues } from '../repair-form-contract'
 import { QuickCreateNhaSanXuat } from '../quick-create/QuickCreateNhaSanXuat'
-import { QuickCreateModel } from '../quick-create/QuickCreateModel'
+import { QuickCreateModel } from '@/features/model/quick-create-model-dialog'
 import {
   MODEL_CATALOG_QUERY_KEY,
   filterModels,

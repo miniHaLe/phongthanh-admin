@@ -32,6 +32,21 @@ export interface ColumnConfig<T> {
   hidden?: boolean
 }
 
+/** Context handed to a custom field renderer (`FieldConfig.renderField`). */
+export interface FieldRenderContext {
+  value: unknown
+  onChange: (value: unknown) => void
+  /** Snapshot of the whole record at render time. NON-reactive: it does not
+   * update when a sibling field changes. For a dependent field that must react
+   * to another (e.g. a commune scoped by the chosen province), read that field
+   * with react-hook-form's `useWatch` inside your renderer instead of this. */
+  formValues: Record<string, unknown>
+  /** Set another field's value (e.g. back-fill Tỉnh when a commune is picked). */
+  setFieldValue: (key: string, value: unknown) => void
+  invalid?: boolean
+  describedBy?: string
+}
+
 export interface FieldConfig<T> {
   key: keyof T
   label: string
@@ -43,6 +58,10 @@ export interface FieldConfig<T> {
   span?: 1 | 2
   /** Field only shown in create mode, not edit mode (e.g. password). */
   createOnly?: boolean
+  /** Escape hatch for fields the built-in types can't express (e.g. a
+   * searchable, province-dependent commune combobox). When set, CrudSheet
+   * renders this instead of the type-driven control. */
+  renderField?: (ctx: FieldRenderContext) => ReactNode
 }
 
 export type FilterConfig<T> = {

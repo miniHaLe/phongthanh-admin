@@ -26,21 +26,21 @@ import type {
 // ── Static seeded data ────────────────────────────────────────────────────────
 
 const PART_NAMES = [
-  'Màn hình LCD iPhone 15',
-  'Pin Samsung S24',
-  'Bàn phím MacBook Pro',
-  'Loa ngoài Oppo Reno',
-  'Nắp lưng Xiaomi 14',
-  'Cổng sạc USB-C Dell',
-  'Camera trước iPad',
-  'Loa trong iPhone 14',
-  'Màn hình Samsung A54',
-  'Pin Realme 12',
-  'Kính cường lực iPad',
-  'Cáp flex màn hình Lenovo',
-  'Nút nguồn Surface',
-  'Cảm biến vân tay Oppo',
-  'Ăng ten WiFi MacBook',
+  'Block máy lạnh 1HP',
+  'Board điều khiển tủ lạnh',
+  'Motor máy giặt lồng đứng',
+  'Quạt dàn lạnh điều hòa',
+  'Gas lạnh R32 bình 3kg',
+  'Cảm biến nhiệt tủ lạnh',
+  'Tụ đề block 35uF',
+  'Van cấp nước máy giặt',
+  'Gioăng cửa tủ lạnh',
+  'Bơm xả máy giặt',
+  'Điện trở xả đá',
+  'Board máy giặt cửa trước',
+  'Remote điều hòa universal',
+  'Dây curoa máy giặt',
+  'Mâm nhiệt nồi cơm điện',
 ] as const
 
 const WAREHOUSE_NAMES = ['Kho chính Đắk Lắk', 'Kho chính Đắk Nông'] as const

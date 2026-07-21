@@ -5,18 +5,18 @@ import { makeMockApi } from './make-mock-api'
 const rng = new SeededRandom(1003)
 
 const NHOM_SP = [
-  'Điện thoại thông minh',
-  'Máy tính bảng',
-  'Laptop',
-  'Đồng hồ thông minh',
-  'Tai nghe không dây',
-  'Loa bluetooth',
-  'Pin sạc dự phòng',
-  'Cáp sạc',
-  'Ốp lưng',
-  'Kính cường lực',
-  'Bàn phím',
-  'Chuột máy tính',
+  'Điện lạnh',
+  'Giặt sấy',
+  'Điều hòa không khí',
+  'Điện tử nghe nhìn',
+  'Thiết bị nhà bếp',
+  'Xử lý nước',
+  'Đồ gia dụng nhỏ',
+  'Chăm sóc cá nhân',
+  'Quạt và làm mát',
+  'Bảo quản lạnh',
+  'Thiết bị sưởi',
+  'Vệ sinh gia dụng',
 ]
 
 export const NHOM_SAN_PHAM_ROWS: NhomSanPham[] = NHOM_SP.map((ten, i) => ({
