@@ -1,6 +1,6 @@
 # Codebase Summary
 
-Updated: 2026-07-16
+Updated: 2026-07-21
 
 ## Overview
 
@@ -51,6 +51,24 @@ exposed through ngrok. Pages deploys only after its selected API URL passes
   across customer and dealer flows. Official province/commune lookup, duplicate
   commune handling, bank/tax/account fields, parent dealer, explicit address
   clearing, and legacy address preservation align with the API.
+- Catalog theme: all mock master-data is điện lạnh (hãng: Samsung, LG,
+  Panasonic, Daikin, Toshiba…; sản phẩm: tủ lạnh, máy giặt, máy điều hòa…;
+  hàng hóa: block, board, motor, gas R32…) with deterministic Model→NSX/SanPham
+  FK triples (`src/mock/masterdata/model.mock.ts` resolves `sanPhamId` by name,
+  no `rng.pick`). `NhaSanXuat` carries an optional `duongDanHang` brand URL
+  (frontend-only; the danh mục column renders a clickable link). The product
+  editor Model autocomplete filters by the selected NSX, renders table-style
+  option rows (Sản phẩm | NSX | Tên model | Mã model via
+  `src/features/model/model-option-row.tsx`), back-fills NSX on model select,
+  and clears an incompatible model when NSX changes — reusing repair's
+  `filterModels`/`resolveModelParents` (`src/features/model/model-catalog-data.ts`).
+- Khu vực: modeled on the post-2025 two-level Tỉnh→Phường/Xã snapshot. `KhuVuc`
+  stores `tinhCode` + `phuongXaCode` (Quận dropped). The Danh Mục > Khu Vực
+  create/edit form uses a searchable, province-scoped commune combobox injected
+  through the new `FieldConfig.renderField` CrudSheet escape hatch; the repair
+  "Thêm khu vực" dialog persists a real row via `khuVucApi.create` (immediately
+  searchable). Legacy seed rows keep an empty `phuongXaCode` (best-effort merger
+  mapping) and render "—".
 - Notifications: the bell and `/thong-bao` share one seen-id store. Item/row
   activation opens repair detail. `/tin-tuc` uses authenticated real CRUD for
   list, search, create, and detail while seen/unseen notification state stays
