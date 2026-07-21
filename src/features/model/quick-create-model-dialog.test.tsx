@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/test/render-with-providers'
-import { QuickCreateModel } from './QuickCreateModel'
+import { QuickCreateModel } from './quick-create-model-dialog'
 
 const mocks = vi.hoisted(() => ({
   createCatalogModel: vi.fn(),
