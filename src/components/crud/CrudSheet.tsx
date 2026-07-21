@@ -299,7 +299,20 @@ export function CrudSheet<T extends { id: string }>({
                         )}
                       </FormLabel>
 
-                      {f.type === 'switch' ? (
+                      {f.renderField ? (
+                        f.renderField({
+                          value: field.value,
+                          onChange: field.onChange,
+                          formValues: form.getValues(),
+                          setFieldValue: (otherKey, otherValue) =>
+                            form.setValue(
+                              otherKey,
+                              otherValue as never,
+                              { shouldDirty: true, shouldValidate: true },
+                            ),
+                          invalid: Boolean(form.formState.errors[key]),
+                        })
+                      ) : f.type === 'switch' ? (
                         <div className="flex items-center gap-2 pt-1">
                           <FormControl>
                             <Switch

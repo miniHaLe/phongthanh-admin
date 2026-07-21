@@ -105,6 +105,8 @@ export interface NhaSanXuat extends BaseEntity {
   maNSX?: string
   tenNSX: string
   ghiChu?: string
+  /** Đường dẫn hãng — brand website URL (optional, https:// canonicalized). */
+  duongDanHang?: string
 }
 
 export interface SanPham extends BaseEntity {
@@ -116,15 +118,17 @@ export interface SanPham extends BaseEntity {
 }
 
 /**
- * Khu vực = delivery route entity on the Tỉnh→Quận→Xã hierarchy (re-modeled,
- * Finding 2). Seeded from the P1 `TUYEN` lookup (mock/seed/tinh-quan-xa.ts) —
- * that array is the fixture data behind this live, mutable CRUD table.
+ * Khu vực = delivery route entity on the post-2025 two-level Tỉnh→Phường/Xã
+ * hierarchy (Decision 19/2025/QĐ-TTg). Stores official snapshot codes:
+ * `tinhCode` (2-digit province) + `phuongXaCode` (5-digit commune). The Quận
+ * level is gone. `phuongXaCode` may be empty on legacy mock rows whose old
+ * commune could not be mapped post-merger; new rows created via the dialog
+ * always carry it.
  */
 export interface KhuVuc extends BaseEntity {
   tenKhuVuc: string
-  tinhId: string
-  quanId: string
-  xaId: string
+  tinhCode: string
+  phuongXaCode: string
   caySo: number
   tienCong: number
   tienCong2: number

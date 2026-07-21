@@ -2,12 +2,15 @@ import { formatVND } from '@/lib/format'
 import type { CrudConfig } from '@/types/crud-types'
 import type { KhuVuc } from '@/types/masterdata-types'
 import { KHU_VUC_ROWS } from '@/mock/masterdata/khu-vuc.mock'
-import { TINH, QUAN, XA } from '@/mock/seed/tinh-quan-xa'
 import { apiFor } from '@/api/api-for'
-
-const tinhName = (id: string) => TINH.find((t) => t.id === id)?.ten ?? id
-const quanName = (id: string) => QUAN.find((q) => q.id === id)?.ten ?? id
-const xaName = (id: string) => XA.find((x) => x.id === id)?.ten ?? id
+import {
+  KhuVucProvinceField,
+  KhuVucCommuneField,
+} from '@/features/khu-vuc/khu-vuc-geography-fields'
+import {
+  provinceNameForCode,
+  communeNameForCode,
+} from '@/features/khu-vuc/khu-vuc-geography-names'
 
 export const khuVucConfig: CrudConfig<KhuVuc> = {
   resourceKey: 'khu-vuc',
@@ -18,9 +21,18 @@ export const khuVucConfig: CrudConfig<KhuVuc> = {
   bulkDelete: true,
   saveAndNew: true,
   columns: [
-    { key: 'tinhId', header: 'Tên Tỉnh', width: 130, renderCell: (v) => tinhName(v as string) },
-    { key: 'quanId', header: 'Tên Quận', width: 150, renderCell: (v) => quanName(v as string) },
-    { key: 'xaId', header: 'Tên Xã/Phường', width: 160, renderCell: (v) => xaName(v as string) },
+    {
+      key: 'tinhCode',
+      header: 'Tên Tỉnh',
+      width: 160,
+      renderCell: (v) => provinceNameForCode(v as string),
+    },
+    {
+      key: 'phuongXaCode',
+      header: 'Tên Phường/Xã',
+      width: 180,
+      renderCell: (v) => communeNameForCode(v as string),
+    },
     { key: 'tenKhuVuc', header: 'Tên khu vực', sortable: true, width: 180 },
     {
       key: 'caySo',
@@ -46,43 +58,23 @@ export const khuVucConfig: CrudConfig<KhuVuc> = {
   ],
   fields: [
     {
-      key: 'tinhId',
+      key: 'tinhCode',
       label: 'Tỉnh',
-      type: 'select',
+      type: 'text',
       required: true,
-      options: TINH.map((t) => ({ label: t.ten, value: t.id })),
+      renderField: KhuVucProvinceField,
     },
     {
-      key: 'quanId',
-      label: 'Quận',
-      type: 'select',
-      required: true,
-      options: QUAN.map((q) => ({ label: q.ten, value: q.id })),
-    },
-    {
-      key: 'xaId',
+      key: 'phuongXaCode',
       label: 'Phường/Xã',
-      type: 'select',
-      options: XA.map((x) => ({ label: x.ten, value: x.id })),
+      type: 'text',
+      required: true,
+      renderField: KhuVucCommuneField,
     },
     { key: 'tenKhuVuc', label: 'Tên khu vực', type: 'text', required: true },
     { key: 'caySo', label: 'Cây số', type: 'money' },
     { key: 'tienCong', label: 'Tiền công 1', type: 'money' },
     { key: 'tienCong2', label: 'Tiền công 2', type: 'money' },
   ],
-  filters: [
-    { key: 'tenKhuVuc', label: 'Tên khu vực', type: 'text' },
-    {
-      key: 'tinhId',
-      label: 'Tỉnh',
-      type: 'select',
-      options: TINH.map((t) => ({ label: t.ten, value: t.id })),
-    },
-    {
-      key: 'quanId',
-      label: 'Quận',
-      type: 'select',
-      options: QUAN.map((q) => ({ label: q.ten, value: q.id })),
-    },
-  ],
+  filters: [{ key: 'tenKhuVuc', label: 'Tên khu vực', type: 'text' }],
 }
