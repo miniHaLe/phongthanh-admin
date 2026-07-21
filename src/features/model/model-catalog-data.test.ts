@@ -5,6 +5,7 @@ import {
   isCompatibleModelTriple,
   modelConfigForCatalog,
   modelOption,
+  modelRowOption,
   resolveModelParents,
   type ModelCatalog,
 } from './model-catalog-data'
@@ -92,6 +93,23 @@ describe('model catalog relationship helpers', () => {
     expect(modelOption(models[1], catalog).label).toBe(
       'Series 10 — Máy lạnh - Hãng A',
     )
+  })
+
+  it('builds a table-row option with Sản phẩm, NSX, model and code columns', () => {
+    const row = modelRowOption(models[0], catalog)
+    expect(row).toMatchObject({
+      id: 'model-a-tv',
+      label: 'Series 10',
+      tenSP: 'Tivi',
+      tenNSX: 'Hãng A',
+      tenModel: 'Series 10',
+      nhaSanXuatId: 'brand-a',
+      sanPhamId: 'product-tv',
+    })
+  })
+
+  it('filters to empty (no throw) when the NSX id is not in the catalog', () => {
+    expect(filterModels(catalog, '', 'brand-unknown')).toEqual([])
   })
 
   it('resolves both parents from a model-first selection', () => {

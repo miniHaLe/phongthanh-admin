@@ -89,6 +89,34 @@ export function modelOption(
   }
 }
 
+/** Enriched option for the table-style Model dropdown row (Sản phẩm | NSX |
+ * Tên model | Mã model). Extends the plain option so `renderOption` stays
+ * compatible; the input still shows `label` (tên model) for the selected value. */
+export function modelRowOption(
+  row: Model,
+  catalog: Pick<ModelCatalog, 'manufacturers' | 'products'>,
+): ModelAutocompleteOption & {
+  tenSP: string
+  tenNSX: string
+  tenModel: string
+  maModel?: string
+} {
+  const manufacturer = catalog.manufacturers.find(
+    (item) => item.id === row.nhaSanXuatId,
+  )
+  const product = catalog.products.find((item) => item.id === row.sanPhamId)
+  return {
+    id: row.id,
+    label: row.tenModel,
+    nhaSanXuatId: row.nhaSanXuatId,
+    sanPhamId: row.sanPhamId,
+    tenSP: product?.tenSP ?? '',
+    tenNSX: manufacturer?.tenNSX ?? '',
+    tenModel: row.tenModel,
+    maModel: row.maModel,
+  }
+}
+
 export function filterModels(
   catalog: ModelCatalog,
   query: string,

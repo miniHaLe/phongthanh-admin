@@ -32,19 +32,28 @@ import { CURRENT_USER } from '@/mock/current-user-mock'
 import { filterLookupOptions, useLookup } from '@/hooks/use-lookup'
 import { invalidateCrudQueries } from '@/hooks/use-crud'
 import {
+  MODEL_CATALOG_QUERY_KEY,
+  filterModels,
+  loadModelCatalog,
+  modelRowOption,
+  resolveModelParents,
+  type ModelAutocompleteOption,
+} from '@/features/model/model-catalog-data'
+import { ModelOptionRow, type ModelRowOption } from '@/features/model/model-option-row'
+import { QuickCreateModel } from '@/features/model/quick-create-model-dialog'
+import {
   createHangHoa,
   findHangHoa,
   updateHangHoa,
   type HangHoaInput,
 } from './create-product'
 import { QuickCreateNhaSanXuat } from './quick-create-nha-san-xuat'
-import { QuickCreateModel } from './quick-create-model'
 
 interface FormState {
   nhomHangHoaId: string
   coSerial: boolean
   nhaSanXuat: AutocompleteOption | null
-  model: AutocompleteOption | null
+  model: ModelAutocompleteOption | null
   modelDungChung: boolean
   modelDungChungText: string
   donViTinhId: string
@@ -91,11 +100,15 @@ export default function ProductEditorPage() {
     isLoading: isNhaSanXuatLoading,
   } = useLookup('nha-san-xuat')
   const {
-    rows: modelRows,
     byId: modelById,
     isLoading: isModelLoading,
   } = useLookup('model')
-  const { rows: sanPhamRows } = useLookup('san-pham')
+
+  const catalogQuery = useQuery({
+    queryKey: MODEL_CATALOG_QUERY_KEY,
+    queryFn: loadModelCatalog,
+    staleTime: 0,
+  })
 
   const [form, setForm] = useState<FormState>(EMPTY)
   const [error, setError] = useState('')
@@ -114,9 +127,14 @@ export default function ProductEditorPage() {
     [nhaSanXuatRows],
   )
   const searchModel = useCallback(
-    (query: string) =>
-      filterLookupOptions(modelRows, query, (row) => row.tenModel),
-    [modelRows],
+    async (query: string): Promise<ModelRowOption[]> => {
+      const catalog = catalogQuery.data
+      if (!catalog) return []
+      return filterModels(catalog, query, form.nhaSanXuat?.id)
+        .slice(0, 50)
+        .map((row) => modelRowOption(row, catalog))
+    },
+    [catalogQuery.data, form.nhaSanXuat?.id],
   )
 
   useEffect(() => {
@@ -148,7 +166,14 @@ export default function ProductEditorPage() {
       nhomHangHoaId: existing.nhomHangHoaId,
       coSerial: existing.coSerial,
       nhaSanXuat: nsx ? { id: nsx.id, label: nsx.tenNSX } : null,
-      model: model ? { id: model.id, label: model.tenModel } : null,
+      model: model
+        ? {
+            id: model.id,
+            label: model.tenModel,
+            nhaSanXuatId: model.nhaSanXuatId,
+            sanPhamId: model.sanPhamId,
+          }
+        : null,
       modelDungChung: existing.modelDungChung,
       modelDungChungText: existing.modelDungChungText ?? '',
       donViTinhId: existing.donViTinhId,
@@ -342,7 +367,17 @@ export default function ProductEditorPage() {
               <Label>Nhà sản xuất</Label>
               <ServerAutocomplete
                 value={form.nhaSanXuat}
-                onChange={(v) => patch({ nhaSanXuat: v })}
+                onChange={(next) => {
+                  // Clear the model if it no longer belongs to the chosen NSX.
+                  const model = form.model as ModelAutocompleteOption | null
+                  const incompatible =
+                    model?.nhaSanXuatId != null &&
+                    (!next || model.nhaSanXuatId !== next.id)
+                  patch({
+                    nhaSanXuat: next,
+                    ...(incompatible ? { model: null } : {}),
+                  })
+                }}
                 fetchOptions={searchNhaSanXuat}
                 placeholder="Tên nhà sản xuất"
                 quickCreate={{
@@ -360,17 +395,52 @@ export default function ProductEditorPage() {
               </Label>
               <ServerAutocomplete
                 value={form.model}
-                onChange={(v) => patch({ model: v })}
+                onChange={(next) => {
+                  if (!next) {
+                    patch({ model: null })
+                    return
+                  }
+                  // fetchOptions only ever yields ModelRowOption, so the
+                  // returned option carries the FK metadata.
+                  const meta = next as ModelAutocompleteOption
+                  // Back-fill NSX from the model when NSX is empty (legacy parity).
+                  const catalog = catalogQuery.data
+                  if (!form.nhaSanXuat && catalog && meta.nhaSanXuatId) {
+                    const parents = resolveModelParents(catalog, meta)
+                    patch({
+                      model: meta,
+                      ...(parents ? { nhaSanXuat: parents.manufacturer } : {}),
+                    })
+                    return
+                  }
+                  patch({ model: meta })
+                }}
                 fetchOptions={searchModel}
+                renderOption={(opt) => (
+                  <ModelOptionRow option={opt as ModelRowOption} />
+                )}
                 placeholder="Tên model"
                 quickCreate={{
                   title: 'Thêm mới model',
                   renderForm: (close, select) => (
                     <QuickCreateModel
-                      nhaSanXuatId={form.nhaSanXuat?.id ?? ''}
-                      sanPhamId={sanPhamRows[0]?.id ?? ''}
                       close={close}
-                      select={select}
+                      select={(opt) => {
+                        // opt is a ModelAutocompleteOption; back-fill NSX too.
+                        const meta = opt as ModelAutocompleteOption
+                        const catalog = catalogQuery.data
+                        const parents =
+                          !form.nhaSanXuat && catalog && meta.nhaSanXuatId
+                            ? resolveModelParents(catalog, meta)
+                            : undefined
+                        patch({
+                          model: meta,
+                          ...(parents
+                            ? { nhaSanXuat: parents.manufacturer }
+                            : {}),
+                        })
+                      }}
+                      initialNhaSanXuatId={form.nhaSanXuat?.id}
                     />
                   ),
                 }}
