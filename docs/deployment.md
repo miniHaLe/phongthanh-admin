@@ -23,16 +23,20 @@ Browser
   firewall enabled, do not forward port 3210 on the router, and expose the API
   publicly only through ngrok. Postgres is loopback-only on port 5434.
 
-Last observed deployment state on 2026-07-14 (not re-probed by this docs audit):
+## Alternative: Full-Stack Docker Compose
 
-- Repository variable `vars.API_URL` is unset.
-- The previous public tunnel serves an older API and returns `404` for
-  `/health/ready`.
-- A push-triggered Pages deployment therefore fails before deploy. This is
-  safe: the workflow does not replace the current Pages artifact until API URL
-  validation, readiness, and release-capability checks pass.
+For local development or testing without the ngrok split-origin flow, a
+`docker-compose.yml` at the repository root includes both API and web services
+behind an nginx proxy at `http://localhost:8080`. Start with
+`docker compose up -d --build`. This simplified topology avoids tunnel URL
+management but is not suitable for the public GitHub Pages deployment. The
+step-by-step MacBook+ngrok flow below is the supported production path.
 
-## One-Time MacBook Setup
+---
+
+## Part A: First-Time Deployment from Scratch
+
+Follow these numbered steps to deploy the API to your MacBook for the first time.
 
 ### 1. Install tools
 
@@ -67,18 +71,23 @@ ngrok config add-authtoken <your-ngrok-authtoken>
 
 The ngrok token belongs in ngrok's local config, not in this repository.
 
-### 2. Clone and install the API
+### 2. Clone the repository and switch to main
 
 ```bash
 git clone https://github.com/miniHaLe/phongthanh-admin.git
 cd phongthanh-admin
 git switch main
+```
+
+### 3. Install API dependencies
+
+```bash
 npm --prefix api ci
 ```
 
 Use `npm ci`, not `npm install`, so the MacBook uses the committed lockfile.
 
-### 3. Create `api/.env` safely
+### 4. Create `api/.env` safely
 
 Create a private file without copying real values into documentation or shell
 history:
@@ -123,40 +132,57 @@ Do not paste generated values into GitHub issues, chat, logs, or tracked files.
 `INITIAL_ADMIN_PASSWORD` is needed by the idempotent seed command. Seeded users
 must change it at first login.
 
-### 4. Start and initialize Postgres
+### 5. Start PostgreSQL container
 
 ```bash
 docker compose up -d db
 docker compose ps db
-npm --prefix api run build
-npm --prefix api run db:migrate
-npm --prefix api run seed
 ```
 
 Postgres data persists in the Docker volume `pgdata`. Host port `5434` maps to
 container port `5432`.
 
-### 5. Keep two terminals running
+### 6. Build and initialize the database
 
-Terminal A -- API. `caffeinate` keeps the Mac awake while this command runs:
+```bash
+npm --prefix api run build
+npm --prefix api run db:migrate
+npm --prefix api run seed
+```
+
+This runs all migrations in order: 0000 (base schema), 0001 (initial fixtures),
+0002 (backfill khach_hang address codes), 0003 (masterdata catalogs),
+0004 (tin_tuc resource), then seeds demo data.
+
+### 7. Start the API (Terminal A)
+
+Open a dedicated terminal and run:
 
 ```bash
 caffeinate -dimsu npm --prefix api run start:prod
 ```
 
-Terminal B -- HTTPS tunnel:
+`caffeinate -dimsu` keeps the Mac awake while the API process runs. Leave this
+terminal open; do not interrupt it.
+
+### 8. Start the ngrok tunnel (Terminal B)
+
+Open a second terminal and run:
 
 ```bash
 ngrok http 3210
 ```
 
-Copy the displayed HTTPS URL and set it in the shell used for release commands:
+Copy the displayed HTTPS URL (e.g., `https://xxxx-xx-xxx-xxx.ngrok.io`) and set
+it in the shell used for release commands:
 
 ```bash
 export API_URL=https://<your-ngrok-domain>
 ```
 
-Verify the new API locally and publicly:
+### 9. Verify local and public API endpoints
+
+From a third terminal, run all four checks:
 
 ```bash
 curl -fsS http://127.0.0.1:3210/health
@@ -167,11 +193,15 @@ test "$(curl -sS -o /dev/null -w '%{http_code}' \
   "$API_URL/api/v1/tin-tuc?page=1&pageSize=1")" = 401
 ```
 
-Expected JSON is `{"status":"ok"}` and `{"status":"ready"}`. The final
-command must return status `401`, proving the compatible API exposes the
-protected Tin Tuc resource before Pages enables it.
+Expected:
+- First two return JSON `{"status":"ok"}` and `{"status":"ready"}`.
+- Third returns `{"status":"ready"}` over HTTPS.
+- Fourth returns HTTP status `401`, proving the compatible API exposes the
+  protected Tin Tuc resource before Pages enables it.
 
-### 6. Verify host network safety
+If any check fails, stop here and troubleshoot (see Troubleshooting section).
+
+### 10. Verify host network safety
 
 ngrok creates an outbound tunnel, so this deployment needs no router port
 forwarding and no inbound rule for ports `3210` or `5434`.
@@ -194,25 +224,9 @@ that `http://<macbook-lan-ip>:3210/health` cannot connect. If it succeeds, set
 Node.js to **Block incoming connections** in Firewall Options before proceeding.
 Public checks must use the ngrok HTTPS URL, not the MacBook's LAN address.
 
-## First Rollout With the Readiness Gate
+### 11. Persist the tunnel URL in GitHub
 
-The first push containing `/health/ready` can fail its automatic Pages run
-because `vars.API_URL` is unset or still points to the old API. Leave that run
-failed; it protects Pages from building against an unavailable backend.
-
-If the MacBook already contains live data, do not repeat the one-time database
-initialization as a shortcut. Use [Normal Git Update on the MacBook](#normal-git-update-on-the-macbook),
-starting with its backup step.
-
-Use this order:
-
-1. Pull the release on the MacBook.
-2. Install, build, migrate, seed, and start the new API.
-3. Start ngrok and make readiness plus the Tin Tuc capability check pass.
-4. Persist the public URL in GitHub.
-5. Dispatch and watch a new Pages run.
-
-Persist and verify `API_URL`:
+Save the ngrok URL so it persists across future Pages deployments:
 
 ```bash
 gh variable set API_URL --repo miniHaLe/phongthanh-admin --body "$API_URL"
@@ -220,7 +234,9 @@ gh variable list --repo miniHaLe/phongthanh-admin --json name,value \
   --jq '.[] | select(.name == "API_URL")'
 ```
 
-Dispatch, list, and watch:
+### 12. Trigger and watch the first Pages deployment
+
+Dispatch a manual GitHub Pages workflow run:
 
 ```bash
 gh workflow run deploy-pages.yml --repo miniHaLe/phongthanh-admin
@@ -231,12 +247,21 @@ RUN_ID="$(gh run list --repo miniHaLe/phongthanh-admin \
 gh run watch "$RUN_ID" --repo miniHaLe/phongthanh-admin --exit-status
 ```
 
-After success, open <https://minihale.github.io/phongthanh-admin/> and test
-login plus a real customer/catalog request.
+### 13. Smoke test the live site
 
-## Normal Git Update on the MacBook
+After Pages completes, open <https://minihale.github.io/phongthanh-admin/> in a
+browser. Test login with the admin user (seeded username is `admin`, password is
+the value you set in step 4). Then test a real customer or catalog request.
 
-Run from the repository root. The backup is written outside the repository.
+**First-time deployment is now complete.** Keep Terminals A and B running. Move
+to Part B when new code arrives.
+
+## Part B: Update to New Code (Recurring Cycle)
+
+When new commits land on `main` (backend, frontend, or both), follow these
+numbered steps to update the running deployment.
+
+Run all commands from the repository root.
 
 ### 1. Back up the live database
 
@@ -251,7 +276,7 @@ test -s "$BACKUP_FILE"
 
 Keep backups private and outside Git. Copy important backups off the MacBook.
 
-### 2. Require a clean worktree and fast-forward pull
+### 2. Require a clean worktree
 
 ```bash
 git status --short
@@ -260,7 +285,7 @@ git status --short
 If this prints anything, stop. Review with `git diff` and commit or otherwise
 preserve intentional local work. Do not reset, overwrite, or auto-stash it.
 
-When clean:
+### 3. Pull and rebuild (fast-forward only)
 
 ```bash
 git switch main
@@ -269,18 +294,21 @@ npm --prefix api ci
 npm --prefix api run build
 ```
 
-### 3. Stop writes, migrate, seed, and restart
+### 4. Stop the running API process
 
 In Terminal A, press `Ctrl-C` to stop the API. Leave ngrok running; it may show
-a brief `502` while the API restarts.
+a brief `502` while restarting.
+
+### 5. Run database migrations and seed
 
 ```bash
 npm --prefix api run db:migrate
 npm --prefix api run seed
 ```
 
-Verify migration `0002` and the guarded live address backfill before restarting
-the API:
+### 6. Verify migrations
+
+Verify migration 0002 and the guarded live address backfill:
 
 ```bash
 docker exec -i phongthanh-db psql -U phongthanh -d phongthanh <<'SQL'
@@ -319,16 +347,19 @@ docker exec -i phongthanh-db psql -U phongthanh -d phongthanh \
   -c "SELECT to_regclass('public.tin_tuc') AS tin_tuc_table;"
 ```
 
-The result must be `tin_tuc`. The public protected-route `401` check below is
-the release capability gate that proves the running API also mounted it.
+The result must be `tin_tuc`.
 
-Restart the API only after the migration check:
+### 7. Restart the API
 
 ```bash
 caffeinate -dimsu npm --prefix api run start:prod
 ```
 
-From another terminal, verify all four checks:
+Return to Terminal A and start the API with this command. Leave it running.
+
+### 8. Verify all four checks
+
+From a different terminal:
 
 ```bash
 curl -fsS http://127.0.0.1:3210/health
@@ -339,8 +370,30 @@ test "$(curl -sS -o /dev/null -w '%{http_code}' \
   "$API_URL/api/v1/tin-tuc?page=1&pageSize=1")" = 401
 ```
 
-If frontend code changed, dispatch and watch Pages using the commands in
-[First Rollout With the Readiness Gate](#first-rollout-with-the-readiness-gate).
+All four must pass. If any fails, stop and troubleshoot (see Troubleshooting
+section) before proceeding.
+
+### 9. Redeploy Pages if frontend changed
+
+If the commit(s) you pulled included frontend code changes (e.g., new routes,
+UI updates, catalog changes), dispatch Pages:
+
+```bash
+gh workflow run deploy-pages.yml --repo miniHaLe/phongthanh-admin
+gh run list --repo miniHaLe/phongthanh-admin --workflow deploy-pages.yml --limit 5
+RUN_ID="$(gh run list --repo miniHaLe/phongthanh-admin \
+  --workflow deploy-pages.yml --limit 1 --json databaseId \
+  --jq '.[0].databaseId')"
+gh run watch "$RUN_ID" --repo miniHaLe/phongthanh-admin --exit-status
+```
+
+If the commit(s) contained backend-only changes (no frontend edits), skip this
+step; the frontend continues using the previously deployed Pages build.
+
+**Update cycle is complete.** The API is running with new code and the database
+is up-to-date.
+
+---
 
 ## GitHub Pages Workflow Contract
 
@@ -487,10 +540,7 @@ docker exec -i phongthanh-db pg_restore \
 Start the API version matching that backup, then verify local and public
 readiness before deploying Pages.
 
-Migration `0002_backfill-khach-hang-address-codes.sql` follows `0001`,
-`0003_masterdata_catalogs.sql` adds the remaining catalogs, and
-`0004_tin_tuc.sql` adds the internal-news resource. The old
-`0001_cool_sunspot.down.sql` path is unsafe after later migrations because it
+Migrations run in order: 0000 (base schema), 0001 (cool_sunspot), 0002 (backfill khach_hang address codes), 0003 (masterdata catalogs), 0004 (tin_tuc). The `0001_cool_sunspot.down.sql` path is unsafe after later migrations because it
 does not reconcile their ledger/data state. Do not use the `0001` down script
 as a release rollback. Use application-only rollback or restore a full, verified
 backup instead.
