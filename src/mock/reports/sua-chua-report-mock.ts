@@ -26,24 +26,24 @@ const TECHNICIANS = [
 ]
 
 const DEVICE_MODELS = [
-  'iPhone 14 Pro Max',
-  'Samsung Galaxy S23',
-  'Xiaomi 13T',
-  'OPPO Reno 10',
-  'Vivo Y36',
-  'Realme 11 Pro',
-  'iPhone 13',
-  'Samsung A54',
+  'Samsung Inverter 380L',
+  'LG Dual Inverter 12000BTU',
+  'Panasonic Inverter 9000BTU',
+  'Toshiba máy giặt 8kg',
+  'Daikin FTKZ 12000BTU',
+  'Electrolux UltimateCare 9kg',
+  'Aqua tủ lạnh 235L',
+  'Sharp Inverter 287L',
 ]
 
 const PRODUCT_GROUPS = [
-  'Màn hình',
-  'Pin',
-  'Camera',
-  'Bo mạch',
-  'Loa/Mic',
-  'Sạc/Cáp',
-  'Vỏ máy',
+  'Block/Máy nén',
+  'Board mạch',
+  'Motor/Quạt',
+  'Cảm biến',
+  'Van/Ống',
+  'Gas/Vật tư',
+  'Vỏ/Gioăng',
 ]
 
 // ── Date helper ────────────────────────────────────────────────────────────────

@@ -1,6 +1,12 @@
 /**
  * One-shot fixture freezer for the danh-muc real-DB migration.
  * Run with: api/node_modules/.bin/tsx scripts/export-masterdata-fixtures.mjs
+ *
+ * NOTE: the `api/seed-fixtures/*.json` are hand-frozen (normalized timestamps,
+ * extra backend-only fields like model.tenModelNormalized) and diverge from
+ * these raw mock rows — do NOT blindly re-run this over them. In particular
+ * `khu-vuc` intentionally keeps the legacy Tỉnh→Quận→Xã api shape while the
+ * frontend `KHU_VUC_ROWS` moved to the 2-level tinhCode/phuongXaCode model.
  */
 import { writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'

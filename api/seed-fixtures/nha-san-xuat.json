@@ -2,140 +2,144 @@
   {
     "id": "nsx-1",
     "maNSX": "NSX001",
-    "tenNSX": "Apple",
+    "tenNSX": "Samsung",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-2",
     "maNSX": "NSX002",
-    "tenNSX": "Samsung",
+    "tenNSX": "LG",
+    "ghiChu": "Đối tác chính hãng",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-3",
     "maNSX": "NSX003",
-    "tenNSX": "Xiaomi",
+    "tenNSX": "Panasonic",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-4",
     "maNSX": "NSX004",
-    "tenNSX": "Oppo",
+    "tenNSX": "Daikin",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-5",
     "maNSX": "NSX005",
-    "tenNSX": "Vivo",
+    "tenNSX": "Mitsubishi Electric",
+    "ghiChu": "Đối tác chính hãng",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-6",
     "maNSX": "NSX006",
-    "tenNSX": "Huawei",
+    "tenNSX": "Sharp",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-7",
     "maNSX": "NSX007",
-    "tenNSX": "Sony",
+    "tenNSX": "Toshiba",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-8",
     "maNSX": "NSX008",
-    "tenNSX": "LG",
+    "tenNSX": "Electrolux",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-9",
     "maNSX": "NSX009",
-    "tenNSX": "Nokia",
+    "tenNSX": "Aqua",
+    "ghiChu": "Đối tác chính hãng",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-10",
     "maNSX": "NSX010",
-    "tenNSX": "Realme",
+    "tenNSX": "Hisense",
+    "ghiChu": "Đối tác chính hãng",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-11",
     "maNSX": "NSX011",
-    "tenNSX": "OnePlus",
+    "tenNSX": "Casper",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-12",
     "maNSX": "NSX012",
-    "tenNSX": "Motorola",
+    "tenNSX": "Funiki",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-13",
     "maNSX": "NSX013",
-    "tenNSX": "Asus",
+    "tenNSX": "Sunhouse",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-14",
     "maNSX": "NSX014",
-    "tenNSX": "Lenovo",
+    "tenNSX": "Kangaroo",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-15",
     "maNSX": "NSX015",
-    "tenNSX": "HP",
+    "tenNSX": "Sanyo",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-16",
     "maNSX": "NSX016",
-    "tenNSX": "Dell",
+    "tenNSX": "Midea",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-17",
     "maNSX": "NSX017",
-    "tenNSX": "Acer",
+    "tenNSX": "Gree",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-18",
     "maNSX": "NSX018",
-    "tenNSX": "Microsoft",
+    "tenNSX": "Beko",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-19",
     "maNSX": "NSX019",
-    "tenNSX": "Google",
+    "tenNSX": "Hitachi",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
   {
     "id": "nsx-20",
     "maNSX": "NSX020",
-    "tenNSX": "TCL",
+    "tenNSX": "Comfee",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   }

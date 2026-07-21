@@ -5,25 +5,22 @@ import { NHOM_SAN_PHAM_ROWS } from './nhom-san-pham.mock'
 
 const rng = new SeededRandom(1004)
 
+// Appliance types (Sản phẩm) grouped by Nhóm sản phẩm. Names double as the
+// deterministic lookup key that model.mock resolves sanPhamId against, so each
+// entry here must match a `sanPham` value used in MODEL_NAMES.
 const SP_NAMES: Record<string, string[]> = {
-  'Điện thoại thông minh': [
-    'iPhone 15',
-    'iPhone 14',
-    'Galaxy S24',
-    'Galaxy A54',
-    'Xiaomi 14',
-    'Redmi Note 13',
-    'Oppo Reno 11',
-    'Vivo Y36',
-  ],
-  'Máy tính bảng': ['iPad Air', 'iPad Pro', 'Galaxy Tab S9', 'Xiaomi Pad 6'],
-  Laptop: ['MacBook Air M3', 'MacBook Pro M3', 'Galaxy Book 4', 'IdeaPad 5'],
-  'Đồng hồ thông minh': [
-    'Apple Watch Series 9',
-    'Galaxy Watch 6',
-    'Xiaomi Watch S3',
-  ],
-  'Tai nghe không dây': ['AirPods Pro', 'Galaxy Buds 2', 'Xiaomi Buds 4'],
+  'Điện lạnh': ['Tủ lạnh', 'Tủ đông'],
+  'Bảo quản lạnh': ['Tủ mát'],
+  'Giặt sấy': ['Máy giặt', 'Máy sấy quần áo'],
+  'Điều hòa không khí': ['Máy điều hòa', 'Điều hòa âm trần'],
+  'Điện tử nghe nhìn': ['Tivi', 'Loa kéo'],
+  'Thiết bị nhà bếp': ['Lò vi sóng', 'Bếp từ', 'Lò nướng', 'Máy hút mùi'],
+  'Xử lý nước': ['Máy lọc nước', 'Máy nước nóng'],
+  'Đồ gia dụng nhỏ': ['Nồi cơm điện', 'Ấm siêu tốc', 'Máy xay sinh tố'],
+  'Chăm sóc cá nhân': ['Máy sấy tóc'],
+  'Quạt và làm mát': ['Quạt điện', 'Máy làm mát'],
+  'Thiết bị sưởi': ['Máy sưởi'],
+  'Vệ sinh gia dụng': ['Máy hút bụi'],
 }
 
 const allNames = Object.entries(SP_NAMES).flatMap(([nhom, names]) =>

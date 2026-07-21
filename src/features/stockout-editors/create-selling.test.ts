@@ -11,8 +11,8 @@ const originalRows = SELLING_ROWS.map((row) => ({
 const LINE: SellingLine = {
   hangHoaId: 'hh-1',
   maHang: 'HH00001',
-  tenHang: 'Pin iPhone',
-  model: 'iPhone 15',
+  tenHang: 'Block máy lạnh 1HP',
+  model: 'Daikin FTKZ 12000BTU',
   serial: 'SN-1',
   khoId: 'nk-1',
   khoTen: 'Kho Chính',

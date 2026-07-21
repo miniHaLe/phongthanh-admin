@@ -53,268 +53,260 @@ export interface LoiBaoHanh {
 // ── Nhà sản xuất (8) ────────────────────────────────────────────────────────
 export const NHA_SAN_XUAT: NhaSanXuat[] = [
   { id: 'nsx-samsung', ten: 'Samsung' },
-  { id: 'nsx-apple', ten: 'Apple' },
-  { id: 'nsx-oppo', ten: 'OPPO' },
-  { id: 'nsx-xiaomi', ten: 'Xiaomi' },
-  { id: 'nsx-vivo', ten: 'Vivo' },
-  { id: 'nsx-realme', ten: 'Realme' },
-  { id: 'nsx-nokia', ten: 'Nokia' },
-  { id: 'nsx-huawei', ten: 'Huawei' },
+  { id: 'nsx-lg', ten: 'LG' },
+  { id: 'nsx-panasonic', ten: 'Panasonic' },
+  { id: 'nsx-daikin', ten: 'Daikin' },
+  { id: 'nsx-toshiba', ten: 'Toshiba' },
+  { id: 'nsx-electrolux', ten: 'Electrolux' },
+  { id: 'nsx-aqua', ten: 'Aqua' },
+  { id: 'nsx-sharp', ten: 'Sharp' },
 ]
 
-// ── Models (40+) ─────────────────────────────────────────────────────────────
+// ── Models (40) — điện lạnh, grouped by appliance category ────────────────────
+// sanPhamId is an appliance-category key (sp-tulanh, sp-maylanh, sp-maygiat,
+// sp-tivi, sp-giadung) mapped to a Nhóm sản phẩm in SANPHAM_TO_NHOM (products.ts).
 export const MODELS: Model[] = [
   // Samsung
   {
-    id: 'mdl-s24u',
-    ten: 'Galaxy S24 Ultra',
+    id: 'mdl-sam-rf-458l',
+    ten: 'Samsung RT46 458L',
     nhaSxId: 'nsx-samsung',
-    sanPhamId: 'sp-dienthoai',
+    sanPhamId: 'sp-tulanh',
   },
   {
-    id: 'mdl-s24',
-    ten: 'Galaxy S24',
+    id: 'mdl-sam-rf-660l',
+    ten: 'Samsung Family Hub 660L',
     nhaSxId: 'nsx-samsung',
-    sanPhamId: 'sp-dienthoai',
+    sanPhamId: 'sp-tulanh',
   },
   {
-    id: 'mdl-a55',
-    ten: 'Galaxy A55',
+    id: 'mdl-sam-ac-12k',
+    ten: 'Samsung WindFree 12000BTU',
     nhaSxId: 'nsx-samsung',
-    sanPhamId: 'sp-dienthoai',
+    sanPhamId: 'sp-maylanh',
   },
   {
-    id: 'mdl-a35',
-    ten: 'Galaxy A35',
+    id: 'mdl-sam-ac-18k',
+    ten: 'Samsung WindFree 18000BTU',
     nhaSxId: 'nsx-samsung',
-    sanPhamId: 'sp-dienthoai',
+    sanPhamId: 'sp-maylanh',
   },
   {
-    id: 'mdl-a15',
-    ten: 'Galaxy A15',
+    id: 'mdl-sam-wm-9kg',
+    ten: 'Samsung AddWash 9kg',
     nhaSxId: 'nsx-samsung',
-    sanPhamId: 'sp-dienthoai',
+    sanPhamId: 'sp-maygiat',
   },
   {
-    id: 'mdl-tab-s9',
-    ten: 'Galaxy Tab S9',
+    id: 'mdl-sam-wm-12kg',
+    ten: 'Samsung EcoBubble 12kg',
     nhaSxId: 'nsx-samsung',
-    sanPhamId: 'sp-maytinhbang',
-  },
-  // Apple
-  {
-    id: 'mdl-ip16pm',
-    ten: 'iPhone 16 Pro Max',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-dienthoai',
+    sanPhamId: 'sp-maygiat',
   },
   {
-    id: 'mdl-ip16p',
-    ten: 'iPhone 16 Pro',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-ip16',
-    ten: 'iPhone 16',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-ip15pm',
-    ten: 'iPhone 15 Pro Max',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-ip15',
-    ten: 'iPhone 15',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-ip14',
-    ten: 'iPhone 14',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-ipad-air6',
-    ten: 'iPad Air 6',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-maytinhbang',
-  },
-  // OPPO
-  {
-    id: 'mdl-oppo-f27',
-    ten: 'OPPO F27 Pro+',
-    nhaSxId: 'nsx-oppo',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-oppo-a80',
-    ten: 'OPPO A80',
-    nhaSxId: 'nsx-oppo',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-oppo-reno12',
-    ten: 'OPPO Reno12 F',
-    nhaSxId: 'nsx-oppo',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-oppo-a60',
-    ten: 'OPPO A60',
-    nhaSxId: 'nsx-oppo',
-    sanPhamId: 'sp-dienthoai',
-  },
-  // Xiaomi
-  {
-    id: 'mdl-mi14',
-    ten: 'Xiaomi 14',
-    nhaSxId: 'nsx-xiaomi',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-mi14u',
-    ten: 'Xiaomi 14 Ultra',
-    nhaSxId: 'nsx-xiaomi',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-redmi-note13',
-    ten: 'Redmi Note 13 Pro',
-    nhaSxId: 'nsx-xiaomi',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-redmi-a3',
-    ten: 'Redmi A3',
-    nhaSxId: 'nsx-xiaomi',
-    sanPhamId: 'sp-dienthoai',
-  },
-  // Vivo
-  {
-    id: 'mdl-vivo-y200',
-    ten: 'Vivo Y200',
-    nhaSxId: 'nsx-vivo',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-vivo-v30',
-    ten: 'Vivo V30',
-    nhaSxId: 'nsx-vivo',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-vivo-t3x',
-    ten: 'Vivo T3x',
-    nhaSxId: 'nsx-vivo',
-    sanPhamId: 'sp-dienthoai',
-  },
-  // Realme
-  {
-    id: 'mdl-realme-c75',
-    ten: 'Realme C75',
-    nhaSxId: 'nsx-realme',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-realme-12',
-    ten: 'Realme 12',
-    nhaSxId: 'nsx-realme',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-realme-gt6t',
-    ten: 'Realme GT 6T',
-    nhaSxId: 'nsx-realme',
-    sanPhamId: 'sp-dienthoai',
-  },
-  // Nokia
-  {
-    id: 'mdl-nokia-g42',
-    ten: 'Nokia G42',
-    nhaSxId: 'nsx-nokia',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-nokia-g310',
-    ten: 'Nokia G310',
-    nhaSxId: 'nsx-nokia',
-    sanPhamId: 'sp-dienthoai',
-  },
-  // Huawei
-  {
-    id: 'mdl-hw-nova12',
-    ten: 'Huawei Nova 12',
-    nhaSxId: 'nsx-huawei',
-    sanPhamId: 'sp-dienthoai',
-  },
-  {
-    id: 'mdl-hw-mate60',
-    ten: 'Huawei Mate 60 Pro',
-    nhaSxId: 'nsx-huawei',
-    sanPhamId: 'sp-dienthoai',
-  },
-  // Tablets
-  {
-    id: 'mdl-tab-a9',
-    ten: 'Galaxy Tab A9+',
+    id: 'mdl-sam-tv-q80c',
+    ten: 'Samsung QLED Q80C 55"',
     nhaSxId: 'nsx-samsung',
-    sanPhamId: 'sp-maytinhbang',
+    sanPhamId: 'sp-tivi',
+  },
+  // LG
+  {
+    id: 'mdl-lg-rf-335l',
+    ten: 'LG InstaView 335L',
+    nhaSxId: 'nsx-lg',
+    sanPhamId: 'sp-tulanh',
   },
   {
-    id: 'mdl-ipad-mini7',
-    ten: 'iPad mini 7',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-maytinhbang',
-  },
-  // Watches
-  {
-    id: 'mdl-watch7',
-    ten: 'Galaxy Watch 7',
-    nhaSxId: 'nsx-samsung',
-    sanPhamId: 'sp-dongho',
+    id: 'mdl-lg-rf-519l',
+    ten: 'LG InstaView 519L',
+    nhaSxId: 'nsx-lg',
+    sanPhamId: 'sp-tulanh',
   },
   {
-    id: 'mdl-aw10',
-    ten: 'Apple Watch Series 10',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-dongho',
-  },
-  // Earphones
-  {
-    id: 'mdl-buds3',
-    ten: 'Galaxy Buds3 Pro',
-    nhaSxId: 'nsx-samsung',
-    sanPhamId: 'sp-taiphone',
+    id: 'mdl-lg-ac-12k',
+    ten: 'LG Dual Inverter 12000BTU',
+    nhaSxId: 'nsx-lg',
+    sanPhamId: 'sp-maylanh',
   },
   {
-    id: 'mdl-airpods4',
-    ten: 'AirPods 4',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-taiphone',
-  },
-  // Chargers / accessories
-  {
-    id: 'mdl-samsung-charger',
-    ten: 'Sạc 45W Samsung',
-    nhaSxId: 'nsx-samsung',
-    sanPhamId: 'sp-phuongkien',
+    id: 'mdl-lg-ac-18k',
+    ten: 'LG Dual Inverter 18000BTU',
+    nhaSxId: 'nsx-lg',
+    sanPhamId: 'sp-maylanh',
   },
   {
-    id: 'mdl-apple-charger',
-    ten: 'Sạc 20W Apple',
-    nhaSxId: 'nsx-apple',
-    sanPhamId: 'sp-phuongkien',
+    id: 'mdl-lg-wm-10kg',
+    ten: 'LG AI DD 10kg',
+    nhaSxId: 'nsx-lg',
+    sanPhamId: 'sp-maygiat',
   },
   {
-    id: 'mdl-xiaomi-charger',
-    ten: 'Sạc 67W Xiaomi',
-    nhaSxId: 'nsx-xiaomi',
-    sanPhamId: 'sp-phuongkien',
+    id: 'mdl-lg-tv-c3',
+    ten: 'LG OLED C3 55"',
+    nhaSxId: 'nsx-lg',
+    sanPhamId: 'sp-tivi',
+  },
+  // Panasonic
+  {
+    id: 'mdl-pan-rf-322l',
+    ten: 'Panasonic NR-BL340 322L',
+    nhaSxId: 'nsx-panasonic',
+    sanPhamId: 'sp-tulanh',
+  },
+  {
+    id: 'mdl-pan-ac-9k',
+    ten: 'Panasonic Inverter 9000BTU',
+    nhaSxId: 'nsx-panasonic',
+    sanPhamId: 'sp-maylanh',
+  },
+  {
+    id: 'mdl-pan-ac-12k',
+    ten: 'Panasonic Inverter 12000BTU',
+    nhaSxId: 'nsx-panasonic',
+    sanPhamId: 'sp-maylanh',
+  },
+  {
+    id: 'mdl-pan-wm-9kg',
+    ten: 'Panasonic ActiveFoam 9kg',
+    nhaSxId: 'nsx-panasonic',
+    sanPhamId: 'sp-maygiat',
+  },
+  {
+    id: 'mdl-pan-mw-25l',
+    ten: 'Panasonic NN-ST34 25L',
+    nhaSxId: 'nsx-panasonic',
+    sanPhamId: 'sp-giadung',
+  },
+  // Daikin
+  {
+    id: 'mdl-dai-ac-9k',
+    ten: 'Daikin Inverter 9000BTU',
+    nhaSxId: 'nsx-daikin',
+    sanPhamId: 'sp-maylanh',
+  },
+  {
+    id: 'mdl-dai-ac-12k',
+    ten: 'Daikin FTKZ 12000BTU',
+    nhaSxId: 'nsx-daikin',
+    sanPhamId: 'sp-maylanh',
+  },
+  {
+    id: 'mdl-dai-ac-18k',
+    ten: 'Daikin FTKZ 18000BTU',
+    nhaSxId: 'nsx-daikin',
+    sanPhamId: 'sp-maylanh',
+  },
+  {
+    id: 'mdl-dai-ac-24k',
+    ten: 'Daikin Multi-S 24000BTU',
+    nhaSxId: 'nsx-daikin',
+    sanPhamId: 'sp-maylanh',
+  },
+  // Toshiba
+  {
+    id: 'mdl-tos-rf-337l',
+    ten: 'Toshiba GR-RT435 337L',
+    nhaSxId: 'nsx-toshiba',
+    sanPhamId: 'sp-tulanh',
+  },
+  {
+    id: 'mdl-tos-ac-12k',
+    ten: 'Toshiba Inverter 12000BTU',
+    nhaSxId: 'nsx-toshiba',
+    sanPhamId: 'sp-maylanh',
+  },
+  {
+    id: 'mdl-tos-wm-8kg',
+    ten: 'Toshiba Inverter 8kg',
+    nhaSxId: 'nsx-toshiba',
+    sanPhamId: 'sp-maygiat',
+  },
+  {
+    id: 'mdl-tos-rc-18l',
+    ten: 'Toshiba RC-10VRP 1.8L',
+    nhaSxId: 'nsx-toshiba',
+    sanPhamId: 'sp-giadung',
+  },
+  {
+    id: 'mdl-tos-tv-55',
+    ten: 'Toshiba C350LV 55"',
+    nhaSxId: 'nsx-toshiba',
+    sanPhamId: 'sp-tivi',
+  },
+  // Electrolux
+  {
+    id: 'mdl-ele-wm-9kg',
+    ten: 'Electrolux UltimateCare 9kg',
+    nhaSxId: 'nsx-electrolux',
+    sanPhamId: 'sp-maygiat',
+  },
+  {
+    id: 'mdl-ele-wm-10kg',
+    ten: 'Electrolux EWF1024 10kg',
+    nhaSxId: 'nsx-electrolux',
+    sanPhamId: 'sp-maygiat',
+  },
+  {
+    id: 'mdl-ele-rf-350l',
+    ten: 'Electrolux EBB3702K 350L',
+    nhaSxId: 'nsx-electrolux',
+    sanPhamId: 'sp-tulanh',
+  },
+  {
+    id: 'mdl-ele-dry-8kg',
+    ten: 'Electrolux EDV805 8kg',
+    nhaSxId: 'nsx-electrolux',
+    sanPhamId: 'sp-giadung',
+  },
+  // Aqua
+  {
+    id: 'mdl-aqu-rf-186l',
+    ten: 'Aqua AQR-D190 186L',
+    nhaSxId: 'nsx-aqua',
+    sanPhamId: 'sp-tulanh',
+  },
+  {
+    id: 'mdl-aqu-rf-235l',
+    ten: 'Aqua AQR-T239 235L',
+    nhaSxId: 'nsx-aqua',
+    sanPhamId: 'sp-tulanh',
+  },
+  {
+    id: 'mdl-aqu-wm-8kg',
+    ten: 'Aqua Inverter 8kg',
+    nhaSxId: 'nsx-aqua',
+    sanPhamId: 'sp-maygiat',
+  },
+  {
+    id: 'mdl-aqu-frz-310l',
+    ten: 'Aqua AQF-C310 310L',
+    nhaSxId: 'nsx-aqua',
+    sanPhamId: 'sp-tulanh',
+  },
+  // Sharp
+  {
+    id: 'mdl-sha-rf-287l',
+    ten: 'Sharp SJ-X316 287L',
+    nhaSxId: 'nsx-sharp',
+    sanPhamId: 'sp-tulanh',
+  },
+  {
+    id: 'mdl-sha-ac-12k',
+    ten: 'Sharp Inverter 12000BTU',
+    nhaSxId: 'nsx-sharp',
+    sanPhamId: 'sp-maylanh',
+  },
+  {
+    id: 'mdl-sha-tv-55',
+    ten: 'Sharp 4T-C55EK2X 55"',
+    nhaSxId: 'nsx-sharp',
+    sanPhamId: 'sp-tivi',
+  },
+  {
+    id: 'mdl-sha-mw-22l',
+    ten: 'Sharp R-G226 22L',
+    nhaSxId: 'nsx-sharp',
+    sanPhamId: 'sp-giadung',
   },
 ]
 
@@ -339,9 +331,9 @@ export const NGAN_CHUA: NganChua[] = [
 
 // ── Nhóm hàng hóa ────────────────────────────────────────────────────────────
 export const NHOM_HANG_HOA: NhomHangHoa[] = [
-  { id: 'nhh-lk-man-hinh', ten: 'Linh kiện màn hình' },
-  { id: 'nhh-lk-pin', ten: 'Linh kiện pin' },
-  { id: 'nhh-lk-vi-mach', ten: 'Linh kiện vi mạch' },
+  { id: 'nhh-lk-lam-lanh', ten: 'Linh kiện làm lạnh' },
+  { id: 'nhh-lk-dien', ten: 'Linh kiện điện' },
+  { id: 'nhh-lk-board', ten: 'Board mạch điều khiển' },
   { id: 'nhh-phu-kien', ten: 'Phụ kiện' },
   { id: 'nhh-vat-tu', ten: 'Vật tư tiêu hao' },
   { id: 'nhh-may-nguyen', ten: 'Máy nguyên chiếc' },
@@ -383,11 +375,11 @@ export const PHONG_BAN: PhongBan[] = [
 
 // ── Nhóm sản phẩm ────────────────────────────────────────────────────────────
 export const NHOM_SAN_PHAM: NhomSanPham[] = [
-  { id: 'nsp-dienthoai', ten: 'Điện thoại' },
-  { id: 'nsp-maytinhbang', ten: 'Máy tính bảng' },
-  { id: 'nsp-dongho', ten: 'Đồng hồ thông minh' },
-  { id: 'nsp-taiphone', ten: 'Tai nghe' },
-  { id: 'nsp-phuongkien', ten: 'Phụ kiện' },
+  { id: 'nsp-tulanh', ten: 'Tủ lạnh - Tủ đông' },
+  { id: 'nsp-maylanh', ten: 'Máy điều hòa' },
+  { id: 'nsp-maygiat', ten: 'Máy giặt - Máy sấy' },
+  { id: 'nsp-tivi', ten: 'Tivi - Nghe nhìn' },
+  { id: 'nsp-giadung', ten: 'Điện gia dụng' },
 ]
 
 // ── Sản phẩm (product-type lookup for Phí giao — reference-mandated appliances) ─

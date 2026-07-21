@@ -10,42 +10,53 @@ const rng = new SeededRandom(1018)
 
 const NGUOI_TAO = ['Nguyễn Văn An', 'Trần Thị Bình', 'Lê Hữu Cường']
 
+// Linh kiện điện lạnh (Vietnamese, English). Generic consumables (gas, tụ,
+// dây đồng…) carry no model — they fit many appliances; model-specific parts
+// (block, board, motor…) derive their NSX from the picked model for coherence.
 const HH_NAMES: Array<[string, string]> = [
-  ['Pin iPhone 15', 'iPhone 15 Battery'],
-  ['Pin iPhone 14', 'iPhone 14 Battery'],
-  ['Pin Samsung S24', 'Samsung S24 Battery'],
-  ['Pin Xiaomi 14', 'Xiaomi 14 Battery'],
-  ['Màn hình iPhone 15', 'iPhone 15 Screen'],
-  ['Màn hình iPhone 14', 'iPhone 14 Screen'],
-  ['Màn hình Samsung S24', 'Samsung S24 Screen'],
-  ['Camera sau iPhone 15', 'iPhone 15 Rear Camera'],
-  ['Camera trước Samsung A54', 'Samsung A54 Front Camera'],
-  ['Bo mạch iPhone 13', 'iPhone 13 Mainboard'],
-  ['Vỏ iPhone 14 Pro', 'iPhone 14 Pro Housing'],
-  ['Kính lưng Samsung S23', 'Samsung S23 Back Glass'],
-  ['Cáp sạc Lightning', 'Lightning Cable'],
-  ['Cáp Type-C 60W', 'Type-C 60W Cable'],
-  ['Sạc nhanh 65W', '65W Fast Charger'],
-  ['Ốp lưng silicon', 'Silicone Case'],
-  ['Kính cường lực 9H', '9H Tempered Glass'],
-  ['Tai nghe Type-C', 'Type-C Earphones'],
-  ['Pin dự phòng 10000mAh', '10000mAh Power Bank'],
-  ['Dụng cụ mở máy', 'Opening Tool Kit'],
-  ['Keo tản nhiệt', 'Thermal Paste'],
-  ['Băng keo dẫn điện', 'Conductive Tape'],
-  ['Vít siêu nhỏ bộ 50c', 'Micro Screw Set 50pcs'],
-  ['Chổi vệ sinh mạch', 'Circuit Cleaning Brush'],
-  ['Màn hình Oppo Reno 11', 'Oppo Reno 11 Screen'],
-  ['Pin Vivo Y36', 'Vivo Y36 Battery'],
-  ['Camera Huawei Nova 11', 'Huawei Nova 11 Camera'],
-  ['Nắp lưng Xiaomi Redmi', 'Xiaomi Redmi Back Cover'],
-  ['Loa ngoài iPhone', 'iPhone Loudspeaker'],
-  ['Mic iPhone 15', 'iPhone 15 Microphone'],
+  ['Block máy lạnh 1HP', '1HP AC Compressor'],
+  ['Block tủ lạnh 1/5HP', '1/5HP Fridge Compressor'],
+  ['Board điều khiển tủ lạnh', 'Fridge Control Board'],
+  ['Board máy giặt cửa trước', 'Front-load Washer PCB'],
+  ['Board điều hòa dàn lạnh', 'Indoor AC Control Board'],
+  ['Motor máy giặt lồng đứng', 'Top-load Washer Motor'],
+  ['Motor quạt dàn nóng', 'Outdoor Fan Motor'],
+  ['Quạt dàn lạnh điều hòa', 'Indoor AC Blower'],
+  ['Cảm biến nhiệt tủ lạnh', 'Fridge Thermistor'],
+  ['Cảm biến nhiệt điều hòa', 'AC Temperature Sensor'],
+  ['Van tiết lưu điện tử', 'Electronic Expansion Valve'],
+  ['Rơ le nhiệt block', 'Compressor Thermal Relay'],
+  ['Tụ đề block 35uF', '35uF Start Capacitor'],
+  ['Tụ quạt 2uF', '2uF Fan Capacitor'],
+  ['Gas lạnh R32 bình 3kg', 'R32 Refrigerant 3kg'],
+  ['Gas lạnh R410A bình 3kg', 'R410A Refrigerant 3kg'],
+  ['Dây đồng ống đồng 6mm', '6mm Copper Pipe'],
+  ['Remote điều hòa universal', 'Universal AC Remote'],
+  ['Phao cảm biến máy giặt', 'Washer Water-level Sensor'],
+  ['Van cấp nước máy giặt', 'Washer Inlet Valve'],
+  ['Gioăng cửa tủ lạnh', 'Fridge Door Gasket'],
+  ['Đèn led khoang tủ lạnh', 'Fridge LED Lamp'],
+  ['Bơm xả máy giặt', 'Washer Drain Pump'],
+  ['Dây curoa máy giặt', 'Washer Drive Belt'],
+  ['Màng lọc điều hòa', 'AC Filter Mesh'],
+  ['Ống mao dẫn tủ lạnh', 'Fridge Capillary Tube'],
+  ['Sò lạnh tủ đông', 'Freezer Thermostat'],
+  ['Điện trở xả đá', 'Defrost Heater'],
+  ['Quạt gió lò vi sóng', 'Microwave Fan'],
+  ['Mâm nhiệt nồi cơm điện', 'Rice Cooker Heating Plate'],
 ]
 
 export const HANG_HOA_ROWS: HangHoa[] = HH_NAMES.map(([ten, tenEn], i) => {
-  const nhaSanXuat = rng.bool(0.8) ? rng.pick(NHA_SAN_XUAT_ROWS) : undefined
+  // Pick the model first, then derive NSX from it so a row that names both
+  // stays coherent (model.nhaSanXuatId === row.nhaSanXuatId). Generic parts
+  // (30% of rows) get an NSX-only or NSX-less assignment.
   const model = rng.bool(0.7) ? rng.pick(MODEL_ROWS) : undefined
+  const nhaSanXuat = model
+    ? NHA_SAN_XUAT_ROWS.find((r) => r.id === model.nhaSanXuatId)
+    : rng.bool(0.7)
+      ? rng.pick(NHA_SAN_XUAT_ROWS)
+      : undefined
+  const modelDungChung = rng.bool(0.15)
   return {
     id: `hh-${i + 1}`,
     maHH: `HH${String(i + 1).padStart(5, '0')}`,
@@ -55,8 +66,9 @@ export const HANG_HOA_ROWS: HangHoa[] = HH_NAMES.map(([ten, tenEn], i) => {
     nhomHangHoaId: rng.pick(NHOM_HANG_HOA_ROWS).id,
     nhaSanXuatId: nhaSanXuat?.id,
     modelId: model?.id,
-    modelDungChung: rng.bool(0.15),
-    modelDungChungText: rng.bool(0.15)
+    // Single gate: the "dùng chung" text only exists when the flag is set.
+    modelDungChung,
+    modelDungChungText: modelDungChung
       ? 'RAS-F10CJV, RAS-F13CJV, RAS-F18CJV'
       : undefined,
     donViTinhId: rng.pick(DON_VI_TINH_ROWS).id,
