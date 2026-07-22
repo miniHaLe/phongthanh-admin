@@ -1,7 +1,7 @@
 # Phong Thành Admin
 
-Giao diện quản trị chuỗi cửa hàng sửa chữa điện thoại Phong Thành, dùng React
-18 + Vite + TypeScript + Tailwind v3 + shadcn/ui.
+Giao diện quản trị chuỗi cửa hàng sửa chữa điện lạnh và điện gia dụng Phong
+Thành, dùng React 18 + Vite + TypeScript + Tailwind v3 + shadcn/ui.
 
 Backend thật trong [`api/`](./api/README.md) dùng NestJS + Postgres + Drizzle,
 phục vụ JWT auth và 21 resource của release. Khách hàng bị giới hạn theo chi
