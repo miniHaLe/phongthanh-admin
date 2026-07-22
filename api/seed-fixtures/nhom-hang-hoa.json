@@ -2,35 +2,35 @@
   {
     "id": "nhh-1",
     "maNhom": "NHH001",
-    "tenNhom": "Điện lạnh",
-    "active": false,
+    "tenNhom": "Thiết bị điện lạnh",
+    "active": true,
     "createdAt": "2025-06-13T02:04:40.134Z"
   },
   {
     "id": "nhh-2",
     "maNhom": "NHH002",
-    "tenNhom": "Điện tử",
+    "tenNhom": "Thiết bị điện tử nghe nhìn",
     "active": true,
     "createdAt": "2025-06-12T16:00:17.557Z"
   },
   {
     "id": "nhh-3",
     "maNhom": "NHH003",
-    "tenNhom": "Điện Thoại",
+    "tenNhom": "Thiết bị điện gia dụng",
     "active": true,
     "createdAt": "2026-05-27T18:16:24.264Z"
   },
   {
     "id": "nhh-4",
     "maNhom": "NHH004",
-    "tenNhom": "Điện gia dụng",
+    "tenNhom": "Linh kiện điện lạnh",
     "active": true,
     "createdAt": "2026-04-26T19:45:35.731Z"
   },
   {
     "id": "nhh-5",
     "maNhom": "NHH005",
-    "tenNhom": "Linh kiện điện tử",
+    "tenNhom": "Linh kiện điện - điện tử",
     "active": true,
     "createdAt": "2025-06-27T15:51:02.468Z"
   },
@@ -44,14 +44,14 @@
   {
     "id": "nhh-7",
     "maNhom": "NHH007",
-    "tenNhom": "Nguyên vật liệu sửa chữa",
+    "tenNhom": "Vật tư và môi chất lạnh",
     "active": true,
     "createdAt": "2025-12-27T07:06:10.745Z"
   },
   {
     "id": "nhh-8",
     "maNhom": "NHH008",
-    "tenNhom": "Nhà vệ sinh",
+    "tenNhom": "Phụ kiện lắp đặt và vệ sinh",
     "active": true,
     "createdAt": "2025-08-18T20:47:39.800Z"
   }

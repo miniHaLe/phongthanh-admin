@@ -22,7 +22,7 @@ const NHOM_SP = [
 export const NHOM_SAN_PHAM_ROWS: NhomSanPham[] = NHOM_SP.map((ten, i) => ({
   id: `nhomsp-${i + 1}`,
   tenNhomSP: ten,
-  active: rng.bool(0.92),
+  active: true,
   createdAt: rng.isoDateWithin(400),
   updatedAt: rng.bool(0.25) ? rng.isoDateWithin(90) : undefined,
 }))

@@ -10,6 +10,7 @@ import type {
   NguoiDungFixture,
   PhuongXaFixture,
   QuanFixture,
+  SanPhamFixture,
   TinhThanhFixture,
   XaFixture,
   SeedFixtures,
@@ -27,6 +28,8 @@ export function validateFkClosure(fixtures: {
   nguoiDung: NguoiDungFixture[]
   khachHang: KhachHangFixture[]
   nhaSanXuatIds: Set<string>
+  nhomSanPhamIds: Set<string>
+  sanPham: SanPhamFixture[]
   sanPhamIds: Set<string>
   nganHangIds: Set<string>
   model: ModelFixture[]
@@ -98,6 +101,16 @@ export function validateFkClosure(fixtures: {
     if (!fixtures.sanPhamIds.has(model.sanPhamId)) {
       errors.push(
         `model "${model.id}" references missing san_pham "${model.sanPhamId}"`,
+      )
+    }
+  }
+  for (const product of fixtures.sanPham) {
+    if (
+      product.nhomSanPhamId &&
+      !fixtures.nhomSanPhamIds.has(product.nhomSanPhamId)
+    ) {
+      errors.push(
+        `san_pham "${product.id}" references missing nhom_san_pham "${product.nhomSanPhamId}"`,
       )
     }
   }
@@ -246,6 +259,8 @@ export function validateSeedFixtureClosure(fixtures: SeedFixtures): void {
     nguoiDung: fixtures.nguoiDung,
     khachHang: fixtures.khachHang,
     nhaSanXuatIds: new Set(fixtures.nhaSanXuat.map((row) => row.id)),
+    nhomSanPhamIds: new Set(fixtures.nhomSanPham.map((row) => row.id)),
+    sanPham: fixtures.sanPham,
     sanPhamIds: new Set(fixtures.sanPham.map((row) => row.id)),
     nganHangIds: new Set(fixtures.nganHang.map((row) => row.id)),
     model: fixtures.model,

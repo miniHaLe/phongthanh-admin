@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm'
 import type { DbClient } from '../db/client'
 import * as schema from '../db/schema'
 import type { SeedFixtures } from './load-fixtures'
@@ -43,7 +44,14 @@ export async function seedMasterdataTables(
           tenNhomSP: row.tenNhomSP,
         })),
       )
-      .onConflictDoNothing({ target: schema.nhomSanPham.id })
+      .onConflictDoUpdate({
+        target: schema.nhomSanPham.id,
+        set: {
+          tenNhomSP: sql.raw('excluded.ten_nhom_sp'),
+          active: sql.raw('excluded.active'),
+          updatedAt: sql.raw('excluded.updated_at'),
+        },
+      })
   }
 
   if (fixtures.nhomHangHoa.length > 0) {
@@ -56,7 +64,15 @@ export async function seedMasterdataTables(
           tenNhom: row.tenNhom,
         })),
       )
-      .onConflictDoNothing({ target: schema.nhomHangHoa.id })
+      .onConflictDoUpdate({
+        target: schema.nhomHangHoa.id,
+        set: {
+          maNhom: sql.raw('excluded.ma_nhom'),
+          tenNhom: sql.raw('excluded.ten_nhom'),
+          active: sql.raw('excluded.active'),
+          updatedAt: sql.raw('excluded.updated_at'),
+        },
+      })
   }
 
   if (fixtures.thoiHan.length > 0) {
@@ -201,7 +217,12 @@ export async function seedMasterdataTables(
           tonKho: row.tonKho,
         })),
       )
-      .onConflictDoNothing({ target: schema.hangHoa.id })
+      .onConflictDoUpdate({
+        target: schema.hangHoa.id,
+        set: {
+          nhomHangHoaId: sql.raw('excluded.nhom_hang_hoa_id'),
+        },
+      })
   }
 
   return {
