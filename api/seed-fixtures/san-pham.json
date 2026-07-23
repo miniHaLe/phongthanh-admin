@@ -3,6 +3,7 @@
     "id": "sp-1",
     "maSP": "SP0001",
     "tenSP": "Tủ lạnh",
+    "nhomSanPhamId": "nhomsp-1",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -10,6 +11,7 @@
     "id": "sp-2",
     "maSP": "SP0002",
     "tenSP": "Tủ đông",
+    "nhomSanPhamId": "nhomsp-1",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -17,6 +19,7 @@
     "id": "sp-3",
     "maSP": "SP0003",
     "tenSP": "Tủ mát",
+    "nhomSanPhamId": "nhomsp-10",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -24,6 +27,7 @@
     "id": "sp-4",
     "maSP": "SP0004",
     "tenSP": "Máy giặt",
+    "nhomSanPhamId": "nhomsp-2",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -31,6 +35,7 @@
     "id": "sp-5",
     "maSP": "SP0005",
     "tenSP": "Máy sấy quần áo",
+    "nhomSanPhamId": "nhomsp-2",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -38,6 +43,7 @@
     "id": "sp-6",
     "maSP": "SP0006",
     "tenSP": "Máy điều hòa",
+    "nhomSanPhamId": "nhomsp-3",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -45,6 +51,7 @@
     "id": "sp-7",
     "maSP": "SP0007",
     "tenSP": "Điều hòa âm trần",
+    "nhomSanPhamId": "nhomsp-3",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -52,6 +59,7 @@
     "id": "sp-8",
     "maSP": "SP0008",
     "tenSP": "Tivi",
+    "nhomSanPhamId": "nhomsp-4",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -59,6 +67,7 @@
     "id": "sp-9",
     "maSP": "SP0009",
     "tenSP": "Loa kéo",
+    "nhomSanPhamId": "nhomsp-4",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -66,6 +75,7 @@
     "id": "sp-10",
     "maSP": "SP0010",
     "tenSP": "Lò vi sóng",
+    "nhomSanPhamId": "nhomsp-5",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -73,6 +83,7 @@
     "id": "sp-11",
     "maSP": "SP0011",
     "tenSP": "Bếp từ",
+    "nhomSanPhamId": "nhomsp-5",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -80,6 +91,7 @@
     "id": "sp-12",
     "maSP": "SP0012",
     "tenSP": "Lò nướng",
+    "nhomSanPhamId": "nhomsp-5",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -87,6 +99,7 @@
     "id": "sp-13",
     "maSP": "SP0013",
     "tenSP": "Máy hút mùi",
+    "nhomSanPhamId": "nhomsp-5",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -94,6 +107,7 @@
     "id": "sp-14",
     "maSP": "SP0014",
     "tenSP": "Máy lọc nước",
+    "nhomSanPhamId": "nhomsp-6",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -101,6 +115,7 @@
     "id": "sp-15",
     "maSP": "SP0015",
     "tenSP": "Máy nước nóng",
+    "nhomSanPhamId": "nhomsp-6",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -108,6 +123,7 @@
     "id": "sp-16",
     "maSP": "SP0016",
     "tenSP": "Nồi cơm điện",
+    "nhomSanPhamId": "nhomsp-7",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -115,6 +131,7 @@
     "id": "sp-17",
     "maSP": "SP0017",
     "tenSP": "Ấm siêu tốc",
+    "nhomSanPhamId": "nhomsp-7",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -122,6 +139,7 @@
     "id": "sp-18",
     "maSP": "SP0018",
     "tenSP": "Máy xay sinh tố",
+    "nhomSanPhamId": "nhomsp-7",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -129,6 +147,7 @@
     "id": "sp-19",
     "maSP": "SP0019",
     "tenSP": "Máy sấy tóc",
+    "nhomSanPhamId": "nhomsp-8",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -136,6 +155,7 @@
     "id": "sp-20",
     "maSP": "SP0020",
     "tenSP": "Quạt điện",
+    "nhomSanPhamId": "nhomsp-9",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -143,6 +163,7 @@
     "id": "sp-21",
     "maSP": "SP0021",
     "tenSP": "Máy làm mát",
+    "nhomSanPhamId": "nhomsp-9",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -150,6 +171,7 @@
     "id": "sp-22",
     "maSP": "SP0022",
     "tenSP": "Máy sưởi",
+    "nhomSanPhamId": "nhomsp-11",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   },
@@ -157,6 +179,7 @@
     "id": "sp-23",
     "maSP": "SP0023",
     "tenSP": "Máy hút bụi",
+    "nhomSanPhamId": "nhomsp-12",
     "active": true,
     "createdAt": "2025-07-01T00:00:00.000Z"
   }

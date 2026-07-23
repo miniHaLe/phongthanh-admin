@@ -51,9 +51,10 @@ exposed through ngrok. Pages deploys only after its selected API URL passes
   across customer and dealer flows. Official province/commune lookup, duplicate
   commune handling, bank/tax/account fields, parent dealer, explicit address
   clearing, and legacy address preservation align with the API.
-- Catalog theme: all mock master-data is điện lạnh (hãng: Samsung, LG,
-  Panasonic, Daikin, Toshiba…; sản phẩm: tủ lạnh, máy giặt, máy điều hòa…;
-  hàng hóa: block, board, motor, gas R32…) with deterministic Model→NSX/SanPham
+- Catalog theme: all mock master-data is điện lạnh và điện gia dụng (hãng:
+  Samsung, LG, Panasonic, Daikin, Toshiba…; sản phẩm: tủ lạnh, máy giặt, máy
+  điều hòa, TV, thiết bị bếp…; hàng hóa: block, board, motor, gas R32…) with
+  deterministic Model→NSX/SanPham
   FK triples (`src/mock/masterdata/model.mock.ts` resolves `sanPhamId` by name,
   no `rng.pick`). `NhaSanXuat` carries an optional `duongDanHang` brand URL
   (frontend-only; the danh mục column renders a clickable link). The product

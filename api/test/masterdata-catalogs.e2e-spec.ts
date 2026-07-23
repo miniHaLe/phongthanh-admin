@@ -19,7 +19,9 @@ let db: DbClient
 let token: string
 
 beforeAll(async () => {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile()
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule],
+  }).compile()
   app = moduleRef.createNestApplication<NestExpressApplication>()
   ;(app as NestExpressApplication).set('query parser', 'extended')
   app.enableCors({
@@ -55,8 +57,8 @@ const catalogs = [
   ['khu-vuc', 6, 'xaId'],
   ['loi-sua-chua', 36, 'branchId'],
   ['ngan-chua', 16, 'nhaKhoId'],
-  ['san-pham', 22, 'nhomSanPhamId'],
-  ['model', 26, 'nhaSanXuatId'],
+  ['san-pham', 23, 'nhomSanPhamId'],
+  ['model', 27, 'nhaSanXuatId'],
   ['hang-hoa', 30, 'donViTinhId'],
   ['phi-giao', 40, 'tenPhi'],
 ] as const
@@ -328,12 +330,12 @@ describe('real danh-muc catalogs', () => {
   ])(
     '%s returns a Vietnamese 400 for an invalid FK',
     async (resource, body, message) => {
-    const response = await http
-      .post(`/api/v1/${resource}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send(body)
+      const response = await http
+        .post(`/api/v1/${resource}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(body)
 
-    expect(response.status).toBe(400)
+      expect(response.status).toBe(400)
       expect(response.body.message).toBe(message)
     },
   )

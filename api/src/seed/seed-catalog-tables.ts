@@ -5,7 +5,7 @@
  * fixture row against the existing natural key first: on a hit, skip the
  * insert and record fixtureId → existingId so child fixtures (model,
  * hang_hoa, phi_giao) can be rewritten to the surviving row. */
-import { inArray, sql } from 'drizzle-orm'
+import { eq, inArray, sql } from 'drizzle-orm'
 import type { DbClient } from '../db/client'
 import * as schema from '../db/schema'
 import type { SeedFixtures } from './load-fixtures'
@@ -53,9 +53,7 @@ function catalogTimestamps(row: { createdAt: string; updatedAt?: string }) {
 
 interface NamedTable {
   table:
-    | typeof schema.nhaSanXuat
-    | typeof schema.sanPham
-    | typeof schema.nganHang
+    typeof schema.nhaSanXuat | typeof schema.sanPham | typeof schema.nganHang
   idColumn:
     | typeof schema.nhaSanXuat.id
     | typeof schema.sanPham.id
@@ -74,9 +72,14 @@ async function resolveByName<F extends { id: string }>(
   { table, idColumn, nameColumn }: NamedTable,
   rows: F[],
   getName: (row: F) => string,
-): Promise<{ toInsert: F[]; idMap: Map<string, string> }> {
+): Promise<{
+  toInsert: F[]
+  idMap: Map<string, string>
+  fixtureOwnedIds: Set<string>
+}> {
   const idMap = new Map<string, string>()
-  if (rows.length === 0) return { toInsert: [], idMap }
+  const fixtureOwnedIds = new Set<string>()
+  if (rows.length === 0) return { toInsert: [], idMap, fixtureOwnedIds }
 
   const normalizedExpr = sql<string>`lower(trim(${nameColumn}))`
   const names = [...new Set(rows.map((row) => normalizeName(getName(row))))]
@@ -85,18 +88,36 @@ async function resolveByName<F extends { id: string }>(
     .from(table)
     .where(inArray(normalizedExpr, names))
   const existingByName = new Map(existing.map((row) => [row.name, row.id]))
+  const existingFixtureIds = new Set(
+    (
+      await db
+        .select({ id: idColumn })
+        .from(table)
+        .where(
+          inArray(
+            idColumn,
+            rows.map((row) => row.id),
+          ),
+        )
+    ).map((row) => row.id),
+  )
 
   const toInsert: F[] = []
   for (const row of rows) {
     const existingId = existingByName.get(normalizeName(getName(row)))
     if (existingId === undefined) {
-      toInsert.push(row)
+      if (existingFixtureIds.has(row.id)) {
+        fixtureOwnedIds.add(row.id)
+      } else {
+        toInsert.push(row)
+      }
     } else if (existingId !== row.id) {
       idMap.set(row.id, existingId)
+    } else {
+      fixtureOwnedIds.add(row.id)
     }
-    // existingId === row.id → fixture already seeded verbatim: nothing to do.
   }
-  return { toInsert, idMap }
+  return { toInsert, idMap, fixtureOwnedIds }
 }
 
 export async function seedCatalogTables(
@@ -142,6 +163,20 @@ export async function seedCatalogTables(
         sanPham.toInsert.map((row) => ({ ...row, ...catalogTimestamps(row) })),
       )
       .onConflictDoNothing({ target: schema.sanPham.id })
+  }
+  for (const row of fixtures.sanPham) {
+    if (!sanPham.fixtureOwnedIds.has(row.id)) continue
+    await db
+      .update(schema.sanPham)
+      .set({
+        maSP: row.maSP,
+        tenSP: row.tenSP,
+        nhomSanPhamId: row.nhomSanPhamId,
+        tienKhoan: row.tienKhoan,
+        active: row.active,
+        updatedAt: row.updatedAt ? new Date(row.updatedAt) : null,
+      })
+      .where(eq(schema.sanPham.id, row.id))
   }
 
   // Banks are unique on the bank code as well as the normalized name; a code

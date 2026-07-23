@@ -28,4 +28,13 @@ describe('masterdata seed fixture closure', () => {
       /hang_hoa .* references missing don_vi_tinh/,
     )
   })
+
+  it('fails loud for a missing product-group reference', () => {
+    const fixtures = structuredClone(loadFixtures())
+    fixtures.sanPham[0].nhomSanPhamId = 'nhomsp-khong-ton-tai'
+
+    expect(() => validateSeedFixtureClosure(fixtures)).toThrow(
+      /san_pham .* references missing nhom_san_pham/,
+    )
+  })
 })
