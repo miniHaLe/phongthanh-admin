@@ -1,6 +1,6 @@
 # Codebase Summary
 
-Updated: 2026-07-21
+Updated: 2026-07-23
 
 ## Overview
 
@@ -138,8 +138,10 @@ Administrative source and checksums remain documented in
 - Every workflow run validates the URL. Normal runs require public
   `/health/ready` plus a protected `tin-tuc` capability probe; the emergency
   override skips both API gates but still validates the URL.
-- MacBook runtime uses Docker Postgres, host-run Nest API, two long-lived
-  API/ngrok terminals, backups outside Git, and forward-only migrations.
+- MacBook runtime uses Docker Postgres, a LaunchAgent-managed host Nest API,
+  independently managed ngrok, backups outside Git, and forward-only
+  migrations. `scripts/macbook-api-deploy.sh` automates first setup and later
+  backend-only updates without invoking the Pages workflow.
   Postgres binds only to `127.0.0.1:5434`; the runbook requires the macOS
   firewall and forbids router forwarding for the host-run API.
 

@@ -30,11 +30,107 @@ For local development or testing without the ngrok split-origin flow, a
 behind an nginx proxy at `http://localhost:8080`. Start with
 `docker compose up -d --build`. This simplified topology avoids tunnel URL
 management but is not suitable for the public GitHub Pages deployment. The
-step-by-step MacBook+ngrok flow below is the supported production path.
+MacBook API script below is the recommended production path; the numbered
+manual flow remains available as a fallback.
+
+## Recommended: One-Command MacBook Backend Deployment
+
+[`scripts/macbook-api-deploy.sh`](../scripts/macbook-api-deploy.sh) automates the
+supported backend flow without building, triggering, or deploying the GitHub
+Pages frontend. It manages only:
+
+```text
+verified Postgres backup when data already exists
+  -> Git fast-forward update
+  -> Docker Postgres startup and health gate
+  -> locked API dependency install and NestJS build
+  -> forward migrations and idempotent seed
+  -> macOS LaunchAgent API restart
+  -> local and optional public API capability gates
+```
+
+The script requires a logged-in macOS user, Node.js 24, npm, Docker Desktop,
+Git, curl, OpenSSL, `launchctl`, `lsof`, and `plutil`. It checks prerequisites
+but does not install system software. Open Docker Desktop before running it and
+enable Docker Desktop's login startup so Postgres returns after a Mac restart.
+
+### First run
+
+Clone the repository, switch to `main`, and run:
+
+```bash
+git clone https://github.com/miniHaLe/phongthanh-admin.git
+cd phongthanh-admin
+git switch main
+./scripts/macbook-api-deploy.sh --first-run
+```
+
+When `api/.env` does not exist, the script generates separate JWT secrets and
+prompts for the initial admin password without echo. For non-interactive use,
+provide `INITIAL_ADMIN_PASSWORD` in the process environment. The resulting file
+is gitignored, permissioned `600`, and retained for later idempotent seed runs.
+Automatic creation accepts normal password-manager symbols but rejects literal
+newlines and backticks so dotenv parsing cannot change the entered password.
+
+If the stable ngrok tunnel is already running, configure its HTTPS URL through
+`PUBLIC_API_URL`, `API_URL`, or the GitHub repository variable `API_URL`. The
+script verifies public readiness and the protected Tin Tuc endpoint but does
+not start/rotate ngrok, change the repository variable, or rebuild Pages.
+
+### Later updates
+
+Run the same script from the repository checkout:
+
+```bash
+./scripts/macbook-api-deploy.sh --update
+```
+
+With no mode flag, `--auto` selects update when the Compose database container
+or its `pgdata` volume exists; otherwise it selects first run. Update mode:
+
+1. refuses a dirty worktree or concurrent deployment;
+2. starts Postgres if needed;
+3. writes and validates a custom-format backup under
+   `~/phongthanh-backups/`;
+4. fetches, switches, and fast-forwards `main` only;
+5. re-executes the newly pulled version of itself;
+6. builds only `api/`, applies migrations, runs the idempotent seed, and reloads
+   the API LaunchAgent;
+7. requires local health, readiness, and unauthenticated Tin Tuc HTTP `401`.
+
+Useful options:
+
+```bash
+./scripts/macbook-api-deploy.sh --check
+./scripts/macbook-api-deploy.sh --skip-pull
+./scripts/macbook-api-deploy.sh --skip-public-check
+./scripts/macbook-api-deploy.sh --branch main
+```
+
+`--skip-pull` deploys the current clean checkout and is intended for controlled
+verification. It still backs up an existing database. `--skip-public-check`
+allows local-only completion when ngrok is intentionally offline.
+
+### Service and logs
+
+The script installs the user LaunchAgent
+`~/Library/LaunchAgents/com.phongthanh.admin-api.plist`. It runs the compiled
+API through `caffeinate`, starts it after login, and restarts it after a crash.
+
+```bash
+launchctl print "gui/$(id -u)/com.phongthanh.admin-api"
+tail -f "$HOME/Library/Logs/phongthanh-admin/api.log"
+tail -f "$HOME/Library/Logs/phongthanh-admin/api-error.log"
+```
+
+The script never restores a backup automatically, migrates backward, resets
+Git state, deletes Docker data, changes firewall/router settings, or runs any
+frontend command. Pushes to `main` continue to drive the existing Pages CI/CD
+workflow independently.
 
 ---
 
-## Part A: First-Time Deployment from Scratch
+## Part A: Manual First-Time Deployment Fallback
 
 Follow these numbered steps to deploy the API to your MacBook for the first time.
 
@@ -82,10 +178,12 @@ git switch main
 ### 3. Install API dependencies
 
 ```bash
-npm --prefix api ci
+npm --prefix api ci --include=dev
 ```
 
-Use `npm ci`, not `npm install`, so the MacBook uses the committed lockfile.
+Use `npm ci --include=dev`, not `npm install`, so the MacBook uses the committed
+lockfile and retains the Nest CLI required for production builds even when the
+shell has `NODE_ENV=production`.
 
 ### 4. Create `api/.env` safely
 
@@ -194,6 +292,7 @@ test "$(curl -sS -o /dev/null -w '%{http_code}' \
 ```
 
 Expected:
+
 - First two return JSON `{"status":"ok"}` and `{"status":"ready"}`.
 - Third returns `{"status":"ready"}` over HTTPS.
 - Fourth returns HTTP status `401`, proving the compatible API exposes the
@@ -256,7 +355,7 @@ the value you set in step 4). Then test a real customer or catalog request.
 **First-time deployment is now complete.** Keep Terminals A and B running. Move
 to Part B when new code arrives.
 
-## Part B: Update to New Code (Recurring Cycle)
+## Part B: Manual Update Fallback
 
 When new commits land on `main` (backend, frontend, or both), follow these
 numbered steps to update the running deployment.
@@ -285,23 +384,30 @@ git status --short
 If this prints anything, stop. Review with `git diff` and commit or otherwise
 preserve intentional local work. Do not reset, overwrite, or auto-stash it.
 
-### 3. Pull and rebuild (fast-forward only)
+### 3. Pull the release (fast-forward only)
 
 ```bash
 git switch main
 git pull --ff-only origin main
-npm --prefix api ci
-npm --prefix api run build
 ```
 
 ### 4. Stop the running API process
 
-In Terminal A, press `Ctrl-C` to stop the API. Leave ngrok running; it may show
-a brief `502` while restarting.
-
-### 5. Run database migrations and seed
+If the recommended script previously installed the LaunchAgent, unload it
+before changing `node_modules` or `dist`:
 
 ```bash
+launchctl bootout "gui/$(id -u)/com.phongthanh.admin-api"
+```
+
+If this Mac still uses the old Terminal A process instead, press `Ctrl-C` there.
+Leave ngrok running; it may show a brief `502` while restarting.
+
+### 5. Install, build, migrate, and seed
+
+```bash
+npm --prefix api ci --include=dev
+npm --prefix api run build
 npm --prefix api run db:migrate
 npm --prefix api run seed
 ```
@@ -351,6 +457,17 @@ The result must be `tin_tuc`.
 
 ### 7. Restart the API
 
+For a LaunchAgent-managed installation:
+
+```bash
+launchctl enable "gui/$(id -u)/com.phongthanh.admin-api"
+launchctl bootstrap "gui/$(id -u)" \
+  "$HOME/Library/LaunchAgents/com.phongthanh.admin-api.plist"
+launchctl kickstart -k "gui/$(id -u)/com.phongthanh.admin-api"
+```
+
+For the old terminal-managed fallback:
+
 ```bash
 caffeinate -dimsu npm --prefix api run start:prod
 ```
@@ -373,22 +490,11 @@ test "$(curl -sS -o /dev/null -w '%{http_code}' \
 All four must pass. If any fails, stop and troubleshoot (see Troubleshooting
 section) before proceeding.
 
-### 9. Redeploy Pages if frontend changed
+### 9. Leave frontend deployment to CI/CD
 
-If the commit(s) you pulled included frontend code changes (e.g., new routes,
-UI updates, catalog changes), dispatch Pages:
-
-```bash
-gh workflow run deploy-pages.yml --repo miniHaLe/phongthanh-admin
-gh run list --repo miniHaLe/phongthanh-admin --workflow deploy-pages.yml --limit 5
-RUN_ID="$(gh run list --repo miniHaLe/phongthanh-admin \
-  --workflow deploy-pages.yml --limit 1 --json databaseId \
-  --jq '.[0].databaseId')"
-gh run watch "$RUN_ID" --repo miniHaLe/phongthanh-admin --exit-status
-```
-
-If the commit(s) contained backend-only changes (no frontend edits), skip this
-step; the frontend continues using the previously deployed Pages build.
+Do not build or deploy the frontend from the MacBook backend flow. Pushes to
+`main` trigger `.github/workflows/deploy-pages.yml`; backend-only MacBook
+updates continue using the already hosted frontend.
 
 **Update cycle is complete.** The API is running with new code and the database
 is up-to-date.
@@ -507,27 +613,47 @@ endpoint returning `401` is not expected.
 ### Preferred: application-only rollback
 
 Keep the migrated database and run a known-good API commit that is compatible
-with the current additive schema/data:
+with the current additive schema/data. For a LaunchAgent-managed installation,
+unload it before changing `node_modules` or `dist`:
 
-In Terminal A, press `Ctrl-C` to stop the current API first. Leave ngrok running;
-it will return a temporary `502` until the known-good API starts.
+```bash
+SERVICE_TARGET="gui/$(id -u)/com.phongthanh.admin-api"
+launchctl bootout "$SERVICE_TARGET"
+```
+
+If this Mac still uses the old Terminal A process, press `Ctrl-C` there instead.
+Leave ngrok running; it will return a temporary `502` until the known-good API
+starts.
 
 ```bash
 git status --short
 git log --oneline -10
 git switch --detach <known-good-commit>
-npm --prefix api ci
+npm --prefix api ci --include=dev
 npm --prefix api run build
-caffeinate -dimsu npm --prefix api run start:prod
 ```
+
+Restart the managed API with its existing plist:
+
+```bash
+launchctl enable "$SERVICE_TARGET"
+launchctl bootstrap "gui/$(id -u)" \
+  "$HOME/Library/LaunchAgents/com.phongthanh.admin-api.plist"
+launchctl kickstart -k "$SERVICE_TARGET"
+```
+
+For an old terminal-managed installation, run
+`caffeinate -dimsu npm --prefix api run start:prod` instead.
 
 Do not run migrations backward. Return to the release branch later with
 `git switch main`, then use the normal update procedure.
 
 ### Restore a full backup
 
-Use only when a database rollback is required. Stop the API first. Restoring
-rewinds all data written after the selected backup.
+Use only when a database rollback is required. Stop the API first with the same
+LaunchAgent `bootout` or Terminal A procedure above. Never restore while the
+managed API remains loaded. Restoring rewinds all data written after the
+selected backup.
 
 ```bash
 BACKUP_FILE="$HOME/phongthanh-backups/<selected-backup>.dump"
@@ -537,8 +663,9 @@ docker exec -i phongthanh-db pg_restore \
   -U phongthanh -d phongthanh < "$BACKUP_FILE"
 ```
 
-Start the API version matching that backup, then verify local and public
-readiness before deploying Pages.
+Start the API version matching that backup with the managed or terminal restart
+procedure above, then verify local and public readiness before considering the
+backend recovery complete.
 
 Migrations run in order: 0000 (base schema), 0001 (cool_sunspot), 0002 (backfill khach_hang address codes), 0003 (masterdata catalogs), 0004 (tin_tuc). The `0001_cool_sunspot.down.sql` path is unsafe after later migrations because it
 does not reconcile their ledger/data state. Do not use the `0001` down script

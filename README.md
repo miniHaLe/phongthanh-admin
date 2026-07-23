@@ -118,6 +118,13 @@ còn API public chỉ đi qua ngrok và được bảo vệ bởi firewall macOS
 Runbook đầy đủ, gồm cập nhật bằng Git, backup, readiness gate, đổi tunnel và
 rollback: [`docs/deployment.md`](./docs/deployment.md).
 
+Thiết lập lần đầu hoặc cập nhật riêng Postgres/API trên MacBook, không deploy
+frontend:
+
+```bash
+./scripts/macbook-api-deploy.sh
+```
+
 ## Kiến trúc
 
 Xem [`ARCHITECTURE.md`](./ARCHITECTURE.md) và
